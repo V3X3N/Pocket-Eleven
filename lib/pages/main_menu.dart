@@ -1,8 +1,9 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pocket_eleven/databases/database_helper.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
 class MainMenu extends StatelessWidget {
@@ -27,15 +28,7 @@ class MainMenu extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  // Capture the context before the async operation
-                  BuildContext currentContext = context;
-
-                  await _requestStoragePermission(currentContext);
-
-                  // Check if the context is still mounted before showing the dialog
-                  if (!currentContext.mounted) return;
-
-                  _showNewGameDialog(currentContext);
+                  await _signInWithGoogle(context);
                 },
                 child: const Text('New Game'),
               ),
@@ -59,46 +52,29 @@ class MainMenu extends StatelessWidget {
     );
   }
 
-  Future<void> _requestStoragePermission(BuildContext context) async {
-    var status = await Permission.storage.status;
+  Future<void> _signInWithGoogle(BuildContext context) async {
+    final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    final GoogleSignIn googleSignIn = GoogleSignIn();
 
-    if (status == PermissionStatus.granted || status.isDenied) {
-      var result = await Permission.storage.request();
+    try {
+      final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
 
-      if (result.isDenied) {
-        // Capture the context before the asynchronous operation
-        BuildContext currentContext = context;
+      if (googleSignInAccount != null) {
+        final GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
 
-        // Check if the context is still mounted before showing the dialog
-        if (!currentContext.mounted) return;
-
-        await showDialog(
-          context: currentContext,
-          builder: (BuildContext context) {
-            // Check if the context is still mounted before building the dialog
-            if (!currentContext.mounted) return const SizedBox.shrink();
-
-            return AlertDialog(
-              title: const Text('Permission Required'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                      'Storage permission is required to save game data.'),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(currentContext).pop();
-                      openAppSettings();
-                    },
-                    child: const Text('Open Settings'),
-                  ),
-                ],
-              ),
-            );
-          },
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken,
         );
+
+        await firebaseAuth.signInWithCredential(credential);
+        // Przejdź do procesu tworzenia nowej gry po zalogowaniu
+        await _showNewGameDialog(context);
       }
+    } catch (error) {
+      print("Error signing in with Google: $error");
+      // Tutaj możesz dodać kod obsługujący błąd logowania
     }
   }
 
@@ -231,3 +207,4 @@ class MainMenu extends StatelessWidget {
     }
   }
 }
+
