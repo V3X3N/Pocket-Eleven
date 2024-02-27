@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pocket_eleven/databases/database_helper.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:pocket_eleven/pages/start_page.dart';
 
 class MainMenu extends StatelessWidget {
   const MainMenu({super.key});
@@ -70,8 +71,10 @@ class MainMenu extends StatelessWidget {
         );
 
         await firebaseAuth.signInWithCredential(credential);
-        // Proceed to the process of creating a new game after logging in
-        await _showNewGameDialog(context);
+        // Proceed directly to StadiumPage after logging in
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const StartPage()
+        ));
       }
     } catch (error) {
       if (kDebugMode) {
@@ -79,98 +82,6 @@ class MainMenu extends StatelessWidget {
       }
       // Here you can add code to handle login error
     }
-  }
-
-  Future<void> _showNewGameDialog(BuildContext context) async {
-    TextEditingController clubNameController = TextEditingController();
-    bool showError = false;
-    bool showLengthError = false;
-    bool showSpecialCharacterError = false; // Flag for special characters
-
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              title: const Text('New Game'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: clubNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Club Name',
-                      errorText: showError
-                          ? 'Please enter a club name'
-                          : (showLengthError
-                              ? 'Club name is too long (max 20 characters)'
-                              : (showSpecialCharacterError
-                                  ? 'Club name cannot contain special characters'
-                                  : null)),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          String clubName = clubNameController.text.trim();
-
-                          // Check if the club name contains special characters
-                          RegExp regex = RegExp(r'[!@#%^&*(),.?":{}|<>]');
-                          if (regex.hasMatch(clubName)) {
-                            setState(() {
-                              showSpecialCharacterError = true;
-                            });
-                            return;
-                          }
-
-                          if (clubName.isNotEmpty) {
-                            if (clubName.length <= 20) {
-                              await DatabaseHelper.instance
-                                  .addNewClub(clubName, createdByPlayer: true);
-
-                              if (!context.mounted) return;
-
-                              Navigator.of(context).pop();
-
-                              bool conditionForNavigation = true;
-                              if (conditionForNavigation && context.mounted) {
-                                Navigator.of(context)
-                                    .pushReplacement(MaterialPageRoute(
-                                  builder: (context) => const HomePage(),
-                                ));
-                              }
-                            } else {
-                              setState(() {
-                                showLengthError = true;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              showError = true;
-                            });
-                          }
-                        },
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   Future<void> _loadGame(BuildContext context) async {
