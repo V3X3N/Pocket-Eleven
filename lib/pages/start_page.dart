@@ -18,19 +18,17 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background image
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/start_game_bg.png'),
-                fit: BoxFit.cover,
-              ),
+      resizeToAvoidBottomInset: false,
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/start_game_bg.png'),
+              fit: BoxFit.cover,
             ),
           ),
-          // Content
-          Center(
+          child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -89,7 +87,7 @@ class _StartPageState extends State<StartPage> {
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
