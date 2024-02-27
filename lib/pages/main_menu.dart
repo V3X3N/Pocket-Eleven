@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pocket_eleven/databases/database_helper.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:pocket_eleven/pages/start_page.dart';
 
 class MainMenu extends StatelessWidget {
   const MainMenu({super.key});
@@ -16,39 +17,83 @@ class MainMenu extends StatelessWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/loading_bg.jpg'),
-            fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/loading_bg.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  await _signInWithGoogle(context);
-                },
-                child: const Text('New Game'),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.25,
+            left: 0,
+            right: 0,
+            child: const Center(
+              child: Column(
+                children: [
+                  Text(
+                    'POCKET',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'ELEVEN',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  // Implement Load Game functionality
-                  await _loadGame(context);
-                },
-                child: const Text('Load Game'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  exit(0);
-                },
-                child: const Text('Leave Game'),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.25, // Adjust the position of the buttons as needed
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Check if user is already signed in
+                      if (FirebaseAuth.instance.currentUser != null) {
+                        // If already signed in, navigate directly to HomePage
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => const HomePage()),
+                        );
+                      } else {
+                        // If not signed in, proceed with Google sign in
+                        await _signInWithGoogle(context);
+                      }
+                    },
+                    child: const Text('Start Game'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Implement Load Game functionality
+                      await _loadGame(context);
+                    },
+                    child: const Text('Load Game'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      exit(0);
+                    },
+                    child: const Text('Leave Game'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -70,8 +115,10 @@ class MainMenu extends StatelessWidget {
         );
 
         await firebaseAuth.signInWithCredential(credential);
-        // Proceed to the process of creating a new game after logging in
-        await _showNewGameDialog(context);
+        // Proceed directly to StadiumPage after logging in
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const StartPage()
+        ));
       }
     } catch (error) {
       if (kDebugMode) {
@@ -79,98 +126,6 @@ class MainMenu extends StatelessWidget {
       }
       // Here you can add code to handle login error
     }
-  }
-
-  Future<void> _showNewGameDialog(BuildContext context) async {
-    TextEditingController clubNameController = TextEditingController();
-    bool showError = false;
-    bool showLengthError = false;
-    bool showSpecialCharacterError = false; // Flag for special characters
-
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              title: const Text('New Game'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: clubNameController,
-                    decoration: InputDecoration(
-                      labelText: 'Club Name',
-                      errorText: showError
-                          ? 'Please enter a club name'
-                          : (showLengthError
-                              ? 'Club name is too long (max 20 characters)'
-                              : (showSpecialCharacterError
-                                  ? 'Club name cannot contain special characters'
-                                  : null)),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          String clubName = clubNameController.text.trim();
-
-                          // Check if the club name contains special characters
-                          RegExp regex = RegExp(r'[!@#%^&*(),.?":{}|<>]');
-                          if (regex.hasMatch(clubName)) {
-                            setState(() {
-                              showSpecialCharacterError = true;
-                            });
-                            return;
-                          }
-
-                          if (clubName.isNotEmpty) {
-                            if (clubName.length <= 20) {
-                              await DatabaseHelper.instance
-                                  .addNewClub(clubName, createdByPlayer: true);
-
-                              if (!context.mounted) return;
-
-                              Navigator.of(context).pop();
-
-                              bool conditionForNavigation = true;
-                              if (conditionForNavigation && context.mounted) {
-                                Navigator.of(context)
-                                    .pushReplacement(MaterialPageRoute(
-                                  builder: (context) => const HomePage(),
-                                ));
-                              }
-                            } else {
-                              setState(() {
-                                showLengthError = true;
-                              });
-                            }
-                          } else {
-                            setState(() {
-                              showError = true;
-                            });
-                          }
-                        },
-                        child: const Text('OK'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   Future<void> _loadGame(BuildContext context) async {
