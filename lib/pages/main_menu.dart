@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -69,12 +70,14 @@ class MainMenu extends StatelessWidget {
         );
 
         await firebaseAuth.signInWithCredential(credential);
-        // Przejdź do procesu tworzenia nowej gry po zalogowaniu
+        // Proceed to the process of creating a new game after logging in
         await _showNewGameDialog(context);
       }
     } catch (error) {
-      print("Error signing in with Google: $error");
-      // Tutaj możesz dodać kod obsługujący błąd logowania
+      if (kDebugMode) {
+        print("Error signing in with Google: $error");
+      }
+      // Here you can add code to handle login error
     }
   }
 
@@ -82,7 +85,7 @@ class MainMenu extends StatelessWidget {
     TextEditingController clubNameController = TextEditingController();
     bool showError = false;
     bool showLengthError = false;
-    bool showSpecialCharacterError = false; // Flaga dla znaków specjalnych
+    bool showSpecialCharacterError = false; // Flag for special characters
 
     return showDialog(
       context: context,
@@ -121,7 +124,7 @@ class MainMenu extends StatelessWidget {
                         onPressed: () async {
                           String clubName = clubNameController.text.trim();
 
-                          // Sprawdzenie, czy nazwa klubu zawiera znaki specjalne
+                          // Check if the club name contains special characters
                           RegExp regex = RegExp(r'[!@#%^&*(),.?":{}|<>]');
                           if (regex.hasMatch(clubName)) {
                             setState(() {
@@ -207,4 +210,3 @@ class MainMenu extends StatelessWidget {
     }
   }
 }
-
