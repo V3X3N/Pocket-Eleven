@@ -17,48 +17,83 @@ class MainMenu extends StatelessWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/loading_bg.jpg'),
-            fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/loading_bg.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  // Check if user is already signed in
-                  if (FirebaseAuth.instance.currentUser != null) {
-                    // If already signed in, navigate directly to HomePage
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  } else {
-                    // If not signed in, proceed with Google sign in
-                    await _signInWithGoogle(context);
-                  }
-                },
-                child: const Text('Start Game'),
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.25,
+            left: 0,
+            right: 0,
+            child: const Center(
+              child: Column(
+                children: [
+                  Text(
+                    'POCKET',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'ELEVEN',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  // Implement Load Game functionality
-                  await _loadGame(context);
-                },
-                child: const Text('Load Game'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  exit(0);
-                },
-                child: const Text('Leave Game'),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.25, // Adjust the position of the buttons as needed
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Check if user is already signed in
+                      if (FirebaseAuth.instance.currentUser != null) {
+                        // If already signed in, navigate directly to HomePage
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => const HomePage()),
+                        );
+                      } else {
+                        // If not signed in, proceed with Google sign in
+                        await _signInWithGoogle(context);
+                      }
+                    },
+                    child: const Text('Start Game'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Implement Load Game functionality
+                      await _loadGame(context);
+                    },
+                    child: const Text('Load Game'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      exit(0);
+                    },
+                    child: const Text('Leave Game'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
