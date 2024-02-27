@@ -30,9 +30,18 @@ class MainMenu extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  await _signInWithGoogle(context);
+                  // Check if user is already signed in
+                  if (FirebaseAuth.instance.currentUser != null) {
+                    // If already signed in, navigate directly to HomePage
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
+                  } else {
+                    // If not signed in, proceed with Google sign in
+                    await _signInWithGoogle(context);
+                  }
                 },
-                child: const Text('New Game'),
+                child: const Text('Start Game'),
               ),
               ElevatedButton(
                 onPressed: () async {
