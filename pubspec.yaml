@@ -35,9 +35,9 @@ dependencies:
   path_provider: ^2.1.1
   flame: ^1.16.0
   permission_handler: ^11.3.0
-  firebase_core: ^2.25.4
+  firebase_core: ^2.25.5
   google_sign_in: ^6.2.1
-  firebase_auth: ^4.17.5
+  firebase_auth: ^4.17.6
 
 flutter_icons:
   android: true
