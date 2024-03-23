@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
-import 'package:pocket_eleven/pages/registration_page.dart';
 
-class MainMenu extends StatelessWidget {
-  const MainMenu({super.key});
+class RegistrationPage extends StatelessWidget {
+  const RegistrationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,12 +52,44 @@ class MainMenu extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Confirm Password',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   MaterialButton(
                     height: 40,
                     minWidth: 100,
                     color: Colors.white,
                     onPressed: () {
-                      // TODO: Implement Google auth.
+                      // TODO: Implement Account Registration process
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
@@ -67,57 +97,7 @@ class MainMenu extends StatelessWidget {
                       );
                     },
                     child: const Text(
-                      "Google",
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.white,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegistrationPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.white,
-                    onPressed: () {
-                      // TODO: Implement Email Login Page
-                    },
-                    child: const Text(
-                      'Log In',
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.white,
-                    onPressed: () {
-                      // TODO: Make sure it's proper way
-                      exit(0);
-                    },
-                    child: const Text(
-                      'Exit',
+                      "Confirm",
                       style: TextStyle(color: Colors.blueAccent),
                     ),
                   ),
