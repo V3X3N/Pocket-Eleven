@@ -56,7 +56,7 @@ class RegistrationPage extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: 'Email',
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.white70,
                     ),
                   ),
                   const SizedBox(
@@ -66,7 +66,7 @@ class RegistrationPage extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: 'Password',
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.white70,
                     ),
                     obscureText: true,
                   ),
@@ -77,7 +77,7 @@ class RegistrationPage extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: 'Confirm Password',
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.white70,
                     ),
                     obscureText: true,
                   ),
@@ -87,7 +87,7 @@ class RegistrationPage extends StatelessWidget {
                   MaterialButton(
                     height: 40,
                     minWidth: 100,
-                    color: Colors.white,
+                    color: Colors.blueAccent,
                     onPressed: () {
                       // TODO: Implement Account Registration process
                       Navigator.pushReplacement(
@@ -98,7 +98,7 @@ class RegistrationPage extends StatelessWidget {
                     },
                     child: const Text(
                       "Confirm",
-                      style: TextStyle(color: Colors.blueAccent),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ],

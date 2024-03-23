@@ -1,11 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
-import 'package:pocket_eleven/pages/login_page.dart';
-import 'package:pocket_eleven/pages/registration_page.dart';
 
-class MainMenu extends StatelessWidget {
-  const MainMenu({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +52,33 @@ class MainMenu extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                      filled: true,
+                      fillColor: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                      filled: true,
+                      fillColor: Colors.white70,
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   MaterialButton(
                     height: 40,
                     minWidth: 100,
-                    color: Colors.white,
+                    color: Colors.blueAccent,
                     onPressed: () {
-                      // TODO: Implement Google auth.
+                      // TODO: Implement Account Login process
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
@@ -68,61 +86,7 @@ class MainMenu extends StatelessWidget {
                       );
                     },
                     child: const Text(
-                      "Google",
-                      style: TextStyle(color: Colors.blueAccent),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.blueAccent,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegistrationPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.blueAccent,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Log In',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.red,
-                    onPressed: () {
-                      // TODO: Make sure it's proper way
-                      exit(0);
-                    },
-                    child: const Text(
-                      'Exit',
+                      "Confirm",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
