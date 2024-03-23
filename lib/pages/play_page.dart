@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/databases/database_helper.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/league_schedule.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage({super.key});
@@ -11,25 +9,6 @@ class PlayPage extends StatefulWidget {
 }
 
 class _PlayPageState extends State<PlayPage> {
-  String clubName = ''; // Variable to store the club name
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchPlayerClubName(); // Fetch player's club name on widget initialization
-  }
-
-  Future<void> _fetchPlayerClubName() async {
-    // Use the new getPlayerClub function in DatabaseHelper to get the player's club name
-    Map<String, dynamic>? playerClub =
-        await DatabaseHelper.instance.getPlayerClub();
-
-    if (playerClub != null) {
-      clubName = playerClub[DatabaseHelper.columnName];
-      setState(() {}); // Update the state to trigger widget rebuild
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,6 +16,7 @@ class _PlayPageState extends State<PlayPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        toolbarHeight: 1,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -58,7 +38,6 @@ class _PlayPageState extends State<PlayPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  // Container on the left
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -74,18 +53,14 @@ class _PlayPageState extends State<PlayPage> {
                         ),
                       ),
                       const SizedBox(height: 8.0),
-                      Text(
-                        clubName,
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 18),
+                      const Text(
+                        // TODO: Display proper Players Club name
+                        "ClubName",
+                        style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     ],
                   ),
-
-                  // Container in the middle
                   const SizedBox.shrink(),
-
-                  // Container on the right
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -111,16 +86,13 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 16.0),
-
-          // Container for "PLAY" as a MaterialButton with bold text, centered alignment, and orange background color
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20.0),
             height: 80,
             child: MaterialButton(
               onPressed: () {
-                // Handle button press for PLAY
+                // TODO: Handle button press for PLAY
               },
               padding: const EdgeInsets.all(16.0),
               color: AppColors.green,
@@ -139,9 +111,7 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 16.0),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -151,7 +121,7 @@ class _PlayPageState extends State<PlayPage> {
                       const EdgeInsets.only(left: 20.0, right: 10.0, top: 10.0),
                   child: MaterialButton(
                     onPressed: () {
-                      // Handle button press for Container 1
+                      // TODO: Handle button press for Container 1
                     },
                     height: 120,
                     padding: const EdgeInsets.all(16.0),
@@ -177,11 +147,7 @@ class _PlayPageState extends State<PlayPage> {
                       const EdgeInsets.only(right: 20.0, left: 10.0, top: 10.0),
                   child: MaterialButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LeagueSchedulePage()),
-                      );
+                      // TODO: Handle button press for Container 1
                     },
                     height: 120,
                     padding: const EdgeInsets.all(16.0),
@@ -191,7 +157,7 @@ class _PlayPageState extends State<PlayPage> {
                     ),
                     child: const Center(
                       child: Text(
-                        'Fixtures',
+                        'Container 2',
                         style: TextStyle(
                           color: AppColors.textDisabledColor,
                           fontSize: 18,
@@ -213,7 +179,7 @@ class _PlayPageState extends State<PlayPage> {
                       const EdgeInsets.only(left: 20.0, right: 10.0, top: 10.0),
                   child: MaterialButton(
                     onPressed: () {
-                      // Handle button press for Container 3
+                      // TODO: Handle button press for Container 3
                     },
                     height: 120,
                     padding: const EdgeInsets.all(16.0),
@@ -239,7 +205,7 @@ class _PlayPageState extends State<PlayPage> {
                       const EdgeInsets.only(right: 20.0, left: 10.0, top: 10.0),
                   child: MaterialButton(
                     onPressed: () {
-                      // Handle button press for Container 4
+                      // TODO: Handle button press for Container 4
                     },
                     height: 120,
                     padding: const EdgeInsets.all(16.0),
