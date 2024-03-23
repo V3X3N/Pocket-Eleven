@@ -53,46 +53,54 @@ class MainMenu extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
-                  SizedBox(
+                  MaterialButton(
                     height: 40,
-                    width: 100,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement Google auth.
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ClubCreatePage()),
-                        );
-                      },
-                      child: const Text('Google'),
+                    minWidth: 100,
+                    color: Colors.white,
+                    onPressed: () {
+                      // TODO: Implement Google auth.
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ClubCreatePage()),
+                      );
+                    },
+                    child: const Text(
+                      "Google",
+                      style: TextStyle(color: Colors.blueAccent),
                     ),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
-                      height: 40,
-                      width: 100,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement Email Register/Login Page
-                        },
-                        child: const Text('Email'),
-                      )),
+                  MaterialButton(
+                    height: 40,
+                    minWidth: 100,
+                    color: Colors.white,
+                    onPressed: () {
+                      // TODO: Implement Email Register/Login Page
+                    },
+                    child: const Text(
+                      'Email',
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
-                      height: 40,
-                      width: 100,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Make sure it's proper way
-                          exit(0);
-                        },
-                        child: const Text('Exit'),
-                      )),
+                  MaterialButton(
+                    height: 40,
+                    minWidth: 100,
+                    color: Colors.white,
+                    onPressed: () {
+                      // TODO: Make sure it's proper way
+                      exit(0);
+                    },
+                    child: const Text(
+                      'Exit',
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
+                  ),
                 ],
               ),
             ),
