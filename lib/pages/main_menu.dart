@@ -59,7 +59,7 @@ class MainMenu extends StatelessWidget {
                     color: Colors.white,
                     onPressed: () {
                       // TODO: Implement Google auth.
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const ClubCreatePage()),
