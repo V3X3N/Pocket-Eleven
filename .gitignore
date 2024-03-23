@@ -575,3 +575,4 @@ test/
 
 #Files
 pubspec.lock
+lib/firebase_options.dart
