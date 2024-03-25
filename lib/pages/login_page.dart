@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/pages/club_create_page.dart';
+import 'package:pocket_eleven/pages/home_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -82,7 +82,7 @@ class LoginPage extends StatelessWidget {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ClubCreatePage()),
+                            builder: (context) => const HomePage()),
                       );
                     },
                     child: const Text(
