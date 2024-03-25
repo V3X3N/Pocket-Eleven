@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/design/colors.dart';
 
 class StadiumPage extends StatefulWidget {
   const StadiumPage({super.key});
@@ -10,8 +11,19 @@ class StadiumPage extends StatefulWidget {
 class _StadiumPageState extends State<StadiumPage> {
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Stadium")
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.hoverColor,
+        toolbarHeight: 1,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/stadium_bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
     );
   }
 }

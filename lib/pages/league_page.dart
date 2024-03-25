@@ -9,8 +9,6 @@ class LeaguePage extends StatefulWidget {
 }
 
 class _LeaguePageState extends State<LeaguePage> {
-  late Future<List<Map<String, dynamic>>> clubs;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
