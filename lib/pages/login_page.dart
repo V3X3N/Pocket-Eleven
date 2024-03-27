@@ -46,7 +46,7 @@ class LoginPage extends StatelessWidget {
             ),
           ),
           Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.25,
+            bottom: MediaQuery.of(context).size.height * 0.3,
             left: 0,
             right: 0,
             child: Center(
@@ -79,10 +79,12 @@ class LoginPage extends StatelessWidget {
                     color: Colors.blueAccent,
                     onPressed: () {
                       // TODO: Implement Account Login process
-                      Navigator.pushReplacement(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const HomePage()),
+                          builder: (context) => const HomePage(),
+                        ),
+                        (route) => false,
                       );
                     },
                     child: const Text(

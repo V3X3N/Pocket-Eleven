@@ -46,7 +46,7 @@ class ClubCreatePage extends StatelessWidget {
             ),
           ),
           Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.37,
+            bottom: MediaQuery.of(context).size.height * 0.38,
             left: 0,
             right: 0,
             child: Center(
@@ -58,6 +58,7 @@ class ClubCreatePage extends StatelessWidget {
                       filled: true,
                       fillColor: Colors.white70,
                     ),
+                    obscureText: true,
                   ),
                   const SizedBox(
                     height: 10,
@@ -68,10 +69,12 @@ class ClubCreatePage extends StatelessWidget {
                     color: Colors.blueAccent,
                     onPressed: () {
                       // TODO: Implement Account Login process
-                      Navigator.pushReplacement(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const HomePage()),
+                          builder: (context) => const HomePage(),
+                        ),
+                        (route) => false,
                       );
                     },
                     child: const Text(
