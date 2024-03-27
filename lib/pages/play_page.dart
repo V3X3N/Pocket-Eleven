@@ -30,7 +30,7 @@ class _PlayPageState extends State<PlayPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10.0),
                 image: const DecorationImage(
-                  image: AssetImage('assets/next_match_banner.jpg'),
+                  image: AssetImage('assets/background/next_match_banner.png'),
                   fit: BoxFit.cover,
                 ),
               ),

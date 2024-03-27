@@ -27,7 +27,7 @@ class _LeaguePageState extends State<LeaguePage> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/league_bg.jpg'),
+            image: AssetImage('assets/background/league_bg.png'),
             fit: BoxFit.cover,
           ),
         ),

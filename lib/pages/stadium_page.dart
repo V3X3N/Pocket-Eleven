@@ -19,7 +19,7 @@ class _StadiumPageState extends State<StadiumPage> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/stadium_bg.png'),
+            image: AssetImage('assets/background/stadium_bg.png'),
             fit: BoxFit.cover,
           ),
         ),

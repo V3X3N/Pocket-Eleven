@@ -1,61 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
-class ClubCreatePage extends StatefulWidget {
+class ClubCreatePage extends StatelessWidget {
   const ClubCreatePage({super.key});
 
-  @override
-  State<ClubCreatePage> createState() => _StartPageState();
-}
-
-class _StartPageState extends State<ClubCreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/loading_bg.jpg'),
-              fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background/loading_bg.png'),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const TextField(
-                  decoration: InputDecoration(
-                    hintText: "What's your club name?",
-                    border: OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white70,
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.25,
+            left: 0,
+            right: 0,
+            child: const Center(
+              child: Column(
+                children: [
+                  Text(
+                    'POCKET',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                MaterialButton(
-                  height: 40,
-                  minWidth: 100,
-                  color: Colors.blue,
-                  onPressed: () {
-                    // TODO: Implement user club get functionality
-                    Navigator.pushAndRemoveUntil(
+                  Text(
+                    'ELEVEN',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.37,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Enter your club name here!',
+                      filled: true,
+                      fillColor: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  MaterialButton(
+                    height: 40,
+                    minWidth: 100,
+                    color: Colors.blueAccent,
+                    onPressed: () {
+                      // TODO: Implement Account Login process
+                      Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const HomePage()),
-                        (Route<dynamic> route) => false);
-                  },
-                  child: const Text(
-                    "Create",
-                    style: TextStyle(color: Colors.white),
+                      );
+                    },
+                    child: const Text(
+                      "Confirm",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
