@@ -15,7 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   //navigate bottom bar
   int _selectedIndex = 0;
   void navigateBottomBar(int newIndex) {
@@ -23,7 +22,6 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = newIndex;
     });
   }
-
 
   //pages to display
   final List<Widget> _pages = [
@@ -40,15 +38,13 @@ class _HomePageState extends State<HomePage> {
     const LeaguePage()
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryColor,
-      bottomNavigationBar: BottomNavBar(
-        onTabChange: (index) => navigateBottomBar(index),
-      ),
-      body: _pages[_selectedIndex]
-    );
+        backgroundColor: AppColors.primaryColor,
+        bottomNavigationBar: BottomNavBar(
+          onTabChange: (index) => navigateBottomBar(index),
+        ),
+        body: _pages[_selectedIndex]);
   }
 }
