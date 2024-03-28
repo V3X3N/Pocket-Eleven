@@ -9,24 +9,25 @@ class StadiumPage extends StatefulWidget {
 }
 
 class _StadiumPageState extends State<StadiumPage> {
-  bool _isLoading = true; // Flaga do śledzenia stanu ładowania
-  late Image _stadiumImage; // Zmienna przechowująca wczytane zdjęcie stadionu
+  bool _isLoading = true;
+  late Image _stadiumImage;
 
   @override
   void initState() {
     super.initState();
-    _loadStadiumImage(); // Rozpoczęcie procesu ładowania zdjęcia w momencie inicjalizacji widoku
+    _loadStadiumImage();
   }
 
-  // Synchroniczna funkcja wczytująca obraz z lokalnej ścieżki
   void _loadStadiumImage() {
-    // Wczytanie obrazu z lokalnej ścieżki
     _stadiumImage = Image.asset('assets/background/stadium_bg.png');
 
-    // Ustawienie flagi na false po wczytaniu obrazu
-    setState(() {
-      _isLoading = false;
-    });
+    _stadiumImage.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((_, __) {
+        setState(() {
+          _isLoading = false;
+        });
+      }),
+    );
   }
 
   @override
@@ -36,19 +37,18 @@ class _StadiumPageState extends State<StadiumPage> {
         backgroundColor: AppColors.hoverColor,
         toolbarHeight: 1,
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Warunkowe wyświetlanie CircularProgressIndicator w zależności od stanu ładowania
-          _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : _stadiumImage != null
-                  ? Image(image: _stadiumImage.image, fit: BoxFit.cover)
-                  : const Text('Błąd ładowania obrazu'),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: _stadiumImage.image,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
     );
   }
 }

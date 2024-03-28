@@ -4,8 +4,30 @@ import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:pocket_eleven/pages/login_page.dart';
 import 'package:pocket_eleven/pages/registration_page.dart';
 
-class MainMenu extends StatelessWidget {
+class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
+
+  @override
+  State<MainMenu> createState() => _MainMenuState();
+}
+
+class _MainMenuState extends State<MainMenu> {
+  bool _isLoading = true;
+  late Image _loadingImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoadingImage();
+  }
+
+  void _loadLoadingImage() {
+    _loadingImage = Image.asset('assets/background/loading_bg.png');
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +35,18 @@ class MainMenu extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/background/loading_bg.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: _loadingImage.image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
           Positioned(
             top: MediaQuery.of(context).size.height * 0.25,
             left: 0,

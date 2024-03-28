@@ -9,21 +9,18 @@ class LeaguePage extends StatefulWidget {
 }
 
 class _LeaguePageState extends State<LeaguePage> {
-  bool _isLoading = true; // Flaga do śledzenia stanu ładowania
-  late Image _leagueBackgroundImage; // Zmienna przechowująca wczytane tło ligi
+  bool _isLoading = true;
+  late Image _leagueImage;
 
   @override
   void initState() {
     super.initState();
-    _loadLeagueBackgroundImage(); // Rozpoczęcie procesu ładowania tła ligi w momencie inicjalizacji widoku
+    _loadLeagueImage();
   }
 
-  // Synchroniczna funkcja wczytująca obraz tła ligi z lokalnej ścieżki
-  void _loadLeagueBackgroundImage() {
-    // Wczytanie obrazu z lokalnej ścieżki
-    _leagueBackgroundImage = Image.asset('assets/background/league_bg.png');
+  void _loadLeagueImage() {
+    _leagueImage = Image.asset('assets/background/league_bg.png');
 
-    // Ustawienie flagi na false po wczytaniu obrazu
     setState(() {
       _isLoading = false;
     });
@@ -47,15 +44,18 @@ class _LeaguePageState extends State<LeaguePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Warunkowe wyświetlanie CircularProgressIndicator w zależności od stanu ładowania
           _isLoading
               ? const Center(
                   child: CircularProgressIndicator(),
                 )
-              : _leagueBackgroundImage != null
-                  ? Image(
-                      image: _leagueBackgroundImage.image, fit: BoxFit.cover)
-                  : const Text('Błąd ładowania tła ligi'),
+              : Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: _leagueImage.image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
         ],
       ),
     );
