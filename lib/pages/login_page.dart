@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/play_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

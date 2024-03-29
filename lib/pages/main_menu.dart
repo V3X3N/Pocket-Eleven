@@ -13,7 +13,7 @@ class MainMenu extends StatefulWidget {
 
 class _MainMenuState extends State<MainMenu> {
   bool _isLoading = true;
-  late Image _loadingImage;
+  late AssetImage _loadingImageAsset;
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   void _loadLoadingImage() {
-    _loadingImage = Image.asset('assets/background/loading_bg.png');
+    _loadingImageAsset = const AssetImage('assets/background/loading_bg.png');
 
     setState(() {
       _isLoading = false;
@@ -42,7 +42,7 @@ class _MainMenuState extends State<MainMenu> {
               : Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: _loadingImage.image,
+                      image: _loadingImageAsset,
                       fit: BoxFit.cover,
                     ),
                   ),
