@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pocket_eleven/pages/main_menu.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'image_loader.dart';
 
-Future <void> main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+  runApp(Builder(
+    builder: (context) {
+      print('preloading images...');
+      ImageLoader.precacheImages(context);
+      print('all assets loaded, launching the app...');
+
+      return const MyApp();
+    },
+  ));
 }
 
 class MyApp extends StatelessWidget {

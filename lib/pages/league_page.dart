@@ -9,6 +9,23 @@ class LeaguePage extends StatefulWidget {
 }
 
 class _LeaguePageState extends State<LeaguePage> {
+  bool _isLoading = true;
+  late Image _leagueImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLeagueImage();
+  }
+
+  void _loadLeagueImage() {
+    _leagueImage = Image.asset('assets/background/league_bg.png');
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,13 +41,22 @@ class _LeaguePageState extends State<LeaguePage> {
         backgroundColor: AppColors.hoverColor,
         centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/league_bg.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: _leagueImage.image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+        ],
       ),
     );
   }

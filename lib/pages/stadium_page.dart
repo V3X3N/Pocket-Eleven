@@ -9,6 +9,27 @@ class StadiumPage extends StatefulWidget {
 }
 
 class _StadiumPageState extends State<StadiumPage> {
+  bool _isLoading = true;
+  late Image _stadiumImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStadiumImage();
+  }
+
+  void _loadStadiumImage() {
+    _stadiumImage = Image.asset('assets/background/stadium_bg.png');
+
+    _stadiumImage.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((_, __) {
+        setState(() {
+          _isLoading = false;
+        });
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,14 +37,18 @@ class _StadiumPageState extends State<StadiumPage> {
         backgroundColor: AppColors.hoverColor,
         toolbarHeight: 1,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/stadium_bg.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: _stadiumImage.image,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
     );
   }
 }

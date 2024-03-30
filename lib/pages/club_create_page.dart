@@ -5,57 +5,114 @@ class ClubCreatePage extends StatefulWidget {
   const ClubCreatePage({super.key});
 
   @override
-  State<ClubCreatePage> createState() => _StartPageState();
+  State<ClubCreatePage> createState() => _ClubCreatePageState();
 }
 
-class _StartPageState extends State<ClubCreatePage> {
+class _ClubCreatePageState extends State<ClubCreatePage> {
+  bool _isLoading = true;
+  late Image _loadingImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoadingImage();
+  }
+
+  void _loadLoadingImage() {
+    _loadingImage = Image.asset('assets/background/loading_bg.png');
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Container(
-          height: MediaQuery.of(context).size.height,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/loading_bg.jpg'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const TextField(
-                  decoration: InputDecoration(
-                    hintText: "What's your club name?",
-                    border: OutlineInputBorder(),
-                    filled: true,
-                    fillColor: Colors.white70,
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: _loadingImage.image,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                MaterialButton(
-                  height: 40,
-                  minWidth: 100,
-                  color: Colors.blue,
-                  onPressed: () {
-                    // TODO: Implement user club get functionality
-                    Navigator.pushAndRemoveUntil(
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.25,
+            left: 0,
+            right: 0,
+            child: const Center(
+              child: Column(
+                children: [
+                  Text(
+                    'POCKET',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    'ELEVEN',
+                    style: TextStyle(
+                      fontSize: 44.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.38,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  const TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Enter your club name here!',
+                      filled: true,
+                      fillColor: Colors.white70,
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  MaterialButton(
+                    height: 40,
+                    minWidth: 100,
+                    color: Colors.blueAccent,
+                    onPressed: () {
+                      // TODO: Implement Account Login process
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const HomePage()),
-                        (Route<dynamic> route) => false);
-                  },
-                  child: const Text(
-                    "Create",
-                    style: TextStyle(color: Colors.white),
+                          builder: (context) => const HomePage(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      "Confirm",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
