@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ClubCreatePage extends StatefulWidget {
-  const ClubCreatePage({super.key});
+  const ClubCreatePage({Key? key}) : super(key: key);
 
   @override
   State<ClubCreatePage> createState() => _ClubCreatePageState();
@@ -11,11 +13,13 @@ class ClubCreatePage extends StatefulWidget {
 class _ClubCreatePageState extends State<ClubCreatePage> {
   bool _isLoading = true;
   late Image _loadingImage;
+  late TextEditingController _clubNameController;
 
   @override
   void initState() {
     super.initState();
     _loadLoadingImage();
+    _clubNameController = TextEditingController();
   }
 
   void _loadLoadingImage() {
@@ -78,13 +82,13 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
             child: Center(
               child: Column(
                 children: [
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _clubNameController,
+                    decoration: const InputDecoration(
                       hintText: 'Enter your club name here!',
                       filled: true,
                       fillColor: Colors.white70,
                     ),
-                    obscureText: true,
                   ),
                   const SizedBox(
                     height: 10,
@@ -93,15 +97,33 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                     height: 40,
                     minWidth: 100,
                     color: Colors.blueAccent,
-                    onPressed: () {
-                      // TODO: Implement Account Login process
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomePage(),
-                        ),
-                        (route) => false,
-                      );
+                    onPressed: () async {
+                      // Get the entered club name
+                      String clubName = _clubNameController.text;
+                      // Check if user is logged in
+                      if (AuthServices.isLoggedIn()) {
+                        // Get current user email
+                        String? email = AuthServices.getCurrentUserEmail();
+                        if (email != null) {
+                          // Update club name in database
+                          await updateClubName(email, clubName);
+                          // Navigate to Home Page
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(),
+                            ),
+                            (route) => false,
+                          );
+                        } else {
+                          print('User email is null');
+                        }
+                      } else {
+                        // User is not logged in, handle accordingly
+                        print('User is not logged in');
+                        // Example: Redirect to login page
+                        // Navigator.pushReplacementNamed(context, '/login');
+                      }
                     },
                     child: const Text(
                       "Confirm",
@@ -115,5 +137,31 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
         ],
       ),
     );
+  }
+
+  Future<void> updateClubName(String email, String clubName) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+        await documentSnapshot.reference.update({'clubName': clubName});
+        // Update successful
+      } else {
+        print('User not found');
+      }
+    } catch (e) {
+      print('Error updating club name: $e');
+      // Handle error
+    }
+  }
+
+  @override
+  void dispose() {
+    _clubNameController.dispose();
+    super.dispose();
   }
 }

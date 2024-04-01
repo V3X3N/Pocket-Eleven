@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
-import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
@@ -175,15 +175,12 @@ class _LoginPageState extends State<LoginPage> {
                                           ? await AuthServices.signinUser(
                                               email, password, context)
                                           : await AuthServices.signupUser(
-                                              email,
-                                              password,
-                                              '',
-                                              context); // Empty club name
+                                              email, password, '', context);
                                       Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              const HomePage(),
+                                              const ClubCreatePage(),
                                         ),
                                         (route) => false,
                                       );
@@ -196,7 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                                     }
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
+                                      const SnackBar(
                                         content: Text("Passwords don't match"),
                                       ),
                                     );
