@@ -4,11 +4,14 @@ import 'package:pocket_eleven/design/colors.dart';
 
 class BottomNavBar extends StatelessWidget {
   final void Function(int)? onTabChange;
-  const BottomNavBar({super.key, required this.onTabChange});
+  final double navBarHeight;
+  const BottomNavBar(
+      {super.key, required this.onTabChange, required this.navBarHeight});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
+      height: navBarHeight,
       padding: const EdgeInsets.only(bottom: 0.0),
       child: GNav(
           onTabChange: (value) => onTabChange!(value),
@@ -27,6 +30,8 @@ class BottomNavBar extends StatelessWidget {
             GButton(icon: Icons.people_alt, text: 'Transfer'),
             //league tab
             GButton(icon: Icons.list_alt, text: 'League'),
+            //profile tab
+            GButton(icon: Icons.co_present_rounded, text: "Profile")
           ]),
     );
   }
