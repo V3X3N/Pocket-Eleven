@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
+import 'package:pocket_eleven/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,9 +15,8 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
+  String clubName = '';
   bool login = false;
-
-  late String fullname;
 
   @override
   void initState() {
@@ -57,22 +57,22 @@ class _LoginPageState extends State<LoginPage> {
                       login
                           ? Container()
                           : TextFormField(
-                              key: const ValueKey('fullname'),
+                              key: const ValueKey('clubName'),
                               decoration: const InputDecoration(
-                                hintText: 'Enter Full Name',
+                                hintText: 'Enter Club Name',
                                 filled: true,
                                 fillColor: Colors.white70,
                               ),
                               validator: (value) {
                                 if (value!.isEmpty) {
-                                  return 'Please Enter Full Name';
+                                  return 'Please Enter Club Name';
                                 } else {
                                   return null;
                                 }
                               },
                               onSaved: (value) {
                                 setState(() {
-                                  fullname = value!;
+                                  clubName = value!;
                                 });
                               },
                             ),
@@ -123,9 +123,15 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                       ),
-                      const SizedBox(
-                        height: 30,
-                      ),
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              login = !login;
+                            });
+                          },
+                          child: Text(login
+                              ? "Don't have an account? Signup"
+                              : "Already have an account? Login")),
                       SizedBox(
                         height: 40,
                         width: 100,
@@ -134,11 +140,22 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                login
-                                    ? AuthServices.signinUser(
-                                        email, password, context)
-                                    : AuthServices.signupUser(
-                                        email, password, fullname, context);
+                                try {
+                                  login
+                                      ? await AuthServices.signinUser(
+                                          email, password, context)
+                                      : await AuthServices.signupUser(
+                                          email, password, clubName, context);
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const HomePage(),
+                                    ),
+                                    (route) => false,
+                                  );
+                                } catch (error) {
+                                  print('Error: $error');
+                                }
                               }
                             },
                             child: Text(
@@ -148,15 +165,6 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(
                         height: 10,
                       ),
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              login = !login;
-                            });
-                          },
-                          child: Text(login
-                              ? "Don't have an account? Signup"
-                              : "Already have an account? Login"))
                     ],
                   ),
                 ),
