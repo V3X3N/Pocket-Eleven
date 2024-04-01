@@ -572,6 +572,7 @@ assets/
 build/
 ios/
 test/
+lib/firebase/
 
 #Files
 pubspec.lock

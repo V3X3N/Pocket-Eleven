@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:pocket_eleven/pages/login_page.dart';
-import 'package:pocket_eleven/pages/registration_page.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -109,30 +108,11 @@ class _MainMenuState extends State<MainMenu> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RegistrationPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.blueAccent,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
                             builder: (context) => const LoginPage()),
                       );
                     },
                     child: const Text(
-                      'Log In',
+                      'Email',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
