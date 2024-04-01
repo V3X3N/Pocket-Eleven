@@ -4,7 +4,7 @@ import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ClubCreatePage extends StatefulWidget {
-  const ClubCreatePage({Key? key}) : super(key: key);
+  const ClubCreatePage({super.key});
 
   @override
   State<ClubCreatePage> createState() => _ClubCreatePageState();
@@ -98,16 +98,11 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                     minWidth: 100,
                     color: Colors.blueAccent,
                     onPressed: () async {
-                      // Get the entered club name
                       String clubName = _clubNameController.text;
-                      // Check if user is logged in
                       if (AuthServices.isLoggedIn()) {
-                        // Get current user email
                         String? email = AuthServices.getCurrentUserEmail();
                         if (email != null) {
-                          // Update club name in database
                           await updateClubName(email, clubName);
-                          // Navigate to Home Page
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -119,10 +114,7 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                           print('User email is null');
                         }
                       } else {
-                        // User is not logged in, handle accordingly
                         print('User is not logged in');
-                        // Example: Redirect to login page
-                        // Navigator.pushReplacementNamed(context, '/login');
                       }
                     },
                     child: const Text(
@@ -149,13 +141,11 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
         await documentSnapshot.reference.update({'clubName': clubName});
-        // Update successful
       } else {
         print('User not found');
       }
     } catch (e) {
       print('Error updating club name: $e');
-      // Handle error
     }
   }
 

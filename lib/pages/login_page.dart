@@ -14,6 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   late Image _loadingImage;
   final _formKey = GlobalKey<FormState>();
+  String managerName = '';
   String email = '';
   String password = '';
   String confirmPassword = '';
@@ -63,6 +64,28 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    login
+                        ? Container()
+                        : TextFormField(
+                            key: const ValueKey('managerName'),
+                            decoration: const InputDecoration(
+                              hintText: "What's your name Manager?",
+                              filled: true,
+                              fillColor: Colors.white70,
+                            ),
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Please tell us your name";
+                              } else {
+                                return null;
+                              }
+                            },
+                            onSaved: (value) {
+                              setState(() {
+                                managerName = value!;
+                              });
+                            },
+                          ),
                     const SizedBox(height: 10),
                     TextFormField(
                       key: const ValueKey('email'),
@@ -174,8 +197,8 @@ class _LoginPageState extends State<LoginPage> {
                                       login
                                           ? await AuthServices.signinUser(
                                               email, password, context)
-                                          : await AuthServices.signupUser(
-                                              email, password, '', context);
+                                          : await AuthServices.signupUser(email,
+                                              password, managerName, context);
                                       Navigator.pushAndRemoveUntil(
                                         context,
                                         MaterialPageRoute(
