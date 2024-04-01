@@ -3,7 +3,7 @@ import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
+  String confirmPassword = '';
   String clubName = '';
   bool login = false;
 
@@ -111,6 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                           fillColor: Colors.white70,
                         ),
                         validator: (value) {
+                          password = value.toString();
                           if (value!.length < 6) {
                             return 'Please Enter Password of min length 6';
                           } else {
@@ -123,23 +125,50 @@ class _LoginPageState extends State<LoginPage> {
                           });
                         },
                       ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      TextFormField(
+                        key: const ValueKey('confirmPassword'),
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          hintText: 'Confirm Password',
+                          filled: true,
+                          fillColor: Colors.white70,
+                        ),
+                        validator: (value) {
+                          confirmPassword = value.toString();
+                          if (confirmPassword != password) {
+                            return "Passwords don't match";
+                          } else {
+                            return null;
+                          }
+                        },
+                        onSaved: (value) {
+                          setState(() {
+                            confirmPassword = value!;
+                          });
+                        },
+                      ),
                       TextButton(
-                          onPressed: () {
-                            setState(() {
-                              login = !login;
-                            });
-                          },
-                          child: Text(login
-                              ? "Don't have an account? Signup"
-                              : "Already have an account? Login")),
+                        onPressed: () {
+                          setState(() {
+                            login = !login;
+                          });
+                        },
+                        child: Text(login
+                            ? "Don't have an account? Signup"
+                            : "Already have an account? Login"),
+                      ),
                       SizedBox(
                         height: 40,
                         width: 100,
                         child: MaterialButton(
-                            color: Colors.blueAccent,
-                            onPressed: () async {
-                              if (_formKey.currentState!.validate()) {
-                                _formKey.currentState!.save();
+                          color: Colors.blueAccent,
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              _formKey.currentState!.save();
+                              if (password == confirmPassword) {
                                 try {
                                   login
                                       ? await AuthServices.signinUser(
@@ -156,11 +185,20 @@ class _LoginPageState extends State<LoginPage> {
                                 } catch (error) {
                                   print('Error: $error');
                                 }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Passwords don't match"),
+                                  ),
+                                );
                               }
-                            },
-                            child: Text(
-                                style: const TextStyle(color: Colors.white),
-                                login ? 'Login' : 'Signup')),
+                            }
+                          },
+                          child: Text(
+                            login ? 'Login' : 'Signup',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
                       const SizedBox(
                         height: 10,
