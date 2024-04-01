@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/login_page.dart';
-import 'firebase_options.dart';
+import 'package:pocket_eleven/pages/main_menu.dart';
+import 'firebase/firebase_options.dart';
 import 'image_loader.dart';
 
 Future<void> main() async {
@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
               if (snapshot.hasData) {
                 return const HomePage();
               } else {
-                return const LoginPage();
+                return const MainMenu();
               }
             }));
   }
