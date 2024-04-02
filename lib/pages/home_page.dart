@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/pages/profile_page.dart';
 
 import 'league_page.dart';
 import 'play_page.dart';
@@ -35,16 +36,23 @@ class _HomePageState extends State<HomePage> {
     const TransferPage(),
 
     //League page
-    const LeaguePage()
+    const LeaguePage(),
+
+    //Profile page
+    const ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
+    double navBarHeight = MediaQuery.of(context).size.height * 0.08;
+
     return Scaffold(
-        backgroundColor: AppColors.primaryColor,
-        bottomNavigationBar: BottomNavBar(
-          onTabChange: (index) => navigateBottomBar(index),
-        ),
-        body: _pages[_selectedIndex]);
+      backgroundColor: AppColors.primaryColor,
+      bottomNavigationBar: BottomNavBar(
+        onTabChange: (index) => navigateBottomBar(index),
+        navBarHeight: navBarHeight,
+      ),
+      body: _pages[_selectedIndex],
+    );
   }
 }

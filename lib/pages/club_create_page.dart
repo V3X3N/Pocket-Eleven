@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
 class ClubCreatePage extends StatefulWidget {
@@ -9,21 +11,20 @@ class ClubCreatePage extends StatefulWidget {
 }
 
 class _ClubCreatePageState extends State<ClubCreatePage> {
-  bool _isLoading = true;
+  late TextEditingController _clubNameController;
   late Image _loadingImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _clubNameController = TextEditingController();
     _loadLoadingImage();
   }
 
   void _loadLoadingImage() {
     _loadingImage = Image.asset('assets/background/loading_bg.png');
-
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() {});
   }
 
   @override
@@ -32,84 +33,74 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: _loadingImage.image,
-                      fit: BoxFit.cover,
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: _loadingImage.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  bottom: MediaQuery.of(context).size.height * 0.38,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _clubNameController,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your club name here!',
+                            filled: true,
+                            fillColor: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        SizedBox(
+                          height: 40,
+                          width: 100,
+                          child: MaterialButton(
+                            color: Colors.blueAccent,
+                            onPressed: _isLoading
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    String clubName = _clubNameController.text;
+                                    String managerEmail = FirebaseAuth
+                                            .instance.currentUser?.email ??
+                                        '';
+                                    await FirebaseFunctions.createClub(
+                                        clubName, managerEmail);
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const HomePage(),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  },
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  )
+                                : const Text(
+                                    "Confirm",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.25,
-            left: 0,
-            right: 0,
-            child: const Center(
-              child: Column(
-                children: [
-                  Text(
-                    'POCKET',
-                    style: TextStyle(
-                      fontSize: 44.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'ELEVEN',
-                    style: TextStyle(
-                      fontSize: 44.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.38,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Column(
-                children: [
-                  const TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter your club name here!',
-                      filled: true,
-                      fillColor: Colors.white70,
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  MaterialButton(
-                    height: 40,
-                    minWidth: 100,
-                    color: Colors.blueAccent,
-                    onPressed: () {
-                      // TODO: Implement Account Login process
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HomePage(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                    child: const Text(
-                      "Confirm",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ],

@@ -572,8 +572,7 @@ assets/
 build/
 ios/
 test/
-lib/firebase/
+lib/firebase/firebase_options.dart
 
 #Files
 pubspec.lock
-lib/firebase_options.dart
