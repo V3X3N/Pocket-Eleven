@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,16 +31,6 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = false;
     });
-  }
-
-  Future<bool> isEmailRegistered(String email) async {
-    final QuerySnapshot result = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .limit(1)
-        .get();
-    final List<DocumentSnapshot> documents = result.docs;
-    return documents.isNotEmpty;
   }
 
   @override
@@ -183,8 +172,8 @@ class _LoginPageState extends State<LoginPage> {
                                     });
                                     try {
                                       if (!login) {
-                                        bool isRegistered =
-                                            await isEmailRegistered(email);
+                                        bool isRegistered = await AuthServices
+                                            .isEmailRegistered(email);
                                         if (isRegistered) {
                                           setState(() {
                                             errorMessage =

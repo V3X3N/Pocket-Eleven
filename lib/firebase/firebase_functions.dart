@@ -58,4 +58,22 @@ class FirebaseFunctions {
       return '';
     }
   }
+
+  static Future<void> updateClubName(String email, String clubName) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
+        await documentSnapshot.reference.update({'clubName': clubName});
+      } else {
+        print('User not found');
+      }
+    } catch (e) {
+      print('Error updating club name: $e');
+    }
+  }
 }

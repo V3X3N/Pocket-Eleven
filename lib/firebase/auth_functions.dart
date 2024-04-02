@@ -1,29 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
 class AuthServices {
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
-
   static bool isLoggedIn() {
     return FirebaseAuth.instance.currentUser != null;
-  }
-
-  static String? getCurrentUserEmail() {
-    final user = FirebaseAuth.instance.currentUser;
-    return user?.email;
-  }
-
-  static Future<String?> getCurrentUserId() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        return user.uid;
-      }
-    } catch (e) {
-      print('Error getting current user id: $e');
-    }
-    return null;
   }
 
   static signupUser(
@@ -67,5 +49,15 @@ class AuthServices {
             const SnackBar(content: Text('Password did not match')));
       }
     }
+  }
+
+  static Future<bool> isEmailRegistered(String email) async {
+    final QuerySnapshot result = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+    final List<DocumentSnapshot> documents = result.docs;
+    return documents.isNotEmpty;
   }
 }

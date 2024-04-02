@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ClubCreatePage extends StatefulWidget {
   const ClubCreatePage({super.key});
@@ -100,9 +101,12 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                     onPressed: () async {
                       String clubName = _clubNameController.text;
                       if (AuthServices.isLoggedIn()) {
-                        String? email = AuthServices.getCurrentUserEmail();
-                        if (email != null) {
-                          await updateClubName(email, clubName);
+                        String? userId = FirebaseAuth.instance.currentUser?.uid;
+                        if (userId != null) {
+                          String? email =
+                              await FirebaseFunctions.getEmail(userId);
+                          await FirebaseFunctions.updateClubName(
+                              email, clubName);
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -110,8 +114,6 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                             ),
                             (route) => false,
                           );
-                        } else {
-                          print('User email is null');
                         }
                       } else {
                         print('User is not logged in');
@@ -129,24 +131,6 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
         ],
       ),
     );
-  }
-
-  Future<void> updateClubName(String email, String clubName) async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-        await documentSnapshot.reference.update({'clubName': clubName});
-      } else {
-        print('User not found');
-      }
-    } catch (e) {
-      print('Error updating club name: $e');
-    }
   }
 
   @override
