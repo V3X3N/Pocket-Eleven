@@ -8,6 +8,11 @@ class AuthServices {
     return FirebaseAuth.instance.currentUser != null;
   }
 
+  static String? getCurrentUserID() {
+    final User? user = FirebaseAuth.instance.currentUser;
+    return user?.uid;
+  }
+
   static signupUser(
       String email, String password, String name, BuildContext context) async {
     try {
@@ -30,6 +35,27 @@ class AuthServices {
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  static Future<bool> userHasClub(String email) async {
+    try {
+      final QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+      final List<DocumentSnapshot> documents = result.docs;
+      if (documents.isNotEmpty) {
+        final clubRef = documents.first.get('club');
+        if (clubRef != null) {
+          final clubSnapshot = await clubRef.get();
+          return clubSnapshot.exists;
+        }
+      }
+      return false;
+    } catch (error) {
+      print('Error checking if user has club: $error');
+      return false;
     }
   }
 

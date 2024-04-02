@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
+import 'package:pocket_eleven/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -188,14 +189,30 @@ class _LoginPageState extends State<LoginPage> {
                                               email, password, context)
                                           : await AuthServices.signupUser(email,
                                               password, managerName, context);
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const ClubCreatePage(),
-                                        ),
-                                        (route) => false,
-                                      );
+
+                                      // Sprawdź czy użytkownik ma klub
+                                      bool hasClub =
+                                          await AuthServices.userHasClub(email);
+
+                                      if (hasClub) {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const HomePage(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      } else {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ClubCreatePage(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      }
                                     } catch (error) {
                                       print('Error: $error');
                                     } finally {
