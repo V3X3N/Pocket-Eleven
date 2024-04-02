@@ -4,7 +4,7 @@ import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -189,11 +189,8 @@ class _LoginPageState extends State<LoginPage> {
                                               email, password, context)
                                           : await AuthServices.signupUser(email,
                                               password, managerName, context);
-
-                                      // Sprawdź czy użytkownik ma klub
                                       bool hasClub =
                                           await AuthServices.userHasClub(email);
-
                                       if (hasClub) {
                                         Navigator.pushAndRemoveUntil(
                                           context,

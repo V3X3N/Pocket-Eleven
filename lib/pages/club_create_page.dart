@@ -86,7 +86,7 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                                     );
                                   },
                             child: _isLoading
-                                ? CircularProgressIndicator(
+                                ? const CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Colors.white),
                                   )
