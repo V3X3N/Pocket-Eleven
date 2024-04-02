@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart'; // Zakładając, że FirebaseFunctions zawiera funkcję saveUser()
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -25,18 +24,12 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
+        final String userId = user.uid;
+        managerName = await FirebaseFunctions.getManagerName(userId);
+        clubName = await FirebaseFunctions.getClubName(userId);
+        email = await FirebaseFunctions.getEmail(userId);
 
-        if (userDoc.exists) {
-          setState(() {
-            managerName = userDoc.get('managerName') ?? '';
-            clubName = userDoc.get('clubName') ?? '';
-            email = userDoc.get('email') ?? '';
-          });
-        }
+        setState(() {});
       }
     } catch (error) {
       print('Error loading user data: $error');

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
 class AuthServices {
-  static FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static bool isLoggedIn() {
     return FirebaseAuth.instance.currentUser != null;
@@ -34,7 +34,7 @@ class AuthServices {
 
       await FirebaseAuth.instance.currentUser!.updateDisplayName(name);
       await FirebaseAuth.instance.currentUser!.verifyBeforeUpdateEmail(email);
-      await FirestoreFunctions.saveUser(name, email, userCredential.user!.uid);
+      await FirebaseFunctions.saveUser(name, email, userCredential.user!.uid);
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration Successful')));
     } on FirebaseAuthException catch (e) {
