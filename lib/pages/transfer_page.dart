@@ -56,10 +56,10 @@ class _TransferPageState extends State<TransferPage> {
   }
 
   Future<void> _generateRandomFootballers() async {
-    final _random = Random();
+    final random = Random();
     List<String> tempList = [];
     for (int i = 0; i < 6; i++) {
-      int randomIndex = _random.nextInt(footballers.length);
+      int randomIndex = random.nextInt(footballers.length);
       String selectedFootballer = footballers[randomIndex];
       tempList.add(selectedFootballer);
     }
@@ -75,29 +75,38 @@ class _TransferPageState extends State<TransferPage> {
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: 20),
-          Column(
-            children: selectedFootballers.map((name) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+          const SizedBox(height: 60),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: selectedFootballers.map((name) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.hoverColor,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ),
-              );
-            }).toList(),
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      color: AppColors.textDisabledColor,
+                      fontSize: 18,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
           Expanded(
             child: Container(),
           ),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20.0),
+            margin: const EdgeInsets.symmetric(horizontal: 60.0),
             height: 80,
             child: MaterialButton(
               onPressed: () {
@@ -120,7 +129,7 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
           ),
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
         ],
       ),
     );
