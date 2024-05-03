@@ -40,93 +40,70 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.primaryColor,
       appBar: AppBar(
-        title: const Text('Profile'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 1,
       ),
-      body: Container(
-        color: AppColors.primaryColor,
-        child: Column(
-          children: [
-            Expanded(
-              flex: 1,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: AppColors.hoverColor),
+              height: 200,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Email:',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 90,
+                        width: 90,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          image: const DecorationImage(
+                            image: AssetImage('assets/crests/crest_1.png'),
+                            fit: BoxFit.cover,
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Manager Name:',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Club Name:',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 8.0),
+                      Text(
+                        clubName,
+                        style: const TextStyle(
+                            color: AppColors.textDisabledColor,
+                            fontSize: 18,
+                            fontStyle: FontStyle.italic),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            email,
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            managerName,
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            clubName,
-                            style: TextStyle(fontSize: 18, color: Colors.white),
-                          ),
-                        ],
+                  const SizedBox.shrink(),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        managerName,
+                        style: const TextStyle(
+                            color: AppColors.textDisabledColor,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Container(
-                color: Colors.white,
-                child: Center(
-                  child: Text(
-                    'Lower Container',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
