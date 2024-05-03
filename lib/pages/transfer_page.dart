@@ -121,17 +121,32 @@ class _TransferPageState extends State<TransferPage> {
                               height: 64,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              player.name,
-                              style: const TextStyle(
-                                color: AppColors.textEnabledColor,
-                                fontSize: 18,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  player.name,
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  'Badge: ${player.badge}',
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                         SizedBox(
-                          width: 70,
+                          width: 60,
                           child: Container(
                             margin: const EdgeInsets.only(right: 18),
                             child: Text(
@@ -139,8 +154,7 @@ class _TransferPageState extends State<TransferPage> {
                               textAlign: TextAlign.right,
                               style: const TextStyle(
                                 color: AppColors.textEnabledColor,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
                             ),
                           ),
@@ -188,8 +202,11 @@ class Player {
   final String name;
   final int ovr;
   final String imagePath;
+  late final String badge;
 
-  Player({required this.name, required this.ovr, required this.imagePath});
+  Player({required this.name, required this.ovr, required this.imagePath}) {
+    badge = _calculateBadge();
+  }
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
@@ -205,5 +222,17 @@ class Player {
       'ovr': ovr,
       'imagePath': imagePath,
     };
+  }
+
+  String _calculateBadge() {
+    if (ovr >= 201) {
+      return 'purple';
+    } else if (ovr >= 151 && ovr < 200) {
+      return 'gold';
+    } else if (ovr >= 101 && ovr < 150) {
+      return 'silver';
+    } else {
+      return 'bronze';
+    }
   }
 }
