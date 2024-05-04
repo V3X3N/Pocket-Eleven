@@ -7,7 +7,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransferPage extends StatefulWidget {
-  const TransferPage({Key? key}) : super(key: key);
+  const TransferPage({super.key});
 
   @override
   State<TransferPage> createState() => _TransferPageState();
@@ -58,15 +58,16 @@ class _TransferPageState extends State<TransferPage> {
   }
 
   Future<void> _generateRandomFootballers() async {
-    final _random = Random();
+    final random = Random();
     List<Player> tempList = [];
     for (int i = 0; i < 6; i++) {
-      int randomIndex = _random.nextInt(footballers.length);
+      int randomIndex = random.nextInt(footballers.length);
       String selectedFootballer = footballers[randomIndex];
-      int ovr = _random.nextInt(230) + 21;
+      int ovr = random.nextInt(230) + 21;
+      int age = random.nextInt(14) + 18; // Generowanie wieku od 18 do 31 lat
       String imagePath = _getImagePath(ovr);
-      tempList.add(
-          Player(name: selectedFootballer, ovr: ovr, imagePath: imagePath));
+      tempList.add(Player(
+          name: selectedFootballer, ovr: ovr, age: age, imagePath: imagePath));
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedFootballers', jsonEncode(tempList));
@@ -131,11 +132,21 @@ class _TransferPageState extends State<TransferPage> {
                                     fontSize: 18,
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 4,
                                 ),
                                 Text(
                                   'Badge: ${player.badge}',
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  'Age: ${player.age}',
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
                                     fontSize: 14,
@@ -146,7 +157,7 @@ class _TransferPageState extends State<TransferPage> {
                           ],
                         ),
                         SizedBox(
-                          width: 60,
+                          width: 80,
                           child: Container(
                             margin: const EdgeInsets.only(right: 18),
                             child: Text(
@@ -154,7 +165,8 @@ class _TransferPageState extends State<TransferPage> {
                               textAlign: TextAlign.right,
                               style: const TextStyle(
                                 color: AppColors.textEnabledColor,
-                                fontSize: 18,
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -201,10 +213,15 @@ class _TransferPageState extends State<TransferPage> {
 class Player {
   final String name;
   final int ovr;
+  final int age;
   final String imagePath;
   late final String badge;
 
-  Player({required this.name, required this.ovr, required this.imagePath}) {
+  Player(
+      {required this.name,
+      required this.ovr,
+      required this.age,
+      required this.imagePath}) {
     badge = _calculateBadge();
   }
 
@@ -212,6 +229,7 @@ class Player {
     return Player(
       name: json['name'],
       ovr: json['ovr'],
+      age: json['age'],
       imagePath: json['imagePath'],
     );
   }
@@ -220,6 +238,7 @@ class Player {
     return {
       'name': name,
       'ovr': ovr,
+      'age': age,
       'imagePath': imagePath,
     };
   }
