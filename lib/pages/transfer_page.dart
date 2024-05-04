@@ -60,14 +60,35 @@ class _TransferPageState extends State<TransferPage> {
   Future<void> _generateRandomFootballers() async {
     final random = Random();
     List<Player> tempList = [];
+    List<String> nationalities = [
+      'AUT',
+      'BEL',
+      'BRA',
+      'ENG',
+      'FRA',
+      'GER',
+      'ITA',
+      'JPN',
+      'POL',
+      'ESP',
+      'USA',
+      'TUR'
+    ];
     for (int i = 0; i < 6; i++) {
       int randomIndex = random.nextInt(footballers.length);
       String selectedFootballer = footballers[randomIndex];
       int ovr = random.nextInt(230) + 21;
-      int age = random.nextInt(14) + 18; // Generowanie wieku od 18 do 31 lat
+      int age = random.nextInt(14) + 18;
+      String nationality = nationalities[random.nextInt(nationalities.length)];
       String imagePath = _getImagePath(ovr);
+      String flagPath = 'assets/flags/flag_$nationality.png';
       tempList.add(Player(
-          name: selectedFootballer, ovr: ovr, age: age, imagePath: imagePath));
+          name: selectedFootballer,
+          ovr: ovr,
+          age: age,
+          nationality: nationality,
+          imagePath: imagePath,
+          flagPath: flagPath));
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedFootballers', jsonEncode(tempList));
@@ -156,19 +177,25 @@ class _TransferPageState extends State<TransferPage> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          width: 80,
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 18),
-                            child: Text(
-                              '${player.ovr}',
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                color: AppColors.textEnabledColor,
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
+                        Container(
+                          margin: const EdgeInsets.all(8),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                player.flagPath,
+                                width: 32,
+                                height: 32,
                               ),
-                            ),
+                              Text(
+                                '${player.ovr}',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.textEnabledColor,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -214,14 +241,18 @@ class Player {
   final String name;
   final int ovr;
   final int age;
+  final String nationality;
   final String imagePath;
+  final String flagPath;
   late final String badge;
 
   Player(
       {required this.name,
       required this.ovr,
       required this.age,
-      required this.imagePath}) {
+      required this.nationality,
+      required this.imagePath,
+      required this.flagPath}) {
     badge = _calculateBadge();
   }
 
@@ -230,7 +261,9 @@ class Player {
       name: json['name'],
       ovr: json['ovr'],
       age: json['age'],
+      nationality: json['nationality'],
       imagePath: json['imagePath'],
+      flagPath: json['flagPath'],
     );
   }
 
@@ -239,7 +272,9 @@ class Player {
       'name': name,
       'ovr': ovr,
       'age': age,
+      'nationality': nationality,
       'imagePath': imagePath,
+      'flagPath': flagPath,
     };
   }
 
