@@ -18,6 +18,7 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage> {
   List<Player> selectedFootballers = [];
+  bool _isLoadingImages = true;
 
   @override
   void initState() {
@@ -35,6 +36,19 @@ class _TransferPageState extends State<TransferPage> {
             list.map((model) => Player.fromJson(model)).toList();
       });
     }
+    await _loadImages();
+  }
+
+  Future<void> _loadImages() async {
+    await Future.wait(selectedFootballers.map((player) async {
+      // Load badge image
+      await precacheImage(AssetImage(player.imagePath), context);
+      // Load flag image
+      await precacheImage(AssetImage(player.flagPath), context);
+    }));
+    setState(() {
+      _isLoadingImages = false;
+    });
   }
 
   Future<void> _generateRandomFootballers() async {
@@ -78,94 +92,100 @@ class _TransferPageState extends State<TransferPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 20),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: ListView.builder(
-                itemCount: selectedFootballers.length,
-                itemBuilder: (context, index) {
-                  Player player = selectedFootballers[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.hoverColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset(
-                              player.imagePath,
-                              width: 64,
-                              height: 64,
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${player.name} (${player.position})',
-                                  style: const TextStyle(
-                                    color: AppColors.textEnabledColor,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 4,
-                                ),
-                                Text(
-                                  'Badge: ${player.badge}',
-                                  style: const TextStyle(
-                                    color: AppColors.textEnabledColor,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 4,
-                                ),
-                                Text(
-                                  'Age: ${player.age}',
-                                  style: const TextStyle(
-                                    color: AppColors.textEnabledColor,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
+          _isLoadingImages
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: ListView.builder(
+                      itemCount: selectedFootballers.length,
+                      itemBuilder: (context, index) {
+                        Player player = selectedFootballers[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.hoverColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Image.asset(
-                                player.flagPath,
-                                width: 32,
-                                height: 32,
+                              Row(
+                                children: [
+                                  Image.asset(
+                                    player.imagePath,
+                                    width: 64,
+                                    height: 64,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${player.name} (${player.position})',
+                                        style: const TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        'Badge: ${player.badge}',
+                                        style: const TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        'Age: ${player.age}',
+                                        style: const TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${player.ovr}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textEnabledColor,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                              Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Column(
+                                  children: [
+                                    Image.asset(
+                                      player.flagPath,
+                                      width: 32,
+                                      height: 32,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${player.ovr}',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: AppColors.textEnabledColor,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
-          ),
+                  ),
+                ),
           const SizedBox(height: 20),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20.0),
