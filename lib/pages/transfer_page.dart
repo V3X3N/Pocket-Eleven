@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:random_name_generator/random_name_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TransferPage extends StatefulWidget {
@@ -13,30 +14,8 @@ class TransferPage extends StatefulWidget {
   State<TransferPage> createState() => _TransferPageState();
 }
 
+// Positions
 class _TransferPageState extends State<TransferPage> {
-  List<String> footballers = [
-    'Cristiano',
-    'Lionel',
-    'Neymar',
-    'Kylian',
-    'Mohamed',
-    'Robert',
-    'Sergio',
-    'Kevin',
-    'Luka',
-    'Karim',
-    'Eden',
-    'Sadio',
-    'Virgil',
-    'Paulo',
-    'Harry',
-    'Raheem',
-    'N\'Golo',
-    'Manuel',
-    'Jan',
-    'Thiago',
-  ];
-
   List<String> positions = [
     'GK',
     'DL',
@@ -50,6 +29,7 @@ class _TransferPageState extends State<TransferPage> {
     'LW',
   ];
 
+  // Empty Footballers list to show
   List<Player> selectedFootballers = [];
 
   @override
@@ -70,9 +50,12 @@ class _TransferPageState extends State<TransferPage> {
     }
   }
 
+  // Generate random footballers
   Future<void> _generateRandomFootballers() async {
     final random = Random();
     List<Player> tempList = [];
+
+    // Nationalities
     List<String> nationalities = [
       'AUT',
       'BEL',
@@ -87,17 +70,67 @@ class _TransferPageState extends State<TransferPage> {
       'USA',
       'TUR'
     ];
+
+    // Generate 6 players
     for (int i = 0; i < 6; i++) {
-      int randomIndex = random.nextInt(footballers.length);
-      String selectedFootballer = footballers[randomIndex];
-      String position = positions[random.nextInt(positions.length)];
-      int ovr = random.nextInt(230) + 21;
-      int age = random.nextInt(14) + 18;
       String nationality = nationalities[random.nextInt(nationalities.length)];
+
+      //Zonal names
+      var randomNamesAUT = RandomNames(Zone.austria);
+      var randomNamesBEL = RandomNames(Zone.belgium);
+      var randomNamesBRA = RandomNames(Zone.brazil);
+      var randomNamesENG = RandomNames(Zone.uk);
+      var randomNamesESP = RandomNames(Zone.spain);
+      var randomNamesFRA = RandomNames(Zone.france);
+      var randomNamesGER = RandomNames(Zone.germany);
+      var randomNamesITA = RandomNames(Zone.italy);
+      var randomNamesJPN = RandomNames(Zone.japan);
+      var randomNamesPOL = RandomNames(Zone.poland);
+      var randomNamesTUR = RandomNames(Zone.turkey);
+      var randomNamesUSA = RandomNames(Zone.us);
+
+      // Select name based on nationality from the corresponding Zone
+      String selectedFootballer() {
+        switch (nationality) {
+          case 'AUT':
+            return randomNamesAUT.manName();
+          case 'BEL':
+            return randomNamesBEL.manName();
+          case 'BRA':
+            return randomNamesBRA.manName();
+          case 'ENG':
+            return randomNamesENG.manName();
+          case 'ESP':
+            return randomNamesESP.manName();
+          case 'FRA':
+            return randomNamesFRA.manName();
+          case 'GER':
+            return randomNamesGER.manName();
+          case 'ITA':
+            return randomNamesITA.manName();
+          case 'JPN':
+            return randomNamesJPN.manName();
+          case 'POL':
+            return randomNamesPOL.manName();
+          case 'TUR':
+            return randomNamesTUR.manName();
+          default:
+            return randomNamesUSA.manName();
+        }
+      }
+
+      //Select Position
+      String position = positions[random.nextInt(positions.length)];
+      // OVR
+      int ovr = random.nextInt(230) + 21;
+      // Age
+      int age = random.nextInt(14) + 18;
       String imagePath = _getImagePath(ovr);
       String flagPath = 'assets/flags/flag_$nationality.png';
+
+      // HERE WE ADD PLAYERS
       tempList.add(Player(
-          name: selectedFootballer,
+          name: selectedFootballer(),
           position: position,
           ovr: ovr,
           age: age,
@@ -105,6 +138,8 @@ class _TransferPageState extends State<TransferPage> {
           imagePath: imagePath,
           flagPath: flagPath));
     }
+
+    // Save displayed players using SharedPrefs
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedFootballers', jsonEncode(tempList));
     setState(() {
