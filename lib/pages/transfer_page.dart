@@ -4,8 +4,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:random_name_generator/random_name_generator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:pocket_eleven/player.dart';
+import 'package:pocket_eleven/functions/functions.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -14,22 +16,7 @@ class TransferPage extends StatefulWidget {
   State<TransferPage> createState() => _TransferPageState();
 }
 
-// Positions
 class _TransferPageState extends State<TransferPage> {
-  List<String> positions = [
-    'GK',
-    'DL',
-    'DC',
-    'DR',
-    'ML',
-    'MC',
-    'MR',
-    'RW',
-    'ST',
-    'LW',
-  ];
-
-  // Empty Footballers list to show
   List<Player> selectedFootballers = [];
 
   @override
@@ -50,87 +37,23 @@ class _TransferPageState extends State<TransferPage> {
     }
   }
 
-  // Generate random footballers
   Future<void> _generateRandomFootballers() async {
     final random = Random();
     List<Player> tempList = [];
-
-    // Nationalities
-    List<String> nationalities = [
-      'AUT',
-      'BEL',
-      'BRA',
-      'ENG',
-      'FRA',
-      'GER',
-      'ITA',
-      'JPN',
-      'POL',
-      'ESP',
-      'USA',
-      'TUR'
-    ];
-
     // Generate 6 players
     for (int i = 0; i < 6; i++) {
-      String nationality = nationalities[random.nextInt(nationalities.length)];
+      String nationality = await getRandomNationality(random);
 
-      //Zonal names
-      var randomNamesAUT = RandomNames(Zone.austria);
-      var randomNamesBEL = RandomNames(Zone.belgium);
-      var randomNamesBRA = RandomNames(Zone.brazil);
-      var randomNamesENG = RandomNames(Zone.uk);
-      var randomNamesESP = RandomNames(Zone.spain);
-      var randomNamesFRA = RandomNames(Zone.france);
-      var randomNamesGER = RandomNames(Zone.germany);
-      var randomNamesITA = RandomNames(Zone.italy);
-      var randomNamesJPN = RandomNames(Zone.japan);
-      var randomNamesPOL = RandomNames(Zone.poland);
-      var randomNamesTUR = RandomNames(Zone.turkey);
-      var randomNamesUSA = RandomNames(Zone.us);
+      String selectedFootballer = getSelectedFootballerName(nationality);
 
-      // Select name based on nationality from the corresponding Zone
-      String selectedFootballer() {
-        switch (nationality) {
-          case 'AUT':
-            return randomNamesAUT.manName();
-          case 'BEL':
-            return randomNamesBEL.manName();
-          case 'BRA':
-            return randomNamesBRA.manName();
-          case 'ENG':
-            return randomNamesENG.manName();
-          case 'ESP':
-            return randomNamesESP.manName();
-          case 'FRA':
-            return randomNamesFRA.manName();
-          case 'GER':
-            return randomNamesGER.manName();
-          case 'ITA':
-            return randomNamesITA.manName();
-          case 'JPN':
-            return randomNamesJPN.manName();
-          case 'POL':
-            return randomNamesPOL.manName();
-          case 'TUR':
-            return randomNamesTUR.manName();
-          default:
-            return randomNamesUSA.manName();
-        }
-      }
-
-      //Select Position
-      String position = positions[random.nextInt(positions.length)];
-      // OVR
+      String position = getRandomPosition(random);
       int ovr = random.nextInt(230) + 21;
-      // Age
       int age = random.nextInt(14) + 18;
-      String imagePath = _getImagePath(ovr);
+      String imagePath = getImagePath(ovr);
       String flagPath = 'assets/flags/flag_$nationality.png';
 
-      // HERE WE ADD PLAYERS
       tempList.add(Player(
-          name: selectedFootballer(),
+          name: selectedFootballer,
           position: position,
           ovr: ovr,
           age: age,
@@ -139,24 +62,11 @@ class _TransferPageState extends State<TransferPage> {
           flagPath: flagPath));
     }
 
-    // Save displayed players using SharedPrefs
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedFootballers', jsonEncode(tempList));
     setState(() {
       selectedFootballers = tempList;
     });
-  }
-
-  String _getImagePath(int ovr) {
-    if (ovr >= 201) {
-      return 'assets/players/player_card_purple.png';
-    } else if (ovr >= 151 && ovr < 200) {
-      return 'assets/players/player_card_gold.png';
-    } else if (ovr >= 101 && ovr < 150) {
-      return 'assets/players/player_card_silver.png';
-    } else {
-      return 'assets/players/player_card_bronze.png';
-    }
   }
 
   @override
@@ -285,63 +195,5 @@ class _TransferPageState extends State<TransferPage> {
         ],
       ),
     );
-  }
-}
-
-class Player {
-  final String name;
-  final String position;
-  final int ovr;
-  final int age;
-  final String nationality;
-  final String imagePath;
-  final String flagPath;
-  late final String badge;
-
-  Player(
-      {required this.name,
-      required this.position,
-      required this.ovr,
-      required this.age,
-      required this.nationality,
-      required this.imagePath,
-      required this.flagPath}) {
-    badge = _calculateBadge();
-  }
-
-  factory Player.fromJson(Map<String, dynamic> json) {
-    return Player(
-      name: json['name'],
-      position: json['position'],
-      ovr: json['ovr'],
-      age: json['age'],
-      nationality: json['nationality'],
-      imagePath: json['imagePath'],
-      flagPath: json['flagPath'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'position': position,
-      'ovr': ovr,
-      'age': age,
-      'nationality': nationality,
-      'imagePath': imagePath,
-      'flagPath': flagPath,
-    };
-  }
-
-  String _calculateBadge() {
-    if (ovr >= 201) {
-      return 'purple';
-    } else if (ovr >= 151 && ovr < 200) {
-      return 'gold';
-    } else if (ovr >= 101 && ovr < 150) {
-      return 'silver';
-    } else {
-      return 'bronze';
-    }
   }
 }
