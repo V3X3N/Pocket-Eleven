@@ -37,6 +37,19 @@ class _TransferPageState extends State<TransferPage> {
     'Thiago',
   ];
 
+  List<String> positions = [
+    'GK',
+    'DL',
+    'DC',
+    'DR',
+    'ML',
+    'MC',
+    'MR',
+    'RW',
+    'ST',
+    'LW',
+  ];
+
   List<Player> selectedFootballers = [];
 
   @override
@@ -77,6 +90,7 @@ class _TransferPageState extends State<TransferPage> {
     for (int i = 0; i < 6; i++) {
       int randomIndex = random.nextInt(footballers.length);
       String selectedFootballer = footballers[randomIndex];
+      String position = positions[random.nextInt(positions.length)];
       int ovr = random.nextInt(230) + 21;
       int age = random.nextInt(14) + 18;
       String nationality = nationalities[random.nextInt(nationalities.length)];
@@ -84,6 +98,7 @@ class _TransferPageState extends State<TransferPage> {
       String flagPath = 'assets/flags/flag_$nationality.png';
       tempList.add(Player(
           name: selectedFootballer,
+          position: position,
           ovr: ovr,
           age: age,
           nationality: nationality,
@@ -147,7 +162,7 @@ class _TransferPageState extends State<TransferPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  player.name,
+                                  '${player.name} (${player.position})',
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
                                     fontSize: 18,
@@ -178,7 +193,7 @@ class _TransferPageState extends State<TransferPage> {
                           ],
                         ),
                         Container(
-                          margin: const EdgeInsets.all(8),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
                           child: Column(
                             children: [
                               Image.asset(
@@ -186,6 +201,7 @@ class _TransferPageState extends State<TransferPage> {
                                 width: 32,
                                 height: 32,
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 '${player.ovr}',
                                 textAlign: TextAlign.center,
@@ -239,6 +255,7 @@ class _TransferPageState extends State<TransferPage> {
 
 class Player {
   final String name;
+  final String position;
   final int ovr;
   final int age;
   final String nationality;
@@ -248,6 +265,7 @@ class Player {
 
   Player(
       {required this.name,
+      required this.position,
       required this.ovr,
       required this.age,
       required this.nationality,
@@ -259,6 +277,7 @@ class Player {
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
       name: json['name'],
+      position: json['position'],
       ovr: json['ovr'],
       age: json['age'],
       nationality: json['nationality'],
@@ -270,6 +289,7 @@ class Player {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      'position': position,
       'ovr': ovr,
       'age': age,
       'nationality': nationality,
