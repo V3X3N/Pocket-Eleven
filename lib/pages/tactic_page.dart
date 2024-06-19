@@ -124,25 +124,34 @@ class _TacticPageState extends State<TacticPage> {
                                     ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                  child: Stack(
                                     children: [
                                       if (fieldPositions[index] == null)
-                                        Text(
-                                          fieldPositionLabels[index],
-                                          style: TextStyle(
-                                            color: AppColors.textEnabledColor,
-                                            fontWeight: FontWeight.bold,
+                                        Center(
+                                          child: Text(
+                                            fieldPositionLabels[index],
+                                            style: TextStyle(
+                                              color: AppColors.textEnabledColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       if (fieldPositions[index] != null)
-                                        Draggable<Player>(
-                                          data: fieldPositions[index],
-                                          feedback: _buildPlayerAvatar(
-                                              fieldPositions[index]!),
-                                          childWhenDragging: Container(),
-                                          child: _buildPlayerAvatar(
-                                              fieldPositions[index]!),
+                                        Positioned.fill(
+                                          child: Draggable<Player>(
+                                            data: fieldPositions[index],
+                                            feedback: _buildPlayerAvatar(
+                                                fieldPositions[index]!),
+                                            childWhenDragging: Container(),
+                                            child: _buildPlayerAvatar(
+                                                fieldPositions[index]!),
+                                            onDragCompleted: () {
+                                              setState(() {
+                                                fieldPositions[index] =
+                                                    null; // Usuń piłkarza z poprzedniego miejsca
+                                              });
+                                            },
+                                          ),
                                         ),
                                     ],
                                   ),
