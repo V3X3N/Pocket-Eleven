@@ -13,8 +13,8 @@ class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   late Image _leagueImage;
   List<Player> selectedFootballers = [];
-  List<Player?> fieldPositions = List.filled(11, null);
-  List<Player?> benchPlayers = List.filled(4, null);
+  List<Player?> fieldPositions = List.filled(25, null);
+  List<Player?> benchPlayers = List.filled(14, null);
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _TacticPageState extends State<TacticPage> {
 
   Future<void> _generateRandomFootballers() async {
     List<Player> tempList = [];
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 25; i++) {
       tempList.add(await Player.generateRandomFootballer());
     }
 
@@ -74,11 +74,12 @@ class _TacticPageState extends State<TacticPage> {
                   child: Column(
                     children: [
                       Expanded(
+                        flex: 3,
                         child: GridView.builder(
                           padding: const EdgeInsets.all(20),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
+                            crossAxisCount: 5,
                             childAspectRatio: 1,
                             mainAxisSpacing: 10,
                             crossAxisSpacing: 10,
@@ -121,9 +122,16 @@ class _TacticPageState extends State<TacticPage> {
                         height: 1,
                       ),
                       Expanded(
-                        child: ListView.builder(
+                        flex: 1,
+                        child: GridView.builder(
                           padding: const EdgeInsets.all(20),
-                          scrollDirection: Axis.horizontal,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 7,
+                            childAspectRatio: 1,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
+                          ),
                           itemCount: selectedFootballers.length,
                           itemBuilder: (context, index) {
                             Player player = selectedFootballers[index];
