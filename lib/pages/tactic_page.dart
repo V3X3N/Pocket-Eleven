@@ -15,6 +15,35 @@ class _TacticPageState extends State<TacticPage> {
   List<Player> selectedFootballers = [];
   List<Player?> fieldPositions = List.filled(25, null);
   List<Player?> benchPlayers = List.filled(14, null);
+  Player? goalkeeper;
+
+  final List<String> fieldPositionLabels = [
+    'LW',
+    'ST',
+    'ST',
+    'ST',
+    'RW',
+    'LW',
+    'CAM',
+    'CAM',
+    'CAM',
+    'RW',
+    'LM',
+    'CM',
+    'CM',
+    'CM',
+    'RM',
+    'LM',
+    'CDM',
+    'CDM',
+    'CDM',
+    'RM',
+    'LB',
+    'CB',
+    'CB',
+    'CB',
+    'RB'
+  ];
 
   @override
   void initState() {
@@ -47,7 +76,7 @@ class _TacticPageState extends State<TacticPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'L E A G U E   1',
+          'Tactic',
           style: TextStyle(
             color: AppColors.textEnabledColor,
             fontSize: 25,
@@ -80,7 +109,7 @@ class _TacticPageState extends State<TacticPage> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 5,
-                            childAspectRatio: 1,
+                            childAspectRatio: 1.5,
                             mainAxisSpacing: 10,
                             crossAxisSpacing: 10,
                           ),
@@ -95,16 +124,28 @@ class _TacticPageState extends State<TacticPage> {
                                     ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: fieldPositions[index] != null
-                                      ? Draggable<Player>(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (fieldPositions[index] == null)
+                                        Text(
+                                          fieldPositionLabels[index],
+                                          style: TextStyle(
+                                            color: AppColors.textEnabledColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      if (fieldPositions[index] != null)
+                                        Draggable<Player>(
                                           data: fieldPositions[index],
                                           feedback: _buildPlayerAvatar(
                                               fieldPositions[index]!),
                                           childWhenDragging: Container(),
                                           child: _buildPlayerAvatar(
                                               fieldPositions[index]!),
-                                        )
-                                      : Container(),
+                                        ),
+                                    ],
+                                  ),
                                 );
                               },
                               onAccept: (data) {
@@ -121,6 +162,56 @@ class _TacticPageState extends State<TacticPage> {
                         color: AppColors.textEnabledColor,
                         height: 1,
                       ),
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 20),
+                        child: DragTarget<Player>(
+                          builder: (context, candidateData, rejectedData) {
+                            return Container(
+                              width: 100,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: AppColors.textEnabledColor,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (goalkeeper == null)
+                                      Text(
+                                        'GK',
+                                        style: TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    if (goalkeeper != null)
+                                      Draggable<Player>(
+                                        data: goalkeeper,
+                                        feedback:
+                                            _buildPlayerAvatar(goalkeeper!),
+                                        childWhenDragging: Container(),
+                                        child: _buildPlayerAvatar(goalkeeper!),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          onAccept: (data) {
+                            setState(() {
+                              goalkeeper = data;
+                              selectedFootballers.remove(data);
+                            });
+                          },
+                        ),
+                      ),
+                      const Divider(
+                        color: AppColors.textEnabledColor,
+                        height: 1,
+                      ),
                       Expanded(
                         flex: 1,
                         child: GridView.builder(
@@ -128,7 +219,7 @@ class _TacticPageState extends State<TacticPage> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 7,
-                            childAspectRatio: 1,
+                            childAspectRatio: 2,
                             mainAxisSpacing: 10,
                             crossAxisSpacing: 10,
                           ),
