@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:pocket_eleven/player.dart';
-import 'package:pocket_eleven/functions/functions.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -52,28 +48,9 @@ class _TransferPageState extends State<TransferPage> {
   }
 
   Future<void> _generateRandomFootballers() async {
-    final random = Random();
     List<Player> tempList = [];
-    // Generate 6 players
     for (int i = 0; i < 6; i++) {
-      String nationality = await getRandomNationality(random);
-
-      String selectedFootballer = getSelectedFootballerName(nationality);
-
-      String position = getRandomPosition(random);
-      int ovr = random.nextInt(230) + 21;
-      int age = random.nextInt(14) + 18;
-      String imagePath = getImagePath(ovr);
-      String flagPath = 'assets/flags/flag_$nationality.png';
-
-      tempList.add(Player(
-          name: selectedFootballer,
-          position: position,
-          ovr: ovr,
-          age: age,
-          nationality: nationality,
-          imagePath: imagePath,
-          flagPath: flagPath));
+      tempList.add(await Player.generateRandomFootballer());
     }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -211,7 +188,7 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 20),
         ],
       ),
     );
