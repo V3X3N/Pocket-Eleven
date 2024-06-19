@@ -105,13 +105,13 @@ class _TacticPageState extends State<TacticPage> {
                       Expanded(
                         flex: 3,
                         child: GridView.builder(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(10),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 5,
-                            childAspectRatio: 1.5,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
+                            childAspectRatio: 0.8,
+                            mainAxisSpacing: 5,
+                            crossAxisSpacing: 5,
                           ),
                           itemCount: fieldPositions.length,
                           itemBuilder: (context, index) {
@@ -163,12 +163,12 @@ class _TacticPageState extends State<TacticPage> {
                         height: 1,
                       ),
                       Container(
-                        margin: const EdgeInsets.symmetric(vertical: 20),
+                        margin: const EdgeInsets.symmetric(vertical: 10),
                         child: DragTarget<Player>(
                           builder: (context, candidateData, rejectedData) {
                             return Container(
-                              width: 100,
-                              height: 50,
+                              width: 120,
+                              height: 60,
                               decoration: BoxDecoration(
                                 border: Border.all(
                                   color: AppColors.textEnabledColor,
@@ -215,13 +215,13 @@ class _TacticPageState extends State<TacticPage> {
                       Expanded(
                         flex: 1,
                         child: GridView.builder(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(10),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 7,
-                            childAspectRatio: 2,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
+                            childAspectRatio: 1.5,
+                            mainAxisSpacing: 5,
+                            crossAxisSpacing: 5,
                           ),
                           itemCount: selectedFootballers.length,
                           itemBuilder: (context, index) {
@@ -249,15 +249,15 @@ class _TacticPageState extends State<TacticPage> {
       children: [
         Image.asset(
           player.imagePath,
-          width: 50,
-          height: 50,
+          width: 40,
+          height: 40,
         ),
         const SizedBox(height: 4),
         Text(
           player.name,
           style: const TextStyle(
             color: AppColors.textEnabledColor,
-            fontSize: 12,
+            fontSize: 10,
           ),
           textAlign: TextAlign.center,
         ),
@@ -265,7 +265,7 @@ class _TacticPageState extends State<TacticPage> {
           player.position,
           style: const TextStyle(
             color: AppColors.textEnabledColor,
-            fontSize: 12,
+            fontSize: 10,
           ),
           textAlign: TextAlign.center,
         ),
