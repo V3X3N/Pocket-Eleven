@@ -3,7 +3,7 @@ import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/profile_page.dart';
 
-import 'league_page.dart';
+import 'tactic_page.dart';
 import 'play_page.dart';
 import 'stadium_page.dart';
 import 'transfer_page.dart';
@@ -36,7 +36,7 @@ class _HomePageState extends State<HomePage> {
     const TransferPage(),
 
     //League page
-    const LeaguePage(),
+    const TacticPage(),
 
     //Profile page
     const ProfilePage(),
