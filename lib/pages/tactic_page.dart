@@ -13,35 +13,16 @@ class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   late Image _leagueImage;
   List<Player> footballers = [];
-  List<Player?> fieldPositions = List.filled(25, null);
-  Player? goalkeeper;
+  List<Player?> fieldPositions =
+      List.filled(26, null); // Zmieniono na 26, aby dodać pozycję dla bramkarza
 
   final List<String> fieldPositionLabels = [
-    'LW',
-    'ST',
-    'ST',
-    'ST',
-    'RW',
-    'LW',
-    'CAM',
-    'CAM',
-    'CAM',
-    'RW',
-    'LM',
-    'CM',
-    'CM',
-    'CM',
-    'RM',
-    'LM',
-    'CDM',
-    'CDM',
-    'CDM',
-    'RM',
-    'LB',
-    'CB',
-    'CB',
-    'CB',
-    'RB'
+    'LW', 'ST', 'ST', 'ST', 'RW',
+    'LW', 'CAM', 'CAM', 'CAM', 'RW',
+    'LM', 'CM', 'CM', 'CM', 'RM',
+    'LM', 'CDM', 'CDM', 'CDM', 'RM',
+    'LB', 'CB', 'CB', 'CB', 'RB',
+    'GK' // Dodano pozycję dla bramkarza
   ];
 
   @override
@@ -162,56 +143,6 @@ class _TacticPageState extends State<TacticPage> {
                                 });
                               },
                             );
-                          },
-                        ),
-                      ),
-                      const Divider(
-                        color: AppColors.textEnabledColor,
-                        height: 1,
-                      ),
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10),
-                        child: DragTarget<Player>(
-                          builder: (context, candidateData, rejectedData) {
-                            return Container(
-                              width: 120,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: AppColors.textEnabledColor,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (goalkeeper == null)
-                                      Text(
-                                        'GK',
-                                        style: TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    if (goalkeeper != null)
-                                      Draggable<Player>(
-                                        data: goalkeeper,
-                                        feedback:
-                                            _buildPlayerAvatar(goalkeeper!),
-                                        childWhenDragging: Container(),
-                                        child: _buildPlayerAvatar(goalkeeper!),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          onAccept: (data) {
-                            setState(() {
-                              goalkeeper = data;
-                              footballers.remove(data);
-                            });
                           },
                         ),
                       ),
