@@ -13,8 +13,9 @@ class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   late Image _leagueImage;
   List<Player> selectedFootballers = [];
+  List<Player> benchFootballers = [];
   List<Player?> fieldPositions = List.filled(25, null);
-  List<Player?> benchPlayers = List.filled(14, null);
+  List<Player?> benchPositions = List.filled(20, null);
   Player? goalkeeper;
 
   final List<String> fieldPositionLabels = [
@@ -62,12 +63,13 @@ class _TacticPageState extends State<TacticPage> {
 
   Future<void> _generateRandomFootballers() async {
     List<Player> tempList = [];
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 45; i++) {
       tempList.add(await Player.generateRandomFootballer());
     }
 
     setState(() {
-      selectedFootballers = tempList;
+      selectedFootballers = tempList.sublist(0, 25);
+      benchFootballers = tempList.sublist(25);
     });
   }
 
@@ -147,8 +149,7 @@ class _TacticPageState extends State<TacticPage> {
                                                 fieldPositions[index]!),
                                             onDragCompleted: () {
                                               setState(() {
-                                                fieldPositions[index] =
-                                                    null; // Usuń piłkarza z poprzedniego miejsca
+                                                fieldPositions[index] = null;
                                               });
                                             },
                                           ),
@@ -240,6 +241,74 @@ class _TacticPageState extends State<TacticPage> {
                               feedback: _buildPlayerAvatar(player),
                               childWhenDragging: Container(),
                               child: _buildPlayerAvatar(player),
+                            );
+                          },
+                        ),
+                      ),
+                      const Divider(
+                        color: AppColors.textEnabledColor,
+                        height: 1,
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(10),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            childAspectRatio: 1.5,
+                            mainAxisSpacing: 5,
+                            crossAxisSpacing: 5,
+                          ),
+                          itemCount: benchPositions.length,
+                          itemBuilder: (context, index) {
+                            return DragTarget<Player>(
+                              builder: (context, candidateData, rejectedData) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: AppColors.textEnabledColor,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      if (benchPositions[index] == null)
+                                        Center(
+                                          child: Text(
+                                            'SUB',
+                                            style: TextStyle(
+                                              color: AppColors.textEnabledColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      if (benchPositions[index] != null)
+                                        Positioned.fill(
+                                          child: Draggable<Player>(
+                                            data: benchPositions[index],
+                                            feedback: _buildPlayerAvatar(
+                                                benchPositions[index]!),
+                                            childWhenDragging: Container(),
+                                            child: _buildPlayerAvatar(
+                                                benchPositions[index]!),
+                                            onDragCompleted: () {
+                                              setState(() {
+                                                benchPositions[index] = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              onAccept: (data) {
+                                setState(() {
+                                  benchPositions[index] = data;
+                                  benchFootballers.remove(data);
+                                });
+                              },
                             );
                           },
                         ),
