@@ -12,10 +12,8 @@ class TacticPage extends StatefulWidget {
 class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   late Image _leagueImage;
-  List<Player> selectedFootballers = [];
-  List<Player> benchFootballers = [];
+  List<Player> footballers = [];
   List<Player?> fieldPositions = List.filled(25, null);
-  List<Player?> benchPositions = List.filled(20, null);
   Player? goalkeeper;
 
   final List<String> fieldPositionLabels = [
@@ -63,13 +61,12 @@ class _TacticPageState extends State<TacticPage> {
 
   Future<void> _generateRandomFootballers() async {
     List<Player> tempList = [];
-    for (int i = 0; i < 45; i++) {
+    for (int i = 0; i < 20; i++) {
       tempList.add(await Player.generateRandomFootballer());
     }
 
     setState(() {
-      selectedFootballers = tempList.sublist(0, 25);
-      benchFootballers = tempList.sublist(25);
+      footballers = tempList;
     });
   }
 
@@ -161,7 +158,7 @@ class _TacticPageState extends State<TacticPage> {
                               onAccept: (data) {
                                 setState(() {
                                   fieldPositions[index] = data;
-                                  selectedFootballers.remove(data);
+                                  footballers.remove(data);
                                 });
                               },
                             );
@@ -213,7 +210,7 @@ class _TacticPageState extends State<TacticPage> {
                           onAccept: (data) {
                             setState(() {
                               goalkeeper = data;
-                              selectedFootballers.remove(data);
+                              footballers.remove(data);
                             });
                           },
                         ),
@@ -224,93 +221,20 @@ class _TacticPageState extends State<TacticPage> {
                       ),
                       Expanded(
                         flex: 1,
-                        child: GridView.builder(
+                        child: SingleChildScrollView(
                           padding: const EdgeInsets.all(10),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 7,
-                            childAspectRatio: 1.5,
-                            mainAxisSpacing: 5,
-                            crossAxisSpacing: 5,
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: footballers.map((player) {
+                              return Draggable<Player>(
+                                data: player,
+                                feedback: _buildPlayerAvatar(player),
+                                childWhenDragging: Container(),
+                                child: _buildPlayerAvatar(player),
+                              );
+                            }).toList(),
                           ),
-                          itemCount: selectedFootballers.length,
-                          itemBuilder: (context, index) {
-                            Player player = selectedFootballers[index];
-                            return Draggable<Player>(
-                              data: player,
-                              feedback: _buildPlayerAvatar(player),
-                              childWhenDragging: Container(),
-                              child: _buildPlayerAvatar(player),
-                            );
-                          },
-                        ),
-                      ),
-                      const Divider(
-                        color: AppColors.textEnabledColor,
-                        height: 1,
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: GridView.builder(
-                          padding: const EdgeInsets.all(10),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            childAspectRatio: 1.5,
-                            mainAxisSpacing: 5,
-                            crossAxisSpacing: 5,
-                          ),
-                          itemCount: benchPositions.length,
-                          itemBuilder: (context, index) {
-                            return DragTarget<Player>(
-                              builder: (context, candidateData, rejectedData) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: AppColors.textEnabledColor,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      if (benchPositions[index] == null)
-                                        Center(
-                                          child: Text(
-                                            'SUB',
-                                            style: TextStyle(
-                                              color: AppColors.textEnabledColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      if (benchPositions[index] != null)
-                                        Positioned.fill(
-                                          child: Draggable<Player>(
-                                            data: benchPositions[index],
-                                            feedback: _buildPlayerAvatar(
-                                                benchPositions[index]!),
-                                            childWhenDragging: Container(),
-                                            child: _buildPlayerAvatar(
-                                                benchPositions[index]!),
-                                            onDragCompleted: () {
-                                              setState(() {
-                                                benchPositions[index] = null;
-                                              });
-                                            },
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              },
-                              onAccept: (data) {
-                                setState(() {
-                                  benchPositions[index] = data;
-                                  benchFootballers.remove(data);
-                                });
-                              },
-                            );
-                          },
                         ),
                       ),
                     ],
