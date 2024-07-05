@@ -12,7 +12,7 @@ class TacticPage extends StatefulWidget {
 class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   List<Player> footballers = [];
-  List<Player?> fieldPositions = List.filled(26, null);
+  List<Player?> fieldPositions = List.filled(25, null);
 
   final List<String> fieldPositionLabels = [
     'LW',
@@ -37,10 +37,9 @@ class _TacticPageState extends State<TacticPage> {
     'RM',
     'LB',
     'CB',
+    'GK',
     'CB',
-    'CB',
-    'RB',
-    'GK'
+    'RB'
   ];
 
   @override
@@ -81,7 +80,7 @@ class _TacticPageState extends State<TacticPage> {
               child: CircularProgressIndicator(),
             )
           : Container(
-              color: AppColors.primaryColor,
+              color: AppColors.hoverColor, // Ustawienie tła na kolor AppBaru
               child: Column(
                 children: [
                   Expanded(
@@ -101,7 +100,8 @@ class _TacticPageState extends State<TacticPage> {
                           builder: (context, candidateData, rejectedData) {
                             return Container(
                               decoration: BoxDecoration(
-                                color: AppColors.hoverColor,
+                                color: Colors
+                                    .black, // Kolorowanie pól siatki na czarno
                                 border: Border.all(
                                   color: AppColors.textEnabledColor,
                                 ),
@@ -113,7 +113,7 @@ class _TacticPageState extends State<TacticPage> {
                                     Center(
                                       child: Text(
                                         fieldPositionLabels[index],
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppColors.textEnabledColor,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -155,20 +155,25 @@ class _TacticPageState extends State<TacticPage> {
                   ),
                   Expanded(
                     flex: 1,
-                    child: SingleChildScrollView(
+                    child: GridView.builder(
                       padding: const EdgeInsets.all(10),
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: footballers.map((player) {
-                          return Draggable<Player>(
-                            data: player,
-                            feedback: _buildPlayerAvatar(player),
-                            childWhenDragging: Container(),
-                            child: _buildPlayerAvatar(player),
-                          );
-                        }).toList(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 5,
+                        childAspectRatio: 0.8,
+                        mainAxisSpacing: 5,
+                        crossAxisSpacing: 5,
                       ),
+                      itemCount: footballers.length,
+                      itemBuilder: (context, index) {
+                        Player player = footballers[index];
+                        return Draggable<Player>(
+                          data: player,
+                          feedback: _buildPlayerAvatar(player),
+                          childWhenDragging: Container(),
+                          child: _buildPlayerAvatar(player),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -194,11 +199,11 @@ class _TacticPageState extends State<TacticPage> {
               player.position,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.bold, // Pogrubienie tekstu
                 fontSize: 10,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 4), // Odstęp między pozycją a imieniem
             Text(
               player.name,
               style: const TextStyle(
