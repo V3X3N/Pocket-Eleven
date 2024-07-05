@@ -12,34 +12,15 @@ class TacticPage extends StatefulWidget {
 class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   List<Player> footballers = [];
-  List<Player?> fieldPositions = List.filled(25, null);
+  List<Player?> fieldPositions = List.filled(26, null);
 
   final List<String> fieldPositionLabels = [
-    'LW',
-    'ST',
-    'ST',
-    'ST',
-    'RW',
-    'LW',
-    'CAM',
-    'CAM',
-    'CAM',
-    'RW',
-    'LM',
-    'CM',
-    'CM',
-    'CM',
-    'RM',
-    'LM',
-    'CDM',
-    'CDM',
-    'CDM',
-    'RM',
-    'LB',
-    'CB',
-    'GK', // Poprawiona pozycja bramkarza
-    'CB',
-    'RB',
+    'LW', 'ST', 'ST', 'ST', 'RW',
+    'LW', 'CAM', 'CAM', 'CAM', 'RW',
+    'LM', 'CM', 'CM', 'CM', 'RM',
+    'LM', 'CDM', 'CDM', 'CDM', 'RM',
+    'LB', 'CB', 'CB', 'CB', 'RB',
+    'GK' // Dodano pozycję dla bramkarza jako oddzielny wiersz
   ];
 
   @override
