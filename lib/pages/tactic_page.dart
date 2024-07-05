@@ -37,10 +37,9 @@ class _TacticPageState extends State<TacticPage> {
     'RM',
     'LB',
     'CB',
-    'CB',
+    'GK', // Poprawiona pozycja bramkarza
     'CB',
     'RB',
-    'GK',
   ];
 
   @override
@@ -101,7 +100,10 @@ class _TacticPageState extends State<TacticPage> {
                           builder: (context, candidateData, rejectedData) {
                             return Container(
                               decoration: BoxDecoration(
-                                color: AppColors.hoverColor,
+                                color: fieldPositions[index] != null
+                                    ? Colors
+                                        .green // Zmiana koloru na zielony, gdy jest zawodnik
+                                    : AppColors.hoverColor,
                                 border: Border.all(
                                   color: AppColors.textEnabledColor,
                                 ),
@@ -188,10 +190,10 @@ class _TacticPageState extends State<TacticPage> {
       children: [
         Image.asset(
           player.imagePath,
-          width: 40,
-          height: 40,
+          width: 60, // Zwiększono szerokość avatara
+          height: 60, // Zwiększono wysokość avatara
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8), // Zwiększono odstęp
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -199,16 +201,16 @@ class _TacticPageState extends State<TacticPage> {
               player.position,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 10,
+                fontWeight: FontWeight.bold, // Pogrubienie tekstu
+                fontSize: 14, // Zwiększono rozmiar tekstu
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 4), // Odstęp między pozycją a imieniem
             Text(
               player.name,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontSize: 10,
+                fontSize: 14, // Zwiększono rozmiar tekstu
               ),
               textAlign: TextAlign.center,
             ),
