@@ -15,12 +15,32 @@ class _TacticPageState extends State<TacticPage> {
   List<Player?> fieldPositions = List.filled(26, null);
 
   final List<String> fieldPositionLabels = [
-    'LW', 'ST', 'ST', 'ST', 'RW',
-    'LW', 'CAM', 'CAM', 'CAM', 'RW',
-    'LM', 'CM', 'CM', 'CM', 'RM',
-    'LM', 'CDM', 'CDM', 'CDM', 'RM',
-    'LB', 'CB', 'CB', 'CB', 'RB',
-    'GK' // Dodano pozycję dla bramkarza jako oddzielny wiersz
+    'LW',
+    'ST',
+    'ST',
+    'ST',
+    'RW',
+    'LW',
+    'CAM',
+    'CAM',
+    'CAM',
+    'RW',
+    'LM',
+    'CM',
+    'CM',
+    'CM',
+    'RM',
+    'LM',
+    'CDM',
+    'CDM',
+    'CDM',
+    'RM',
+    'LB',
+    'CB',
+    'CB',
+    'CB',
+    'RB',
+    'GK'
   ];
 
   @override
@@ -82,8 +102,7 @@ class _TacticPageState extends State<TacticPage> {
                             return Container(
                               decoration: BoxDecoration(
                                 color: fieldPositions[index] != null
-                                    ? Colors
-                                        .green // Zmiana koloru na zielony, gdy jest zawodnik
+                                    ? AppColors.green
                                     : AppColors.hoverColor,
                                 border: Border.all(
                                   color: AppColors.textEnabledColor,
@@ -171,10 +190,10 @@ class _TacticPageState extends State<TacticPage> {
       children: [
         Image.asset(
           player.imagePath,
-          width: 60, // Zwiększono szerokość avatara
-          height: 60, // Zwiększono wysokość avatara
+          width: 60,
+          height: 60,
         ),
-        const SizedBox(height: 8), // Zwiększono odstęp
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -182,16 +201,16 @@ class _TacticPageState extends State<TacticPage> {
               player.position,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.bold, // Pogrubienie tekstu
-                fontSize: 14, // Zwiększono rozmiar tekstu
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
             ),
-            const SizedBox(width: 4), // Odstęp między pozycją a imieniem
+            const SizedBox(width: 4),
             Text(
               player.name,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontSize: 14, // Zwiększono rozmiar tekstu
+                fontSize: 14,
               ),
               textAlign: TextAlign.center,
             ),
