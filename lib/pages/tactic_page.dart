@@ -37,9 +37,10 @@ class _TacticPageState extends State<TacticPage> {
     'RM',
     'LB',
     'CB',
-    'GK',
     'CB',
-    'RB'
+    'CB',
+    'RB',
+    'GK',
   ];
 
   @override
@@ -80,7 +81,7 @@ class _TacticPageState extends State<TacticPage> {
               child: CircularProgressIndicator(),
             )
           : Container(
-              color: AppColors.hoverColor, // Ustawienie tła na kolor AppBaru
+              color: AppColors.primaryColor,
               child: Column(
                 children: [
                   Expanded(
@@ -100,8 +101,7 @@ class _TacticPageState extends State<TacticPage> {
                           builder: (context, candidateData, rejectedData) {
                             return Container(
                               decoration: BoxDecoration(
-                                color: Colors
-                                    .black, // Kolorowanie pól siatki na czarno
+                                color: AppColors.hoverColor,
                                 border: Border.all(
                                   color: AppColors.textEnabledColor,
                                 ),
@@ -113,7 +113,7 @@ class _TacticPageState extends State<TacticPage> {
                                     Center(
                                       child: Text(
                                         fieldPositionLabels[index],
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: AppColors.textEnabledColor,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -199,11 +199,11 @@ class _TacticPageState extends State<TacticPage> {
               player.position,
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.bold, // Pogrubienie tekstu
+                fontWeight: FontWeight.bold,
                 fontSize: 10,
               ),
             ),
-            const SizedBox(width: 4), // Odstęp między pozycją a imieniem
+            const SizedBox(width: 4),
             Text(
               player.name,
               style: const TextStyle(
