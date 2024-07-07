@@ -114,6 +114,12 @@ class _TacticPageState extends State<TacticPage> {
     });
   }
 
+  String _truncateWithEllipsis(String text, int maxLength) {
+    return text.length > maxLength
+        ? '${text.substring(0, maxLength)}...'
+        : text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +205,30 @@ class _TacticPageState extends State<TacticPage> {
                           data: player,
                           feedback: _buildPlayerAvatar(player),
                           childWhenDragging: Container(),
-                          child: _buildPlayerAvatar(player),
+                          child: Column(
+                            children: [
+                              _buildPlayerAvatar(player),
+                              const SizedBox(height: 4),
+                              Text(
+                                _truncateWithEllipsis(player.name, 6),
+                                style: const TextStyle(
+                                  color: AppColors.textEnabledColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                positionAbbreviations[player.position]!,
+                                style: const TextStyle(
+                                  color: AppColors.textEnabledColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
@@ -311,46 +340,61 @@ class _TacticPageState extends State<TacticPage> {
         top: offset.dy,
         child: DragTarget<Player>(
           builder: (context, candidateData, rejectedData) {
-            return Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: fieldPositions[position] != null
-                    ? AppColors.green
-                    : AppColors.hoverColor,
-                border: Border.all(
-                  color: AppColors.textEnabledColor,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Stack(
-                children: [
-                  if (fieldPositions[position] == null)
-                    Center(
-                      child: Text(
-                        abbreviation,
-                        style: const TextStyle(
-                          color: AppColors.textEnabledColor,
-                          fontWeight: FontWeight.bold,
+            return Column(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: fieldPositions[position] != null
+                        ? AppColors.green
+                        : AppColors.hoverColor,
+                    border: Border.all(
+                      color: AppColors.textEnabledColor,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Stack(
+                    children: [
+                      if (fieldPositions[position] == null)
+                        Center(
+                          child: Text(
+                            abbreviation,
+                            style: const TextStyle(
+                              color: AppColors.textEnabledColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                      if (fieldPositions[position] != null)
+                        Positioned.fill(
+                          child: Draggable<Player>(
+                            data: fieldPositions[position],
+                            feedback:
+                                _buildPlayerAvatar(fieldPositions[position]!),
+                            childWhenDragging: Container(),
+                            child:
+                                _buildPlayerAvatar(fieldPositions[position]!),
+                            onDragCompleted: () {
+                              setState(() {
+                                fieldPositions[position] = null;
+                              });
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (fieldPositions[position] != null)
+                  Text(
+                    '$abbreviation ${_truncateWithEllipsis(fieldPositions[position]!.name, 6)}',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
                     ),
-                  if (fieldPositions[position] != null)
-                    Positioned.fill(
-                      child: Draggable<Player>(
-                        data: fieldPositions[position],
-                        feedback: _buildPlayerAvatar(fieldPositions[position]!),
-                        childWhenDragging: Container(),
-                        child: _buildPlayerAvatar(fieldPositions[position]!),
-                        onDragCompleted: () {
-                          setState(() {
-                            fieldPositions[position] = null;
-                          });
-                        },
-                      ),
-                    ),
-                ],
-              ),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
             );
           },
           onAccept: (data) {
