@@ -202,17 +202,17 @@ class _TacticPageState extends State<TacticPage> {
     double height = MediaQuery.of(context).size.height * 0.5;
 
     Map<String, Offset> positions = {
-      'ST1': Offset(width * 0.5 - 30, height * 0.1),
-      'ST2': Offset(width * 0.5 + 30, height * 0.1),
+      'ST1': Offset(width * 0.5 - 75, height * 0.1),
+      'ST2': Offset(width * 0.5 + 15, height * 0.1),
       'LM': Offset(width * 0.1, height * 0.3),
-      'CM1': Offset(width * 0.3, height * 0.3),
-      'CM2': Offset(width * 0.7, height * 0.3),
-      'RM': Offset(width * 0.9, height * 0.3),
+      'CM1': Offset(width * 0.5 - 75, height * 0.3),
+      'CM2': Offset(width * 0.5 + 15, height * 0.3),
+      'RM': Offset(width * 0.9 - 60, height * 0.3),
       'LB': Offset(width * 0.1, height * 0.5),
-      'CB1': Offset(width * 0.3, height * 0.5),
-      'CB2': Offset(width * 0.7, height * 0.5),
-      'RB': Offset(width * 0.9, height * 0.5),
-      'GK': Offset(width * 0.5, height * 0.7),
+      'CB1': Offset(width * 0.5 - 75, height * 0.5),
+      'CB2': Offset(width * 0.5 + 15, height * 0.5),
+      'RB': Offset(width * 0.9 - 60, height * 0.5),
+      'GK': Offset(width * 0.5 - 30, height * 0.7),
     };
 
     List<String>? currentFormation = formations[selectedFormation];
