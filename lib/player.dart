@@ -112,15 +112,17 @@ class Player {
   static String _getRandomPosition(Random random) {
     List<String> positions = [
       'GK',
-      'DL',
-      'DC',
-      'DR',
-      'ML',
-      'MC',
-      'MR',
+      'LB',
+      'CB',
+      'RB',
+      'CDM',
+      'LM',
+      'CM',
+      'RM',
+      'CAM',
+      'LW',
       'RW',
       'ST',
-      'LW',
     ];
     return positions[random.nextInt(positions.length)];
   }

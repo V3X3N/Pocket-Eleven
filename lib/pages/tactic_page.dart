@@ -312,58 +312,62 @@ class _TacticPageState extends State<TacticPage> {
             Positioned(
               left: pos.dx,
               top: pos.dy,
-              child: DragTarget<Player>(
-                builder: (context, candidateData, rejectedData) {
-                  return Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: fieldPositions[position] != null
-                          ? AppColors.green
-                          : AppColors.hoverColor,
-                      border: Border.all(
-                        color: AppColors.textEnabledColor,
+              child: SizedBox(
+                width: 60, // Set a fixed width
+                height: 60, // Set a fixed height
+                child: DragTarget<Player>(
+                  builder: (context, candidateData, rejectedData) {
+                    return Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: fieldPositions[position] != null
+                            ? AppColors.green
+                            : AppColors.hoverColor,
+                        border: Border.all(
+                          color: AppColors.textEnabledColor,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Stack(
-                      children: [
-                        if (fieldPositions[position] == null)
-                          Center(
-                            child: Text(
-                              abbreviation,
-                              style: const TextStyle(
-                                color: AppColors.textEnabledColor,
-                                fontWeight: FontWeight.bold,
+                      child: Stack(
+                        children: [
+                          if (fieldPositions[position] == null)
+                            Center(
+                              child: Text(
+                                abbreviation,
+                                style: const TextStyle(
+                                  color: AppColors.textEnabledColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                          ),
-                        if (fieldPositions[position] != null)
-                          Positioned.fill(
-                            child: Draggable<Player>(
-                              data: fieldPositions[position],
-                              feedback:
-                                  _buildPlayerAvatar(fieldPositions[position]!),
-                              childWhenDragging: Container(),
-                              child:
-                                  _buildPlayerAvatar(fieldPositions[position]!),
-                              onDragCompleted: () {
-                                setState(() {
-                                  fieldPositions[position] = null;
-                                });
-                              },
+                          if (fieldPositions[position] != null)
+                            Positioned.fill(
+                              child: Draggable<Player>(
+                                data: fieldPositions[position],
+                                feedback: _buildPlayerAvatar(
+                                    fieldPositions[position]!),
+                                childWhenDragging: Container(),
+                                child: _buildPlayerAvatar(
+                                    fieldPositions[position]!),
+                                onDragCompleted: () {
+                                  setState(() {
+                                    fieldPositions[position] = null;
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-                onAccept: (data) {
-                  setState(() {
-                    fieldPositions[position] = data;
-                    footballers.remove(data);
-                  });
-                },
+                        ],
+                      ),
+                    );
+                  },
+                  onAccept: (data) {
+                    setState(() {
+                      fieldPositions[position] = data;
+                      footballers.remove(data);
+                    });
+                  },
+                ),
               ),
             ),
           );
