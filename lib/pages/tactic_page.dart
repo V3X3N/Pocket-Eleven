@@ -197,6 +197,19 @@ class _TacticPageState extends State<TacticPage> {
   }
 
   List<Widget> _buildFieldPositions() {
+    switch (selectedFormation) {
+      case '4-4-2':
+        return _buildFieldPositions442();
+      case '4-3-3':
+        return _buildFieldPositions433();
+      case '3-5-2':
+        return _buildFieldPositions352();
+      default:
+        return [];
+    }
+  }
+
+  List<Widget> _buildFieldPositions442() {
     List<Widget> widgets = [];
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height * 0.5;
@@ -205,9 +218,31 @@ class _TacticPageState extends State<TacticPage> {
       'ST1': Offset(width * 0.5 - 75, height * 0.1),
       'ST2': Offset(width * 0.5 + 15, height * 0.1),
       'LM': Offset(width * 0.1, height * 0.3),
-      'CM1': Offset(width * 0.5 - 75, height * 0.3),
-      'CM2': Offset(width * 0.5 + 15, height * 0.3),
-      'RM': Offset(width * 0.9 - 60, height * 0.3),
+      'CM1': Offset(width * 0.5 - 75, height * 0.4),
+      'CM2': Offset(width * 0.5 + 15, height * 0.4),
+      'RM': Offset(width * 0.9 - 60, height * 0.4),
+      'LB': Offset(width * 0.1, height * 0.5),
+      'CB1': Offset(width * 0.5 - 75, height * 0.7),
+      'CB2': Offset(width * 0.5 + 15, height * 0.7),
+      'RB': Offset(width * 0.9 - 60, height * 0.7),
+      'GK': Offset(width * 0.5 - 30, height * 0.9),
+    };
+
+    return _buildFieldWidgets(positions);
+  }
+
+  List<Widget> _buildFieldPositions433() {
+    List<Widget> widgets = [];
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height * 0.5;
+
+    Map<String, Offset> positions = {
+      'ST1': Offset(width * 0.5 - 30, height * 0.1),
+      'LW': Offset(width * 0.2, height * 0.1),
+      'RW': Offset(width * 0.8 - 60, height * 0.1),
+      'CM1': Offset(width * 0.5 - 30, height * 0.3),
+      'CM2': Offset(width * 0.2, height * 0.3),
+      'CM3': Offset(width * 0.8 - 60, height * 0.3),
       'LB': Offset(width * 0.1, height * 0.5),
       'CB1': Offset(width * 0.5 - 75, height * 0.5),
       'CB2': Offset(width * 0.5 + 15, height * 0.5),
@@ -215,6 +250,33 @@ class _TacticPageState extends State<TacticPage> {
       'GK': Offset(width * 0.5 - 30, height * 0.7),
     };
 
+    return _buildFieldWidgets(positions);
+  }
+
+  List<Widget> _buildFieldPositions352() {
+    List<Widget> widgets = [];
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height * 0.5;
+
+    Map<String, Offset> positions = {
+      'ST1': Offset(width * 0.5 - 75, height * 0.1),
+      'ST2': Offset(width * 0.5 + 15, height * 0.1),
+      'CAM': Offset(width * 0.5, height * 0.3),
+      'LM': Offset(width * 0.1, height * 0.3),
+      'CM1': Offset(width * 0.5 - 75, height * 0.3),
+      'CM2': Offset(width * 0.5 + 15, height * 0.3),
+      'RM': Offset(width * 0.9 - 60, height * 0.3),
+      'CB1': Offset(width * 0.1, height * 0.5),
+      'CB2': Offset(width * 0.5 - 30, height * 0.5),
+      'CB3': Offset(width * 0.9 - 60, height * 0.5),
+      'GK': Offset(width * 0.5 - 30, height * 0.7),
+    };
+
+    return _buildFieldWidgets(positions);
+  }
+
+  List<Widget> _buildFieldWidgets(Map<String, Offset> positions) {
+    List<Widget> widgets = [];
     List<String>? currentFormation = formations[selectedFormation];
 
     if (currentFormation != null) {
