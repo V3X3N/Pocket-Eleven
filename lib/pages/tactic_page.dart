@@ -75,6 +75,25 @@ class _TacticPageState extends State<TacticPage> {
     // Add more formations as needed
   };
 
+  final Map<String, String> positionAbbreviations = {
+    'ST1': 'ST',
+    'ST2': 'ST',
+    'LM': 'LM',
+    'RM': 'RM',
+    'CM1': 'CM',
+    'CM2': 'CM',
+    'CM3': 'CM',
+    'CAM': 'CAM',
+    'CDM1': 'CDM',
+    'CDM2': 'CDM',
+    'LB': 'LB',
+    'CB1': 'CB',
+    'CB2': 'CB',
+    'CB3': 'CB',
+    'RB': 'RB',
+    'GK': 'GK',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -288,6 +307,7 @@ class _TacticPageState extends State<TacticPage> {
       for (var position in currentFormation) {
         Offset? pos = positions[position];
         if (pos != null) {
+          String abbreviation = positionAbbreviations[position] ?? position;
           widgets.add(
             Positioned(
               left: pos.dx,
@@ -311,7 +331,7 @@ class _TacticPageState extends State<TacticPage> {
                         if (fieldPositions[position] == null)
                           Center(
                             child: Text(
-                              position,
+                              abbreviation,
                               style: const TextStyle(
                                 color: AppColors.textEnabledColor,
                                 fontWeight: FontWeight.bold,
