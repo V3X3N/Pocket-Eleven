@@ -189,48 +189,50 @@ class _TacticPageState extends State<TacticPage> {
                   ),
                   Expanded(
                     flex: 1,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(10),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 5,
-                        childAspectRatio: 0.8,
-                        mainAxisSpacing: 15, // Zwiększ odstęp pionowy
-                        crossAxisSpacing: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          childAspectRatio: 0.7,
+                          mainAxisSpacing: 5, // Zmniejsz odstęp pionowy
+                          crossAxisSpacing: 5,
+                        ),
+                        itemCount: footballers.length,
+                        itemBuilder: (context, index) {
+                          Player player = footballers[index];
+                          return Draggable<Player>(
+                            data: player,
+                            feedback: _buildPlayerAvatar(player),
+                            childWhenDragging: Container(),
+                            child: Column(
+                              children: [
+                                _buildPlayerAvatar(player),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _truncateWithEllipsis(player.name, 6),
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  positionAbbreviations[player.position] ?? '',
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                      itemCount: footballers.length,
-                      itemBuilder: (context, index) {
-                        Player player = footballers[index];
-                        return Draggable<Player>(
-                          data: player,
-                          feedback: _buildPlayerAvatar(player),
-                          childWhenDragging: Container(),
-                          child: Column(
-                            children: [
-                              _buildPlayerAvatar(player),
-                              const SizedBox(height: 4),
-                              Text(
-                                _truncateWithEllipsis(player.name, 6),
-                                style: const TextStyle(
-                                  color: AppColors.textEnabledColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              Text(
-                                positionAbbreviations[player.position] ?? '',
-                                style: const TextStyle(
-                                  color: AppColors.textEnabledColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      },
                     ),
                   ),
                 ],
@@ -292,8 +294,8 @@ class _TacticPageState extends State<TacticPage> {
     double height = MediaQuery.of(context).size.height * 0.5;
 
     Map<String, Offset> positions = {
-      'LW': Offset(width * 0.1, height * 0.1),
-      'ST1': Offset(width * 0.5 - 30, height * 0.05),
+      'ST1': Offset(width * 0.5 - 30, height * 0.1),
+      'LW': Offset(width * 0.1, height * 0.05),
       'RW': Offset(width * 0.9 - 60, height * 0.1),
       'CM1': Offset(width * 0.5 - 0.5 * 30 - 30, height * 0.37),
       'CM2': Offset(width * 0.5 - 0.5 * 30, height * 0.37),
