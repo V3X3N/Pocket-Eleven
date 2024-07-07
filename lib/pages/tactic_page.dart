@@ -295,14 +295,14 @@ class _TacticPageState extends State<TacticPage> {
 
     Map<String, Offset> positions = {
       'ST1': Offset(width * 0.5 - 30, height * 0.1),
-      'LW': Offset(width * 0.1, height * 0.05),
-      'RW': Offset(width * 0.9 - 60, height * 0.1),
-      'CM1': Offset(width * 0.5 - 0.5 * 30 - 30, height * 0.37),
-      'CM2': Offset(width * 0.5 - 0.5 * 30, height * 0.37),
-      'CM3': Offset(width * 0.5 + 0.5 * 30 - 30, height * 0.37),
+      'LW': Offset(width * 0.1, height * 0.15),
+      'RW': Offset(width * 0.9 - 60, height * 0.15),
+      'CM1': Offset(width * 0.3 - 30, height * 0.37),
+      'CM2': Offset(width * 0.5 - 30, height * 0.37),
+      'CM3': Offset(width * 0.7 - 30, height * 0.37),
       'LB': Offset(width * 0.1, height * 0.6),
-      'CB1': Offset(width * 0.5 - 0.5 * 30 - 30, height * 0.65),
-      'CB2': Offset(width * 0.5 + 0.5 * 30 - 30, height * 0.65),
+      'CB1': Offset(width * 0.5 - 75, height * 0.65),
+      'CB2': Offset(width * 0.5 + 15, height * 0.65),
       'RB': Offset(width * 0.9 - 60, height * 0.6),
       'GK': Offset(width * 0.5 - 30, height * 0.9),
     };
