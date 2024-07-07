@@ -12,36 +12,27 @@ class TacticPage extends StatefulWidget {
 class _TacticPageState extends State<TacticPage> {
   bool _isLoading = true;
   List<Player> footballers = [];
-  List<Player?> fieldPositions = List.filled(26, null);
+  List<Player?> fieldPositions = List.filled(11, null);
+  String selectedFormation = '4-4-2';
 
-  final List<String> fieldPositionLabels = [
-    'LW',
-    'ST',
-    'ST',
-    'ST',
-    'RW',
-    'LW',
-    'CAM',
-    'CAM',
-    'CAM',
-    'RW',
-    'LM',
-    'CM',
-    'CM',
-    'CM',
-    'RM',
-    'LM',
-    'CDM',
-    'CDM',
-    'CDM',
-    'RM',
-    'LB',
-    'CB',
-    'CB',
-    'CB',
-    'RB',
-    'GK'
-  ];
+  final Map<String, List<String>> formations = {
+    '4-4-2': ['ST', 'ST', 'LM', 'CM', 'CM', 'RM', 'LB', 'CB', 'CB', 'RB', 'GK'],
+    '4-3-3': ['ST', 'LW', 'RW', 'CM', 'CM', 'CM', 'LB', 'CB', 'CB', 'RB', 'GK'],
+    '3-5-2': [
+      'ST',
+      'ST',
+      'CAM',
+      'LM',
+      'CM',
+      'CM',
+      'RM',
+      'CB',
+      'CB',
+      'CB',
+      'GK'
+    ],
+    // Add more formations as needed
+  };
 
   @override
   void initState() {
@@ -84,6 +75,37 @@ class _TacticPageState extends State<TacticPage> {
               color: AppColors.primaryColor,
               child: Column(
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_left),
+                        onPressed: () {
+                          setState(() {
+                            selectedFormation =
+                                _previousFormation(selectedFormation);
+                          });
+                        },
+                      ),
+                      Text(
+                        selectedFormation,
+                        style: const TextStyle(
+                          color: AppColors.textEnabledColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.arrow_right),
+                        onPressed: () {
+                          setState(() {
+                            selectedFormation =
+                                _nextFormation(selectedFormation);
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                   Expanded(
                     flex: 3,
                     child: GridView.builder(
@@ -95,7 +117,7 @@ class _TacticPageState extends State<TacticPage> {
                         mainAxisSpacing: 5,
                         crossAxisSpacing: 5,
                       ),
-                      itemCount: fieldPositions.length,
+                      itemCount: formations[selectedFormation]!.length,
                       itemBuilder: (context, index) {
                         return DragTarget<Player>(
                           builder: (context, candidateData, rejectedData) {
@@ -114,7 +136,7 @@ class _TacticPageState extends State<TacticPage> {
                                   if (fieldPositions[index] == null)
                                     Center(
                                       child: Text(
-                                        fieldPositionLabels[index],
+                                        formations[selectedFormation]![index],
                                         style: const TextStyle(
                                           color: AppColors.textEnabledColor,
                                           fontWeight: FontWeight.bold,
@@ -182,6 +204,18 @@ class _TacticPageState extends State<TacticPage> {
               ),
             ),
     );
+  }
+
+  String _previousFormation(String current) {
+    List<String> keys = formations.keys.toList();
+    int currentIndex = keys.indexOf(current);
+    return keys[(currentIndex - 1 + keys.length) % keys.length];
+  }
+
+  String _nextFormation(String current) {
+    List<String> keys = formations.keys.toList();
+    int currentIndex = keys.indexOf(current);
+    return keys[(currentIndex + 1) % keys.length];
   }
 
   Widget _buildPlayerAvatar(Player player) {
