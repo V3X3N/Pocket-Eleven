@@ -3,7 +3,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/player.dart';
 
 class TacticPage extends StatefulWidget {
-  const TacticPage({super.key});
+  const TacticPage({Key? key}) : super(key: key);
 
   @override
   State<TacticPage> createState() => _TacticPageState();
@@ -76,8 +76,10 @@ class _TacticPageState extends State<TacticPage> {
   };
 
   final Map<String, String> positionAbbreviations = {
+    'LW': 'LW',
     'ST1': 'ST',
     'ST2': 'ST',
+    'RW': 'RW',
     'LM': 'LM',
     'RM': 'RM',
     'CM1': 'CM',
@@ -301,119 +303,80 @@ class _TacticPageState extends State<TacticPage> {
 
   List<Widget> _buildFieldWidgets(Map<String, Offset> positions) {
     List<Widget> widgets = [];
-    List<String>? currentFormation = formations[selectedFormation];
+    positions.forEach((position, offset) {
+      String abbreviation = positionAbbreviations[position] ?? '';
 
-    if (currentFormation != null) {
-      for (var position in currentFormation) {
-        Offset? pos = positions[position];
-        if (pos != null) {
-          String abbreviation = positionAbbreviations[position] ?? position;
-          widgets.add(
-            Positioned(
-              left: pos.dx,
-              top: pos.dy,
-              child: SizedBox(
-                width: 60, // Set a fixed width
-                height: 60, // Set a fixed height
-                child: DragTarget<Player>(
-                  builder: (context, candidateData, rejectedData) {
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: fieldPositions[position] != null
-                            ? AppColors.green
-                            : AppColors.hoverColor,
-                        border: Border.all(
-                          color: AppColors.textEnabledColor,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Stack(
-                        children: [
-                          if (fieldPositions[position] == null)
-                            Center(
-                              child: Text(
-                                abbreviation,
-                                style: const TextStyle(
-                                  color: AppColors.textEnabledColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          if (fieldPositions[position] != null)
-                            Positioned.fill(
-                              child: Draggable<Player>(
-                                data: fieldPositions[position],
-                                feedback: _buildPlayerAvatar(
-                                    fieldPositions[position]!),
-                                childWhenDragging: Container(),
-                                child: _buildPlayerAvatar(
-                                    fieldPositions[position]!),
-                                onDragCompleted: () {
-                                  setState(() {
-                                    fieldPositions[position] = null;
-                                  });
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                  onAccept: (data) {
-                    setState(() {
-                      fieldPositions[position] = data;
-                      footballers.remove(data);
-                    });
-                  },
+      widgets.add(Positioned(
+        left: offset.dx,
+        top: offset.dy,
+        child: DragTarget<Player>(
+          builder: (context, candidateData, rejectedData) {
+            return Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: fieldPositions[position] != null
+                    ? AppColors.green
+                    : AppColors.hoverColor,
+                border: Border.all(
+                  color: AppColors.textEnabledColor,
                 ),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-          );
-        }
-      }
-    }
+              child: Stack(
+                children: [
+                  if (fieldPositions[position] == null)
+                    Center(
+                      child: Text(
+                        abbreviation,
+                        style: const TextStyle(
+                          color: AppColors.textEnabledColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  if (fieldPositions[position] != null)
+                    Positioned.fill(
+                      child: Draggable<Player>(
+                        data: fieldPositions[position],
+                        feedback: _buildPlayerAvatar(fieldPositions[position]!),
+                        childWhenDragging: Container(),
+                        child: _buildPlayerAvatar(fieldPositions[position]!),
+                        onDragCompleted: () {
+                          setState(() {
+                            fieldPositions[position] = null;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+          onAccept: (data) {
+            setState(() {
+              fieldPositions[position] = data;
+              footballers.remove(data);
+            });
+          },
+        ),
+      ));
+    });
 
     return widgets;
   }
 
   Widget _buildPlayerAvatar(Player player) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Image.asset(
-          player.imagePath,
-          width: 60,
-          height: 60,
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: AssetImage(player.imagePath),
         ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              player.position,
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                player.name,
-                style: const TextStyle(
-                  color: AppColors.textEnabledColor,
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }
