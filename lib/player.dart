@@ -214,7 +214,7 @@ class Player {
 
   static String _getSelectedFootballerName(String nationality) {
     var randomNames = RandomNames(_getZone(nationality));
-    return randomNames.manName();
+    return randomNames.manFullName();
   }
 
   static String _getRandomPosition(Random random) {

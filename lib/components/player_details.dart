@@ -10,6 +10,9 @@ class PlayerDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Container(
         color: AppColors.primaryColor,
         padding: const EdgeInsets.all(16),
@@ -36,7 +39,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      radius: 20,
+                      radius: 22,
                       backgroundImage: AssetImage(player.imagePath),
                     ),
                   ],
@@ -91,7 +94,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Value: \$\$',
+                      'Value: \$',
                       style: const TextStyle(
                         color: AppColors.textEnabledColor,
                         fontSize: 18,
@@ -111,6 +114,7 @@ class PlayerDetailsDialog extends StatelessWidget {
               children: [
                 Text(
                   '${player.param1Name}:',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -118,6 +122,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param1}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -125,6 +130,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param2Name}:',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -132,6 +138,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param2}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -139,6 +146,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param3Name}:',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -146,6 +154,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param3}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -153,6 +162,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param4Name}:',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
@@ -160,6 +170,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                 ),
                 Text(
                   '${player.param4}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
                     fontSize: 18,
