@@ -371,8 +371,8 @@ class _TacticPageState extends State<TacticPage> {
       'CDM1': Offset(width * 0.4 - 60, height * 0.38),
       'CDM2': Offset(width * 0.6, height * 0.38),
       'RM': Offset(width * 0.9 - 60, height * 0.35),
-      'CB1': Offset(width * 0.5 - 30, height * 0.65),
-      'CB2': Offset(width * 0.25 - 30, height * 0.65),
+      'CB2': Offset(width * 0.5 - 30, height * 0.65),
+      'CB1': Offset(width * 0.25 - 30, height * 0.65),
       'CB3': Offset(width * 0.75 - 30, height * 0.65),
       'GK': Offset(width * 0.5 - 30, height * 0.9),
     };
