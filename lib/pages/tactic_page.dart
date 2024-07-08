@@ -32,6 +32,7 @@ class _TacticPageState extends State<TacticPage> {
     'GK': null,
   };
   String selectedFormation = '4-4-2';
+  String? draggedPlayerOriginalPosition;
 
   final Map<String, List<String>> formations = {
     '4-4-2': [
@@ -265,6 +266,16 @@ class _TacticPageState extends State<TacticPage> {
                                   ),
                                 ],
                               ),
+                              onDragStarted: () {
+                                setState(() {
+                                  draggedPlayerOriginalPosition = fieldPositions
+                                      .entries
+                                      .firstWhere(
+                                          (entry) => entry.value == player,
+                                          orElse: () => MapEntry('none', null))
+                                      .key;
+                                });
+                              },
                             ),
                           );
                         },
@@ -317,7 +328,7 @@ class _TacticPageState extends State<TacticPage> {
       case '3-5-2':
         return _buildFieldPositions352();
       default:
-        return [];
+        return _buildFieldPositions442();
     }
   }
 
@@ -433,9 +444,9 @@ class _TacticPageState extends State<TacticPage> {
                               childWhenDragging: Container(),
                               child:
                                   _buildPlayerAvatar(fieldPositions[position]!),
-                              onDragCompleted: () {
+                              onDragStarted: () {
                                 setState(() {
-                                  fieldPositions[position] = null;
+                                  draggedPlayerOriginalPosition = position;
                                 });
                               },
                             ),
@@ -457,7 +468,20 @@ class _TacticPageState extends State<TacticPage> {
             },
             onAccept: (data) {
               setState(() {
+                // Save the player currently at this position
+                Player? currentPlayer = fieldPositions[position];
+                // Assign the new player to this position
                 fieldPositions[position] = data;
+                // If there was a player previously, assign them back to the dragged player's original position
+                if (currentPlayer != null &&
+                    draggedPlayerOriginalPosition != null) {
+                  fieldPositions[draggedPlayerOriginalPosition!] =
+                      currentPlayer;
+                } else if (draggedPlayerOriginalPosition != null) {
+                  // Clear the original position only if it was not occupied
+                  fieldPositions[draggedPlayerOriginalPosition!] = null;
+                }
+                // Remove the new player from the bench
                 footballers.remove(data);
               });
             },
