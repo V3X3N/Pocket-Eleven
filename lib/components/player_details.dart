@@ -28,14 +28,15 @@ class PlayerDetailsDialog extends StatelessWidget {
             GridView.count(
               shrinkWrap: true,
               crossAxisCount: 3,
-              childAspectRatio: 3,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+              childAspectRatio: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
               children: [
                 Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircleAvatar(
-                      radius: 30,
+                      radius: 20,
                       backgroundImage: AssetImage(player.imagePath),
                     ),
                   ],
@@ -56,8 +57,9 @@ class PlayerDetailsDialog extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/flags/${player.nationality}.png',
+                      player.flagPath,
                       width: 30,
+                      height: 30,
                     ),
                   ],
                 ),
