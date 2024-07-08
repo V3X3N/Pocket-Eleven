@@ -103,6 +103,8 @@ class _TacticPageState extends State<TacticPage> {
       'RW': 'ST2',
       'LW': 'LM',
       'CAM': 'CM1',
+      'CDM2': 'CM2',
+      'CM3': 'RM',
     },
     '4-3-3': {
       'CB3': 'RB',
@@ -110,6 +112,8 @@ class _TacticPageState extends State<TacticPage> {
       'ST2': 'RW',
       'LM': 'LW',
       'CAM': 'CM1',
+      'CDM2': 'CM2',
+      'RM': 'CM3',
     },
     '3-5-2': {
       'RB': 'CB3',
@@ -117,6 +121,8 @@ class _TacticPageState extends State<TacticPage> {
       'RW': 'ST2',
       'LW': 'LM',
       'CM1': 'CAM',
+      'CM2': 'CDM2',
+      'CM3': 'RM',
     },
   };
 
