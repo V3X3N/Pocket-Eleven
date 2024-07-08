@@ -43,7 +43,54 @@ class PlayerDetailsDialog extends StatelessWidget {
                 fontSize: 18,
               ),
             ),
-            // Add more player details as needed
+            const SizedBox(height: 8),
+            Text(
+              'Age: ${player.age}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Nationality: ${player.nationality}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${player.param1Name}: ${player.param1}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${player.param2Name}: ${player.param2}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${player.param3Name}: ${player.param3}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${player.param4Name}: ${player.param4}',
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 18,
+              ),
+            ),
           ],
         ),
       ),
