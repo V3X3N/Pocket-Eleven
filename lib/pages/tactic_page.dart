@@ -96,6 +96,33 @@ class _TacticPageState extends State<TacticPage> {
     'GK': 'GK',
   };
 
+  final Map<String, Map<String, String>> positionMapping = {
+    '4-4-2': {
+      'LW': 'LM',
+      'RW': 'RM',
+      'CAM': 'CM1',
+      'CDM1': 'CM2',
+      'CDM2': 'CM2',
+      'CB3': 'RB',
+    },
+    '4-3-3': {
+      'LM': 'LW',
+      'RM': 'RW',
+      'CM1': 'CM1',
+      'CM2': 'CM2',
+      'CM3': 'CM3',
+      'CB3': 'RB',
+    },
+    '3-5-2': {
+      'LW': 'LM',
+      'RW': 'RM',
+      'CM1': 'CDM1',
+      'CM2': 'CDM2',
+      'CM3': 'CAM',
+      'RB': 'CB3',
+    },
+  };
+
   @override
   void initState() {
     super.initState();
@@ -152,6 +179,7 @@ class _TacticPageState extends State<TacticPage> {
                           setState(() {
                             selectedFormation =
                                 _previousFormation(selectedFormation);
+                            _changeFormation(selectedFormation);
                           });
                         },
                       ),
@@ -172,6 +200,7 @@ class _TacticPageState extends State<TacticPage> {
                           setState(() {
                             selectedFormation =
                                 _nextFormation(selectedFormation);
+                            _changeFormation(selectedFormation);
                           });
                         },
                       ),
@@ -196,7 +225,7 @@ class _TacticPageState extends State<TacticPage> {
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 5,
                           childAspectRatio: 0.7,
-                          mainAxisSpacing: 5, // Zmniejsz odstęp pionowy
+                          mainAxisSpacing: 5,
                           crossAxisSpacing: 5,
                         ),
                         itemCount: footballers.length,
@@ -251,6 +280,25 @@ class _TacticPageState extends State<TacticPage> {
     List<String> keys = formations.keys.toList();
     int currentIndex = keys.indexOf(current);
     return keys[(currentIndex + 1) % keys.length];
+  }
+
+  void _changeFormation(String newFormation) {
+    Map<String, Player?> newFieldPositions = {};
+    Map<String, String> mapping = positionMapping[newFormation] ?? {};
+
+    fieldPositions.forEach((key, value) {
+      if (value != null) {
+        if (mapping.containsKey(key)) {
+          newFieldPositions[mapping[key]!] = value;
+        } else {
+          newFieldPositions[key] = value;
+        }
+      }
+    });
+
+    setState(() {
+      fieldPositions = newFieldPositions;
+    });
   }
 
   List<Widget> _buildFieldPositions() {
