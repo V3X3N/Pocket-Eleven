@@ -10,17 +10,14 @@ class PlayerDetailsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Container(
         color: AppColors.primaryColor,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              player.name,
+              '${player.name} (${player.position})',
               style: const TextStyle(
                 color: AppColors.textEnabledColor,
                 fontSize: 22,
@@ -50,8 +47,9 @@ class PlayerDetailsDialog extends StatelessWidget {
                     Text(
                       'OVR: ${player.ovr}',
                       style: const TextStyle(
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textEnabledColor,
-                        fontSize: 18,
+                        fontSize: 22,
                       ),
                     ),
                   ],
@@ -78,24 +76,24 @@ class PlayerDetailsDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Salary: \$',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textEnabledColor,
                         fontSize: 18,
                       ),
                     ),
                   ],
                 ),
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'Value: \$',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textEnabledColor,
                         fontSize: 18,
                       ),
@@ -117,7 +115,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -125,7 +123,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -133,7 +131,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -141,7 +139,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -149,7 +147,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -157,7 +155,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -165,7 +163,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
                 Text(
@@ -173,7 +171,7 @@ class PlayerDetailsDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textEnabledColor,
-                    fontSize: 18,
+                    fontSize: 22,
                   ),
                 ),
               ],

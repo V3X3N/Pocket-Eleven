@@ -73,7 +73,6 @@ class _TacticPageState extends State<TacticPage> {
       'CB3',
       'GK'
     ],
-    // Add more formations as needed
   };
 
   final Map<String, String> positionAbbreviations = {
