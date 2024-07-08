@@ -98,28 +98,19 @@ class _TacticPageState extends State<TacticPage> {
 
   final Map<String, Map<String, String>> positionMapping = {
     '4-4-2': {
-      'LW': 'LM',
-      'RW': 'RM',
-      'CAM': 'CM1',
-      'CDM1': 'CM2',
-      'CDM2': 'CM2',
       'CB3': 'RB',
+      'CDM1': 'LB',
+      'RW': 'ST2',
     },
     '4-3-3': {
-      'LM': 'LW',
-      'RM': 'RW',
-      'CM1': 'CM1',
-      'CM2': 'CM2',
-      'CM3': 'CM3',
       'CB3': 'RB',
+      'CDM1': 'LB',
+      'ST2': 'RW',
     },
     '3-5-2': {
-      'LW': 'LM',
-      'RW': 'RM',
-      'CM1': 'CDM1',
-      'CM2': 'CDM2',
-      'CM3': 'CAM',
       'RB': 'CB3',
+      'LB': 'CDM1',
+      'RW': 'ST2',
     },
   };
 
