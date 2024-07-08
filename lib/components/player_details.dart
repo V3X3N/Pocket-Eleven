@@ -9,105 +9,178 @@ class PlayerDetailsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: AppColors.primaryColor,
-      title: Text(
-        player.name,
-        style: const TextStyle(
-          color: AppColors.textEnabledColor,
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: SingleChildScrollView(
+    return Dialog(
+      child: Container(
+        color: AppColors.primaryColor,
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage(player.imagePath),
+            Text(
+              player.name,
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Position: ${player.position}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
+            GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 3,
+              childAspectRatio: 3,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: AssetImage(player.imagePath),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'OVR: ${player.ovr}',
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/flags/${player.nationality}.png',
+                      width: 30,
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Age: ${player.age}',
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Salary: \$',
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Value: \$\$',
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Rating: ${player.ovr}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
+            const SizedBox(height: 16),
+            GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 2,
+              childAspectRatio: 5,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              children: [
+                Text(
+                  '${player.param1Name}:',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param1}',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param2Name}:',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param2}',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param3Name}:',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param3}',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param4Name}:',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  '${player.param4}',
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Age: ${player.age}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Nationality: ${player.nationality}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${player.param1Name}: ${player.param1}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${player.param2Name}: ${player.param2}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${player.param3Name}: ${player.param3}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${player.param4Name}: ${player.param4}',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 18,
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                  color: AppColors.textEnabledColor,
+                  fontSize: 18,
+                ),
               ),
             ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(
-            'Close',
-            style: TextStyle(
-              color: AppColors.textEnabledColor,
-              fontSize: 18,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
