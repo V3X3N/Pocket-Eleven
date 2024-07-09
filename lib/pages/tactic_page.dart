@@ -409,14 +409,18 @@ class _TacticPageState extends State<TacticPage> {
               : null,
           child: DragTarget<Player>(
             builder: (context, candidateData, rejectedData) {
+              Player? currentPlayer = fieldPositions[position];
+              bool isCorrectPosition = currentPlayer != null &&
+                  currentPlayer.position == positionAbbreviations[position];
+
               return Column(
                 children: [
                   Container(
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: fieldPositions[position] != null
-                          ? AppColors.green
+                      color: currentPlayer != null
+                          ? (isCorrectPosition ? Colors.green : Colors.white)
                           : AppColors.hoverColor,
                       border: Border.all(
                         color: AppColors.textEnabledColor,
@@ -425,7 +429,7 @@ class _TacticPageState extends State<TacticPage> {
                     ),
                     child: Stack(
                       children: [
-                        if (fieldPositions[position] == null)
+                        if (currentPlayer == null)
                           Center(
                             child: Text(
                               abbreviation,
@@ -435,15 +439,13 @@ class _TacticPageState extends State<TacticPage> {
                               ),
                             ),
                           ),
-                        if (fieldPositions[position] != null)
+                        if (currentPlayer != null)
                           Positioned.fill(
                             child: Draggable<Player>(
-                              data: fieldPositions[position],
-                              feedback:
-                                  _buildPlayerAvatar(fieldPositions[position]!),
+                              data: currentPlayer,
+                              feedback: _buildPlayerAvatar(currentPlayer),
                               childWhenDragging: Container(),
-                              child:
-                                  _buildPlayerAvatar(fieldPositions[position]!),
+                              child: _buildPlayerAvatar(currentPlayer),
                               onDragStarted: () {
                                 setState(() {
                                   draggedPlayerOriginalPosition = position;
@@ -454,12 +456,11 @@ class _TacticPageState extends State<TacticPage> {
                       ],
                     ),
                   ),
-                  if (fieldPositions[position] != null)
+                  if (currentPlayer != null)
                     Text(
-                      '$abbreviation ${_truncateWithEllipsis(fieldPositions[position]!.name, 6)}',
+                      '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
                       style: TextStyle(
-                        color: _isCorrectPosition(
-                                fieldPositions[position]!, position)
+                        color: isCorrectPosition
                             ? Colors.green
                             : AppColors.textEnabledColor,
                         fontWeight: FontWeight.bold,
