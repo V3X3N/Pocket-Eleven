@@ -292,13 +292,11 @@ class _TacticPageState extends State<TacticPage> {
                             },
                             onAccept: (data) {
                               setState(() {
-                                footballers.remove(player);
-                                footballers.add(data);
+                                footballers.remove(data);
+                                footballers.insert(index, data);
                                 if (draggedPlayerOriginalPosition != null) {
                                   fieldPositions[
                                       draggedPlayerOriginalPosition!] = player;
-                                } else {
-                                  footballers.remove(data);
                                 }
                                 draggedPlayerOriginalPosition = null;
                               });
@@ -503,14 +501,11 @@ class _TacticPageState extends State<TacticPage> {
             setState(() {
               Player? currentPlayer = fieldPositions[position];
               fieldPositions[position] = data;
-              if (currentPlayer != null &&
-                  draggedPlayerOriginalPosition != null) {
+
+              if (draggedPlayerOriginalPosition != null) {
                 fieldPositions[draggedPlayerOriginalPosition!] = currentPlayer;
-              } else if (draggedPlayerOriginalPosition != null) {
-                fieldPositions[draggedPlayerOriginalPosition!] = null;
-                footballers.add(currentPlayer!);
-              } else {
-                footballers.add(currentPlayer!);
+              } else if (currentPlayer != null) {
+                footballers.add(currentPlayer);
               }
               footballers.remove(data);
             });
