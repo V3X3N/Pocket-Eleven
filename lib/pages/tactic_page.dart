@@ -457,8 +457,11 @@ class _TacticPageState extends State<TacticPage> {
                   if (fieldPositions[position] != null)
                     Text(
                       '$abbreviation ${_truncateWithEllipsis(fieldPositions[position]!.name, 6)}',
-                      style: const TextStyle(
-                        color: Colors.green,
+                      style: TextStyle(
+                        color: _isCorrectPosition(
+                                fieldPositions[position]!, position)
+                            ? Colors.green
+                            : AppColors.textEnabledColor,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -491,6 +494,10 @@ class _TacticPageState extends State<TacticPage> {
     });
 
     return widgets;
+  }
+
+  bool _isCorrectPosition(Player player, String position) {
+    return player.position == positionAbbreviations[position];
   }
 
   Widget _buildPlayerAvatar(Player player) {
