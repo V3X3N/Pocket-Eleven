@@ -35,9 +35,16 @@ class PlayerDetailsDialog extends StatelessWidget {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundImage: AssetImage(player.imagePath),
+                    Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage(player.imagePath),
+                        ),
+                      ),
                     ),
                   ],
                 ),
