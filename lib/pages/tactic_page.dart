@@ -235,13 +235,21 @@ class _TacticPageState extends State<TacticPage> {
                         itemCount: footballers.length,
                         itemBuilder: (context, index) {
                           Player player = footballers[index];
-                          return GestureDetector(
-                            onTap: () => _showPlayerDetails(player),
-                            child: Draggable<Player>(
-                              data: player,
-                              feedback: _buildPlayerAvatar(player),
-                              childWhenDragging: Container(),
+                          return Draggable<Player>(
+                            data: player,
+                            feedback: _buildPlayerAvatar(player),
+                            childWhenDragging: Container(),
+                            child: Container(
+                              width: 80,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                border: Border.all(
+                                    color: AppColors.textEnabledColor),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   _buildPlayerAvatar(player),
                                   const SizedBox(height: 4),
@@ -266,17 +274,17 @@ class _TacticPageState extends State<TacticPage> {
                                   ),
                                 ],
                               ),
-                              onDragStarted: () {
-                                setState(() {
-                                  draggedPlayerOriginalPosition = fieldPositions
-                                      .entries
-                                      .firstWhere(
-                                          (entry) => entry.value == player,
-                                          orElse: () => MapEntry('none', null))
-                                      .key;
-                                });
-                              },
                             ),
+                            onDragStarted: () {
+                              setState(() {
+                                draggedPlayerOriginalPosition = null;
+                              });
+                            },
+                            onDraggableCanceled: (_, __) {
+                              setState(() {
+                                draggedPlayerOriginalPosition = null;
+                              });
+                            },
                           );
                         },
                       ),
@@ -403,95 +411,94 @@ class _TacticPageState extends State<TacticPage> {
       widgets.add(Positioned(
         left: offset.dx,
         top: offset.dy,
-        child: GestureDetector(
-          onTap: fieldPositions[position] != null
-              ? () => _showPlayerDetails(fieldPositions[position]!)
-              : null,
-          child: DragTarget<Player>(
-            builder: (context, candidateData, rejectedData) {
-              Player? currentPlayer = fieldPositions[position];
-              bool isCorrectPosition = currentPlayer != null &&
-                  currentPlayer.position == positionAbbreviations[position];
+        child: DragTarget<Player>(
+          builder: (context, candidateData, rejectedData) {
+            Player? currentPlayer = fieldPositions[position];
+            bool isCorrectPosition = currentPlayer != null &&
+                currentPlayer.position == positionAbbreviations[position];
 
-              return Column(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: currentPlayer != null
-                          ? (isCorrectPosition
-                              ? AppColors.green
-                              : Colors.orangeAccent)
-                          : AppColors.hoverColor,
-                      border: Border.all(
-                        color: AppColors.textEnabledColor,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Stack(
-                      children: [
-                        if (currentPlayer == null)
-                          Center(
-                            child: Text(
-                              abbreviation,
-                              style: const TextStyle(
-                                color: AppColors.textEnabledColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        if (currentPlayer != null)
-                          Positioned.fill(
-                            child: Draggable<Player>(
-                              data: currentPlayer,
-                              feedback: _buildPlayerAvatar(currentPlayer),
-                              childWhenDragging: Container(),
-                              child: _buildPlayerAvatar(currentPlayer),
-                              onDragStarted: () {
-                                setState(() {
-                                  draggedPlayerOriginalPosition = position;
-                                });
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (currentPlayer != null)
-                    Text(
-                      '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
-                      style: TextStyle(
-                        color: isCorrectPosition
+            return Column(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: currentPlayer != null
+                        ? (isCorrectPosition
                             ? AppColors.green
-                            : Colors.orangeAccent,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+                            : Colors.orangeAccent)
+                        : AppColors.hoverColor,
+                    border: Border.all(
+                      color: AppColors.textEnabledColor,
                     ),
-                ],
-              );
-            },
-            onAccept: (data) {
-              setState(() {
-                // Save the player currently at this position
-                Player? currentPlayer = fieldPositions[position];
-                // Assign the new player to this position
-                fieldPositions[position] = data;
-                // If there was a player previously, assign them back to the dragged player's original position
-                if (currentPlayer != null &&
-                    draggedPlayerOriginalPosition != null) {
-                  fieldPositions[draggedPlayerOriginalPosition!] =
-                      currentPlayer;
-                } else if (draggedPlayerOriginalPosition != null) {
-                  // Clear the original position only if it was not occupied
-                  fieldPositions[draggedPlayerOriginalPosition!] = null;
-                }
-                // Remove the new player from the bench
-                footballers.remove(data);
-              });
-            },
-          ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Stack(
+                    children: [
+                      if (currentPlayer == null)
+                        Center(
+                          child: Text(
+                            abbreviation,
+                            style: const TextStyle(
+                              color: AppColors.textEnabledColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      if (currentPlayer != null)
+                        Positioned.fill(
+                          child: Draggable<Player>(
+                            data: currentPlayer,
+                            feedback: _buildPlayerAvatar(currentPlayer),
+                            childWhenDragging: Container(),
+                            child: _buildPlayerAvatar(currentPlayer),
+                            onDragStarted: () {
+                              setState(() {
+                                draggedPlayerOriginalPosition = position;
+                              });
+                            },
+                            onDraggableCanceled: (_, __) {
+                              setState(() {
+                                draggedPlayerOriginalPosition = null;
+                              });
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (currentPlayer != null)
+                  Text(
+                    '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
+                    style: TextStyle(
+                      color: isCorrectPosition
+                          ? AppColors.green
+                          : Colors.orangeAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+              ],
+            );
+          },
+          onAccept: (data) {
+            setState(() {
+              // Save the player currently at this position
+              Player? currentPlayer = fieldPositions[position];
+              // Assign the new player to this position
+              fieldPositions[position] = data;
+              // If there was a player previously, assign them back to the dragged player's original position
+              if (currentPlayer != null &&
+                  draggedPlayerOriginalPosition != null) {
+                fieldPositions[draggedPlayerOriginalPosition!] = currentPlayer;
+              } else if (draggedPlayerOriginalPosition != null) {
+                // Clear the original position only if it was not occupied
+                fieldPositions[draggedPlayerOriginalPosition!] = null;
+              }
+              // Remove the new player from the bench
+              footballers.remove(data);
+            });
+          },
         ),
       ));
     });
@@ -504,17 +511,14 @@ class _TacticPageState extends State<TacticPage> {
   }
 
   Widget _buildPlayerAvatar(Player player) {
-    return GestureDetector(
-      onTap: () => _showPlayerDetails(player),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(player.imagePath),
-          ),
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        image: DecorationImage(
+          fit: BoxFit.cover,
+          image: AssetImage(player.imagePath),
         ),
       ),
     );
