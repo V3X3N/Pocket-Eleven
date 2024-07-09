@@ -235,53 +235,71 @@ class _TacticPageState extends State<TacticPage> {
                         itemCount: footballers.length,
                         itemBuilder: (context, index) {
                           Player player = footballers[index];
-                          return Draggable<Player>(
-                            data: player,
-                            feedback: _buildPlayerAvatar(player),
-                            childWhenDragging: Container(),
-                            child: Container(
-                              width: 80,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor,
-                                border: Border.all(
-                                    color: AppColors.textEnabledColor),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildPlayerAvatar(player),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _truncateWithEllipsis(player.name, 6),
-                                    style: const TextStyle(
-                                      color: AppColors.textEnabledColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                    textAlign: TextAlign.center,
+                          return DragTarget<Player>(
+                            builder: (context, candidateData, rejectedData) {
+                              return Draggable<Player>(
+                                data: player,
+                                feedback: _buildPlayerAvatar(player),
+                                childWhenDragging: Container(),
+                                child: Container(
+                                  width: 80,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryColor,
+                                    border: Border.all(
+                                        color: AppColors.textEnabledColor),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  Text(
-                                    positionAbbreviations[player.position] ??
-                                        '',
-                                    style: const TextStyle(
-                                      color: AppColors.textEnabledColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      _buildPlayerAvatar(player),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _truncateWithEllipsis(player.name, 6),
+                                        style: const TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      Text(
+                                        positionAbbreviations[
+                                                player.position] ??
+                                            '',
+                                        style: const TextStyle(
+                                          color: AppColors.textEnabledColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            onDragStarted: () {
-                              setState(() {
-                                draggedPlayerOriginalPosition = null;
-                              });
+                                ),
+                                onDragStarted: () {
+                                  setState(() {
+                                    draggedPlayerOriginalPosition = null;
+                                  });
+                                },
+                                onDraggableCanceled: (_, __) {
+                                  setState(() {
+                                    draggedPlayerOriginalPosition = null;
+                                  });
+                                },
+                              );
                             },
-                            onDraggableCanceled: (_, __) {
+                            onAccept: (data) {
                               setState(() {
+                                footballers.remove(player);
+                                footballers.add(data);
+                                if (draggedPlayerOriginalPosition != null) {
+                                  fieldPositions[
+                                      draggedPlayerOriginalPosition!] = player;
+                                } else {
+                                  footballers.remove(data);
+                                }
                                 draggedPlayerOriginalPosition = null;
                               });
                             },
@@ -483,19 +501,17 @@ class _TacticPageState extends State<TacticPage> {
           },
           onAccept: (data) {
             setState(() {
-              // Save the player currently at this position
               Player? currentPlayer = fieldPositions[position];
-              // Assign the new player to this position
               fieldPositions[position] = data;
-              // If there was a player previously, assign them back to the dragged player's original position
               if (currentPlayer != null &&
                   draggedPlayerOriginalPosition != null) {
                 fieldPositions[draggedPlayerOriginalPosition!] = currentPlayer;
               } else if (draggedPlayerOriginalPosition != null) {
-                // Clear the original position only if it was not occupied
                 fieldPositions[draggedPlayerOriginalPosition!] = null;
+                footballers.add(currentPlayer!);
+              } else {
+                footballers.add(currentPlayer!);
               }
-              // Remove the new player from the bench
               footballers.remove(data);
             });
           },
