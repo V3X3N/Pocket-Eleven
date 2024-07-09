@@ -420,7 +420,9 @@ class _TacticPageState extends State<TacticPage> {
                     height: 60,
                     decoration: BoxDecoration(
                       color: currentPlayer != null
-                          ? (isCorrectPosition ? Colors.green : Colors.white)
+                          ? (isCorrectPosition
+                              ? AppColors.green
+                              : Colors.orangeAccent)
                           : AppColors.hoverColor,
                       border: Border.all(
                         color: AppColors.textEnabledColor,
@@ -461,8 +463,8 @@ class _TacticPageState extends State<TacticPage> {
                       '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
                       style: TextStyle(
                         color: isCorrectPosition
-                            ? Colors.green
-                            : AppColors.textEnabledColor,
+                            ? AppColors.green
+                            : Colors.orangeAccent,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
