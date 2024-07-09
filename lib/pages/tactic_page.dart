@@ -522,14 +522,17 @@ class _TacticPageState extends State<TacticPage> {
   }
 
   Widget _buildPlayerAvatar(Player player) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        image: DecorationImage(
-          fit: BoxFit.cover,
-          image: AssetImage(player.imagePath),
+    return GestureDetector(
+      onTap: () => _showPlayerDetails(player),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            fit: BoxFit.cover,
+            image: AssetImage(player.imagePath),
+          ),
         ),
       ),
     );
