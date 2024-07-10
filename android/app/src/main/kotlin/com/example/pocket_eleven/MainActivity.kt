@@ -1,4 +1,4 @@
-package com.mcoffee.pocket_eleven
+package com.vcoffee.pocket_eleven
 
 import io.flutter.embedding.android.FlutterActivity
 
