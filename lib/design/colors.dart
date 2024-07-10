@@ -10,8 +10,5 @@ class AppColors {
   static const Color textDisabledColor = Color(0xFF8F8F8F);
   static const Color textEnabledColor = Color(0xFFBBBBBB);
   static const Color coffeeColor = Color(0xFF6D5D5E);
-
-  // WHITE
-
-  // static const Color hoverColor = Color.fromARGB(213, 255, 255, 240); //FFFFF0
+  static const Color coffeeText = Color(0xFFE1DCCE);
 }
