@@ -80,7 +80,7 @@ class _LoadingPageState extends State<LoadingPage> {
       _updateProgress(1.0);
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 3));
 
     Navigator.pushReplacement(
       context,
@@ -158,6 +158,7 @@ class _LoadingPageState extends State<LoadingPage> {
                         fontSize: 20.0,
                       ),
                     ),
+                    backgroundColor: AppColors.textEnabledColor,
                     progressColor: AppColors.green,
                   );
                 },

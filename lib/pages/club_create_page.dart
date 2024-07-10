@@ -55,7 +55,7 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                           decoration: const InputDecoration(
                             hintText: 'Enter your club name here!',
                             filled: true,
-                            fillColor: AppColors.coffeeText,
+                            fillColor: AppColors.textEnabledColor,
                           ),
                         ),
                         const SizedBox(
@@ -89,12 +89,12 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                             child: _isLoading
                                 ? const CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.coffeeText),
+                                        AppColors.textEnabledColor),
                                   )
                                 : const Text(
                                     "Confirm",
-                                    style:
-                                        TextStyle(color: AppColors.coffeeText),
+                                    style: TextStyle(
+                                        color: AppColors.textEnabledColor),
                                   ),
                           ),
                         ),

@@ -59,7 +59,7 @@ class _MainMenuState extends State<MainMenu> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.coffeeText,
+                      color: AppColors.textEnabledColor,
                     ),
                   ),
                   Text(
@@ -67,7 +67,7 @@ class _MainMenuState extends State<MainMenu> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.coffeeText,
+                      color: AppColors.textEnabledColor,
                     ),
                   ),
                 ],
@@ -84,7 +84,7 @@ class _MainMenuState extends State<MainMenu> {
                   MaterialButton(
                     height: 40,
                     minWidth: 100,
-                    color: AppColors.coffeeText,
+                    color: AppColors.textEnabledColor,
                     onPressed: () {
                       // TODO: Implement Google auth.
                       Navigator.pushReplacement(
@@ -114,7 +114,7 @@ class _MainMenuState extends State<MainMenu> {
                     },
                     child: const Text(
                       'Email',
-                      style: TextStyle(color: AppColors.coffeeText),
+                      style: TextStyle(color: AppColors.textEnabledColor),
                     ),
                   ),
                   const SizedBox(
@@ -129,7 +129,7 @@ class _MainMenuState extends State<MainMenu> {
                     },
                     child: const Text(
                       'Exit',
-                      style: TextStyle(color: AppColors.coffeeText),
+                      style: TextStyle(color: AppColors.textEnabledColor),
                     ),
                   ),
                 ],

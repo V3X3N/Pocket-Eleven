@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: const InputDecoration(
                               hintText: "What's your name Manager?",
                               filled: true,
-                              fillColor: AppColors.coffeeText,
+                              fillColor: AppColors.textEnabledColor,
                             ),
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Enter Email',
                         filled: true,
-                        fillColor: AppColors.coffeeText,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         if (value!.isEmpty || !value.contains('@')) {
@@ -105,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Enter Password',
                         filled: true,
-                        fillColor: AppColors.coffeeText,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         password = value.toString();
@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Confirm Password',
                         filled: true,
-                        fillColor: AppColors.coffeeText,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         confirmPassword = value.toString();
@@ -230,12 +230,12 @@ class _LoginPageState extends State<LoginPage> {
                         child: _isLoading
                             ? const CircularProgressIndicator(
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.coffeeText),
+                                    AppColors.textEnabledColor),
                               )
                             : Text(
                                 login ? 'Login' : 'Signup',
                                 style: const TextStyle(
-                                    color: AppColors.coffeeText),
+                                    color: AppColors.textEnabledColor),
                               ),
                       ),
                     ),

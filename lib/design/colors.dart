@@ -8,7 +8,7 @@ class AppColors {
   static const Color disabledColor = Color(0xFF424242);
   static const Color enabledColor = Color(0xFF6D6D6D);
   static const Color textDisabledColor = Color(0xFF8F8F8F);
-  static const Color textEnabledColor = Color(0xFFBBBBBB);
+  static const Color textEnabledColor = Color(0xFFF8F5FA);
   static const Color coffeeColor = Color(0xFF6D5D5E);
   static const Color coffeeText = Color(0xFFE1DCCE);
 }
