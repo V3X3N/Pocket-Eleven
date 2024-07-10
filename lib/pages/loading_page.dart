@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/image_loader.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:pocket_eleven/pages/auth_check_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
@@ -81,11 +80,6 @@ class _LoadingPageState extends State<LoadingPage> {
     });
 
     await Future.delayed(const Duration(seconds: 3));
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const AuthCheckerPage()),
-    );
   }
 
   void _updateProgress(double newProgress) {
