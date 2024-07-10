@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:pocket_eleven/design/colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -61,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: const InputDecoration(
                               hintText: "What's your name Manager?",
                               filled: true,
-                              fillColor: Colors.white70,
+                              fillColor: AppColors.textEnabledColor,
                             ),
                             validator: (value) {
                               if (value!.isEmpty) {
@@ -82,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Enter Email',
                         filled: true,
-                        fillColor: Colors.white70,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         if (value!.isEmpty || !value.contains('@')) {
@@ -104,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Enter Password',
                         filled: true,
-                        fillColor: Colors.white70,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         password = value.toString();
@@ -127,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(
                         hintText: 'Confirm Password',
                         filled: true,
-                        fillColor: Colors.white70,
+                        fillColor: AppColors.textEnabledColor,
                       ),
                       validator: (value) {
                         confirmPassword = value.toString();
@@ -228,12 +229,13 @@ class _LoginPageState extends State<LoginPage> {
                               },
                         child: _isLoading
                             ? const CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.textEnabledColor),
                               )
                             : Text(
                                 login ? 'Login' : 'Signup',
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(
+                                    color: AppColors.textEnabledColor),
                               ),
                       ),
                     ),
