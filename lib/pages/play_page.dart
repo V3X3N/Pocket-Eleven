@@ -56,7 +56,8 @@ class _PlayPageState extends State<PlayPage> {
                       const Text(
                         // TODO: Display proper Players Club name
                         "ClubName",
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(
+                            color: AppColors.coffeeText, fontSize: 18),
                       ),
                     ],
                   ),
@@ -78,7 +79,8 @@ class _PlayPageState extends State<PlayPage> {
                       const SizedBox(height: 8.0),
                       const Text(
                         'Klub 2',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(
+                            color: AppColors.coffeeText, fontSize: 18),
                       ),
                     ],
                   ),
@@ -103,7 +105,7 @@ class _PlayPageState extends State<PlayPage> {
                 child: Text(
                   'PLAY',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.coffeeText,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),

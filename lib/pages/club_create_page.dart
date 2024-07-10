@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
+import 'package:pocket_eleven/design/colors.dart';
 
 class ClubCreatePage extends StatefulWidget {
   const ClubCreatePage({super.key});
@@ -54,7 +55,7 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                           decoration: const InputDecoration(
                             hintText: 'Enter your club name here!',
                             filled: true,
-                            fillColor: Colors.white70,
+                            fillColor: AppColors.coffeeText,
                           ),
                         ),
                         const SizedBox(
@@ -88,11 +89,12 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                             child: _isLoading
                                 ? const CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
+                                        AppColors.coffeeText),
                                   )
                                 : const Text(
                                     "Confirm",
-                                    style: TextStyle(color: Colors.white),
+                                    style:
+                                        TextStyle(color: AppColors.coffeeText),
                                   ),
                           ),
                         ),

@@ -180,7 +180,7 @@ class _TransferPageState extends State<TransferPage> {
                 child: Text(
                   'DRAW',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.coffeeText,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),

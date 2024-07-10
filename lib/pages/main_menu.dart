@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/pages/club_create_page.dart';
 import 'package:pocket_eleven/pages/login_page.dart';
+import 'package:pocket_eleven/design/colors.dart';
 
 class MainMenu extends StatefulWidget {
   const MainMenu({super.key});
@@ -58,7 +59,7 @@ class _MainMenuState extends State<MainMenu> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.coffeeText,
                     ),
                   ),
                   Text(
@@ -66,7 +67,7 @@ class _MainMenuState extends State<MainMenu> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.coffeeText,
                     ),
                   ),
                 ],
@@ -83,7 +84,7 @@ class _MainMenuState extends State<MainMenu> {
                   MaterialButton(
                     height: 40,
                     minWidth: 100,
-                    color: Colors.white,
+                    color: AppColors.coffeeText,
                     onPressed: () {
                       // TODO: Implement Google auth.
                       Navigator.pushReplacement(
@@ -113,7 +114,7 @@ class _MainMenuState extends State<MainMenu> {
                     },
                     child: const Text(
                       'Email',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.coffeeText),
                     ),
                   ),
                   const SizedBox(
@@ -124,12 +125,11 @@ class _MainMenuState extends State<MainMenu> {
                     minWidth: 100,
                     color: Colors.red,
                     onPressed: () {
-                      // TODO: Make sure it's proper way
                       exit(0);
                     },
                     child: const Text(
                       'Exit',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.coffeeText),
                     ),
                   ),
                 ],
