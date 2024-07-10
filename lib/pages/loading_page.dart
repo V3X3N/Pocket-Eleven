@@ -37,7 +37,7 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 
   Future<void> _loadResources() async {
-    await Future.delayed(const Duration(seconds: 1), () {
+    await Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         _updateProgress(0.3);
       });
@@ -46,7 +46,7 @@ class _LoadingPageState extends State<LoadingPage> {
     await ImageLoader.precacheImages(context);
 
     setState(() {
-      _updateProgress(0.6);
+      _updateProgress(0.9);
     });
 
     await Future.delayed(const Duration(seconds: 1));
