@@ -5,6 +5,7 @@ import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/club_stadium_page.dart';
 import 'package:pocket_eleven/pages/club_training_page.dart';
 import 'package:pocket_eleven/pages/club_medical_page.dart';
+import 'package:pocket_eleven/pages/club_youth_page.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -130,7 +131,12 @@ class _ClubPageState extends State<ClubPage> {
                     image: _clubYouthImage,
                     text: 'Youth',
                     onTap: () {
-                      // Dodaj obsługę nawigacji do innych stron tutaj
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ClubYouthPage(),
+                        ),
+                      );
                     },
                   ),
                 ],
