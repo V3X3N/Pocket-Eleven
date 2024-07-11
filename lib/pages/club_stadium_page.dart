@@ -10,6 +10,7 @@ class ClubStadiumPage extends StatefulWidget {
 
 class _ClubStadiumPageState extends State<ClubStadiumPage> {
   late Image _clubStadiumImage;
+  int level = 1;
 
   @override
   void initState() {
@@ -17,12 +18,25 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
   }
 
+  void increaseLevel() {
+    setState(() {
+      level++;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.hoverColor,
-        title: const Text('Club Stadium'),
+        iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
+        title: const Text(
+          'Club Stadium',
+          style: TextStyle(
+            fontSize: 20.0,
+            color: AppColors.textEnabledColor,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -38,23 +52,36 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
           Expanded(
             child: Container(
               color: AppColors.primaryColor,
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Stadium',
-                        style: TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textEnabledColor,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Stadium',
+                            style: TextStyle(
+                              fontSize: 24.0,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textEnabledColor,
+                            ),
+                          ),
+                          Text(
+                            'Level $level',
+                            style: const TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textEnabledColor,
+                            ),
+                          ),
+                        ],
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: increaseLevel,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondaryColor,
                         ),
@@ -69,7 +96,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16.0),
+                  const SizedBox(height: 40.0),
                   const Text(
                     'Description',
                     style: TextStyle(
@@ -78,7 +105,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  const SizedBox(height: 8.0),
+                  const SizedBox(height: 10.0),
                   const Text(
                     'The club stadium is the heart of our community, where fans gather '
                     'to cheer for their favorite teams. With a capacity of 50,000 seats, '
