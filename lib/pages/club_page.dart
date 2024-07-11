@@ -7,6 +7,7 @@ import 'package:pocket_eleven/pages/club_training_page.dart';
 import 'package:pocket_eleven/pages/club_medical_page.dart';
 import 'package:pocket_eleven/pages/club_youth_page.dart';
 import 'package:pocket_eleven/user_manager.dart';
+import 'package:unicons/unicons.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -22,6 +23,9 @@ class _ClubPageState extends State<ClubPage> {
   late Image _clubYouthImage;
   late String clubName = '';
   double money = 0.0;
+  int trainingPoints = 0;
+  int medicalPoints = 0;
+  int youthPoints = 0;
 
   Future<void> _loadUserData() async {
     try {
@@ -47,11 +51,47 @@ class _ClubPageState extends State<ClubPage> {
     }
   }
 
+  Future<void> _loadTrainingPoints() async {
+    try {
+      await UserManager().loadTrainingPoints();
+      setState(() {
+        trainingPoints = UserManager().trainingPoints;
+      });
+    } catch (error) {
+      print('Error loading training points: $error');
+    }
+  }
+
+  Future<void> _loadMedicalPoints() async {
+    try {
+      await UserManager().loadMedicalPoints();
+      setState(() {
+        medicalPoints = UserManager().medicalPoints;
+      });
+    } catch (error) {
+      print('Error loading medical points: $error');
+    }
+  }
+
+  Future<void> _loadYouthPoints() async {
+    try {
+      await UserManager().loadYouthPoints();
+      setState(() {
+        youthPoints = UserManager().youthPoints;
+      });
+    } catch (error) {
+      print('Error loading youth points: $error');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadMoney();
+    _loadTrainingPoints();
+    _loadMedicalPoints();
+    _loadYouthPoints();
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
     _clubTrainingImage = Image.asset('assets/background/club_training.png');
     _clubMedicalImage = Image.asset('assets/background/club_medical.png');
@@ -66,21 +106,78 @@ class _ClubPageState extends State<ClubPage> {
         toolbarHeight: 50,
         centerTitle: true,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Club Page',
-              style: TextStyle(
-                fontSize: 20,
-                color: AppColors.textEnabledColor,
-              ),
-            ),
-            Text(
-              'Money: \$${money.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 20,
-                color: AppColors.textEnabledColor,
-              ),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.no_entry,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      trainingPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.medkit,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      medicalPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.six_plus,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      youthPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.usd_circle,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      money.toStringAsFixed(0),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
