@@ -1,22 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
-class StadiumPage extends StatefulWidget {
-  const StadiumPage({super.key});
+class ClubPage extends StatefulWidget {
+  const ClubPage({super.key});
 
   @override
-  State<StadiumPage> createState() => _StadiumPageState();
+  State<ClubPage> createState() => _StadiumPageState();
 }
 
-class _StadiumPageState extends State<StadiumPage> {
+class _StadiumPageState extends State<ClubPage> {
   late Image _clubStadiumImage;
   late Image _clubTrainingImage;
   late Image _clubMedicalImage;
   late Image _clubYouthImage;
+  late String clubName = '';
+
+  Future<void> _loadUserData() async {
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final String userId = user.uid;
+        clubName = await FirebaseFunctions.getClubName(userId);
+      }
+    } catch (error) {
+      print('Error loading user data: $error');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
     _clubTrainingImage = Image.asset('assets/background/club_training.png');
     _clubMedicalImage = Image.asset('assets/background/club_medical.png');
@@ -41,9 +57,10 @@ class _StadiumPageState extends State<StadiumPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Your club',
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  Text(
+                    clubName,
+                    style: const TextStyle(
+                        fontSize: 20, color: AppColors.textEnabledColor),
                   ),
                   Image.asset(
                     'assets/crests/crest_1.png',
