@@ -9,6 +9,20 @@ class StadiumPage extends StatefulWidget {
 }
 
 class _StadiumPageState extends State<StadiumPage> {
+  late Image _clubStadiumImage;
+  late Image _clubTrainingImage;
+  late Image _clubMedicalImage;
+  late Image _clubYouthImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
+    _clubTrainingImage = Image.asset('assets/background/club_training.png');
+    _clubMedicalImage = Image.asset('assets/background/club_medical.png');
+    _clubYouthImage = Image.asset('assets/background/club_youth.png');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,38 +61,35 @@ class _StadiumPageState extends State<StadiumPage> {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _buildListItem(
-                    color: Colors.blue,
-                    text: 'Option 1',
-                    onPressed: () {
-                      print('Option 1 selected');
+                    image: _clubStadiumImage,
+                    text: 'Stadium',
+                    onTap: () {
+                      print('Stadium selected');
+                      // Handle stadium selection
                     },
                   ),
                   _buildListItem(
-                    color: Colors.red,
-                    text: 'Option 2',
-                    onPressed: () {
-                      print('Option 2 selected');
+                    image: _clubTrainingImage,
+                    text: 'Training',
+                    onTap: () {
+                      print('Training selected');
+                      // Handle training selection
                     },
                   ),
                   _buildListItem(
-                    color: Colors.green,
-                    text: 'Option 3',
-                    onPressed: () {
-                      print('Option 3 selected');
+                    image: _clubMedicalImage,
+                    text: 'Medical',
+                    onTap: () {
+                      print('Medical selected');
+                      // Handle medical selection
                     },
                   ),
                   _buildListItem(
-                    color: Colors.orange,
-                    text: 'Option 4',
-                    onPressed: () {
-                      print('Option 4 selected');
-                    },
-                  ),
-                  _buildListItem(
-                    color: Colors.purple,
-                    text: 'Option 5',
-                    onPressed: () {
-                      print('Option 5 selected');
+                    image: _clubYouthImage,
+                    text: 'Youth',
+                    onTap: () {
+                      print('Youth selected');
+                      // Handle youth selection
                     },
                   ),
                 ],
@@ -96,22 +107,44 @@ class _StadiumPageState extends State<StadiumPage> {
   }
 
   Widget _buildListItem({
-    required Color color,
+    required Image image,
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextButton(
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: const TextStyle(color: Colors.white),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image(
+                image: image.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  text,
+                  style: const TextStyle(color: AppColors.textEnabledColor),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
