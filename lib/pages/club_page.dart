@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/club_stadium_page.dart';
 import 'package:pocket_eleven/pages/club_training_page.dart';
+import 'package:pocket_eleven/pages/club_medical_page.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -49,7 +50,13 @@ class _ClubPageState extends State<ClubPage> {
         backgroundColor: AppColors.hoverColor,
         toolbarHeight: 50,
         centerTitle: true,
-        title: const Text('Club Page'),
+        title: const Text(
+          'Club Page',
+          style: TextStyle(
+            fontSize: 20,
+            color: AppColors.textEnabledColor,
+          ),
+        ),
       ),
       body: Container(
         color: AppColors.primaryColor,
@@ -111,7 +118,12 @@ class _ClubPageState extends State<ClubPage> {
                     image: _clubMedicalImage,
                     text: 'Medical',
                     onTap: () {
-                      // Dodaj obsługę nawigacji do innych stron tutaj
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ClubMedicalPage(),
+                        ),
+                      );
                     },
                   ),
                   _buildListItem(

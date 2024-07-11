@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-class ClubTrainingPage extends StatefulWidget {
-  const ClubTrainingPage({super.key});
+class ClubMedicalPage extends StatefulWidget {
+  const ClubMedicalPage({super.key});
 
   @override
-  State<ClubTrainingPage> createState() => _ClubTrainingPageState();
+  State<ClubMedicalPage> createState() => _ClubMedicalPageState();
 }
 
-class _ClubTrainingPageState extends State<ClubTrainingPage> {
+class _ClubMedicalPageState extends State<ClubMedicalPage> {
   late Image _clubStadiumImage;
   int level = 1;
 
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_training.png');
+    _clubStadiumImage = Image.asset('assets/background/club_medical.png');
   }
 
   void increaseLevel() {
@@ -31,7 +31,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
         backgroundColor: AppColors.hoverColor,
         iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
         title: const Text(
-          'Club Training',
+          'Club Medical',
           style: TextStyle(
             fontSize: 20.0,
             color: AppColors.textEnabledColor,
@@ -63,7 +63,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Training Facilities',
+                            'Medical Center',
                             style: TextStyle(
                               fontSize: 24.0,
                               fontWeight: FontWeight.bold,
@@ -107,9 +107,10 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
                   ),
                   const SizedBox(height: 10.0),
                   const Text(
-                    'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
-                    'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
-                    'players hone their skills, preparing for the most significant challenges on the field.',
+                    "Our medical center is an essential part of our commitment to our players' health and fitness. "
+                    "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
+                    "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
+                    "It’s a place where we prioritize every aspect of our athletes' health, providing safety and support throughout their careers.",
                     style: TextStyle(
                       fontSize: 16.0,
                       color: AppColors.textEnabledColor,
