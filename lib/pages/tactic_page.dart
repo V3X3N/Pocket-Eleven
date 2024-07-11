@@ -427,6 +427,8 @@ class _TacticPageState extends State<TacticPage> {
       widgets.add(Positioned(
         left: offset.dx,
         top: offset.dy,
+        width: 60,
+        height: 100,
         child: DragTarget<Player>(
           builder: (context, candidateData, rejectedData) {
             Player? currentPlayer = fieldPositions[position];
@@ -466,7 +468,6 @@ class _TacticPageState extends State<TacticPage> {
                           child: Draggable<Player>(
                             data: currentPlayer,
                             feedback: _buildPlayerAvatar(currentPlayer),
-                            childWhenDragging: Container(),
                             child: _buildPlayerAvatar(currentPlayer),
                             onDragStarted: () {
                               setState(() {
@@ -515,10 +516,6 @@ class _TacticPageState extends State<TacticPage> {
     });
 
     return widgets;
-  }
-
-  bool _isCorrectPosition(Player player, String position) {
-    return player.position == positionAbbreviations[position];
   }
 
   Widget _buildPlayerAvatar(Player player) {
