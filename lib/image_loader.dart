@@ -4,7 +4,6 @@ class ImageLoader {
   static Future<void> precacheImages(BuildContext context) async {
     List<String> imagePaths = [
       'assets/background/loading_bg.png',
-      'assets/background/stadium_bg.png',
       'assets/background/league_bg.png',
       //Badges
       'assets/players/player_card_bronze.png',
@@ -24,6 +23,11 @@ class ImageLoader {
       'assets/flags/flag_POL.png',
       'assets/flags/flag_TUR.png',
       'assets/flags/flag_USA.png',
+      //Club
+      'assets/background/club_youth.png',
+      'assets/background/club_medical.png',
+      'assets/background/club_training.png',
+      'assets/background/club_stadion.png',
     ];
 
     for (var imagePath in imagePaths) {

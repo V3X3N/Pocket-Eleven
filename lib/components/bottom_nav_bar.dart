@@ -24,20 +24,19 @@ class BottomNavBar extends StatelessWidget {
                 tabBackgroundColor: AppColors.primaryColor,
                 activeColor: AppColors.textEnabledColor,
                 color: AppColors.textDisabledColor,
-                //gap: 8,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 tabs: const [
-                  //home tam
-                  GButton(icon: Icons.stadium, text: 'Stadium'),
-                  // play tab
+                  //club tab
+                  GButton(icon: Icons.stadium, text: 'Club'),
+                  //play tab
                   GButton(icon: Icons.play_circle_fill, text: 'Play'),
                   //transfer tab
                   GButton(icon: Icons.people_alt, text: 'Transfer'),
-                  //league tab
-                  GButton(icon: Icons.list_alt, text: 'League'),
+                  //tactic tab
+                  GButton(icon: Icons.list_alt, text: 'Tactic'),
                   //profile tab
-                  GButton(icon: Icons.co_present_rounded, text: "Profile")
+                  GButton(icon: Icons.account_circle_rounded, text: "Profile")
                 ]),
           ),
         ],

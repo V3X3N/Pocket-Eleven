@@ -5,7 +5,7 @@ import 'package:pocket_eleven/pages/profile_page.dart';
 
 import 'tactic_page.dart';
 import 'play_page.dart';
-import 'stadium_page.dart';
+import 'club_page.dart';
 import 'transfer_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
   //pages to display
   final List<Widget> _pages = [
     //Stadium page
-    const StadiumPage(),
+    const ClubPage(),
 
     //Play page
     const PlayPage(),

@@ -97,7 +97,7 @@ class _PlayPageState extends State<PlayPage> {
                 // TODO: Handle button press for PLAY
               },
               padding: const EdgeInsets.all(16.0),
-              color: AppColors.green,
+              color: AppColors.secondaryColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
