@@ -267,7 +267,7 @@ class _TacticPageState extends State<TacticPage> {
                                       Text(
                                         positionAbbreviations[
                                                 player.position] ??
-                                            '',
+                                            player.position,
                                         style: const TextStyle(
                                           color: AppColors.textEnabledColor,
                                           fontWeight: FontWeight.bold,
@@ -486,12 +486,11 @@ class _TacticPageState extends State<TacticPage> {
                 ),
                 if (currentPlayer != null)
                   Text(
-                    '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
-                    style: TextStyle(
-                      color: isCorrectPosition
-                          ? AppColors.green
-                          : Colors.orangeAccent,
+                    '${positionAbbreviations[player.position] ?? player.position} ${_truncateWithEllipsis(player.name, 6)}',
+                    style: const TextStyle(
+                      color: AppColors.textEnabledColor,
                       fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                     textAlign: TextAlign.center,
                   ),
