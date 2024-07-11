@@ -17,7 +17,7 @@ class BottomNavBar extends StatelessWidget {
           onTabChange: (value) => onTabChange!(value),
           mainAxisAlignment: MainAxisAlignment.center,
           backgroundColor: AppColors.hoverColor,
-          tabBackgroundColor: AppColors.disabledColor,
+          tabBackgroundColor: AppColors.primaryColor,
           activeColor: AppColors.textEnabledColor,
           color: AppColors.textDisabledColor,
           gap: 8,
