@@ -172,7 +172,7 @@ class _TransferPageState extends State<TransferPage> {
                 _generateRandomFootballers();
               },
               padding: const EdgeInsets.all(16.0),
-              color: Colors.orangeAccent,
+              color: AppColors.secondaryColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),

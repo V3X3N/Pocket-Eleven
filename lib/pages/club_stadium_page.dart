@@ -22,7 +22,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.hoverColor,
-        title: const Text('Club Stadion'),
+        title: const Text('Club Stadium'),
       ),
       body: Column(
         children: [
@@ -38,6 +38,58 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
           Expanded(
             child: Container(
               color: AppColors.primaryColor,
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Stadium',
+                        style: TextStyle(
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textEnabledColor,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondaryColor,
+                        ),
+                        child: const Text(
+                          'Upgrade',
+                          style: TextStyle(
+                            color: AppColors.textEnabledColor,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16.0),
+                  const Text(
+                    'Description',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textEnabledColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  const Text(
+                    'The club stadium is the heart of our community, where fans gather '
+                    'to cheer for their favorite teams. With a capacity of 50,000 seats, '
+                    'it has hosted numerous memorable matches and events.',
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: AppColors.textEnabledColor,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

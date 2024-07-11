@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/bottomNavBar/profile_page.dart';
+import 'package:pocket_eleven/pages/profile_page.dart';
 
-import 'bottomNavBar/tactic_page.dart';
-import 'bottomNavBar/play_page.dart';
-import 'bottomNavBar/club_page.dart';
-import 'bottomNavBar/transfer_page.dart';
+import 'tactic_page.dart';
+import 'play_page.dart';
+import 'club_page.dart';
+import 'transfer_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

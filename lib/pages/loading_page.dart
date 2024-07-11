@@ -117,7 +117,7 @@ class _LoadingPageState extends State<LoadingPage> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textEnabledColor,
                     ),
                   ),
                   Text(
@@ -125,7 +125,7 @@ class _LoadingPageState extends State<LoadingPage> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.textEnabledColor,
                     ),
                   ),
                 ],
@@ -153,7 +153,7 @@ class _LoadingPageState extends State<LoadingPage> {
                       ),
                     ),
                     backgroundColor: AppColors.textEnabledColor,
-                    progressColor: AppColors.green,
+                    progressColor: AppColors.secondaryColor,
                   );
                 },
               ),
