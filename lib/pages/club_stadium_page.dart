@@ -28,7 +28,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        upgradeCost = (upgradeCost * 1.5).round();
+        upgradeCost = (upgradeCost * 1.8).round();
       });
       widget.onCurrencyChange();
     }
