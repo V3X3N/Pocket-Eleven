@@ -31,7 +31,8 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         level++;
         UserManager.money -= stadiumUpgradeCost;
         UserManager.stadiumLevel = level;
-        UserManager.stadiumUpgradeCost = (stadiumUpgradeCost * 1.8).round();
+        UserManager.stadiumUpgradeCost =
+            ((stadiumUpgradeCost * 1.8) / 10000).round() * 10000;
         stadiumUpgradeCost = UserManager.stadiumUpgradeCost;
       });
 

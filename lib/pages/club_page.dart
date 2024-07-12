@@ -241,9 +241,15 @@ class _ClubPageState extends State<ClubPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ClubYouthPage(),
+                          builder: (context) => ClubYouthPage(
+                            onCurrencyChange: () {
+                              _loadUserData();
+                            },
+                          ),
                         ),
-                      );
+                      ).then((_) {
+                        _loadUserData();
+                      });
                     },
                   ),
                 ],

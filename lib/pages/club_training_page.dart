@@ -31,7 +31,8 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
         level++;
         UserManager.money -= upgradeCost;
         UserManager.trainingLevel = level;
-        UserManager.trainingUpgradeCost = (upgradeCost * 1.8).round();
+        UserManager.trainingUpgradeCost =
+            ((upgradeCost * 1.8) / 10000).round() * 10000;
         upgradeCost = UserManager.trainingUpgradeCost;
       });
 

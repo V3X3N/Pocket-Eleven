@@ -31,7 +31,8 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
         level++;
         UserManager.money -= upgradeCost;
         UserManager.medicalLevel = level;
-        UserManager.medicalUpgradeCost = (upgradeCost * 1.8).round();
+        UserManager.medicalUpgradeCost =
+            ((upgradeCost * 1.8) / 10000).round() * 10000;
         upgradeCost = UserManager.medicalUpgradeCost;
       });
 
