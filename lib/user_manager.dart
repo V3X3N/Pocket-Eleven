@@ -18,9 +18,21 @@ class UserManager {
   static int _medicalPoints = 50;
   static int _youthPoints = 50;
 
-  // Nowe właściwości
+  // Stadium
   static int stadiumLevel = 1;
-  static int upgradeCost = 100000;
+  static int stadiumUpgradeCost = 100000;
+
+  // Training
+  static int trainingLevel = 1;
+  static int trainingUpgradeCost = 100000;
+
+  // Medical
+  static int medicalLevel = 1;
+  static int medicalUpgradeCost = 100000;
+
+  // Youth
+  static int youthLevel = 1;
+  static int youthUpgradeCost = 100000;
 
   // Static getters and setters to access the properties
   static double get money => _money;
@@ -58,14 +70,77 @@ class UserManager {
     await prefs.setInt('stadiumLevel', stadiumLevel);
   }
 
-  Future<void> loadUpgradeCost() async {
+  Future<void> loadStadiumUpgradeCost() async {
     final prefs = await SharedPreferences.getInstance();
-    upgradeCost = prefs.getInt('upgradeCost') ?? 100000;
+    stadiumUpgradeCost = prefs.getInt('stadiumUpgradeCost') ?? 100000;
   }
 
-  Future<void> saveUpgradeCost() async {
+  Future<void> saveStadiumUpgradeCost() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('upgradeCost', upgradeCost);
+    await prefs.setInt('stadiumUpgradeCost', stadiumUpgradeCost);
+  }
+
+  // Nowe metody do ładowania i zapisywania poziomu treningu i kosztu
+  Future<void> loadTrainingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    trainingLevel = prefs.getInt('trainingLevel') ?? 1;
+  }
+
+  Future<void> saveTrainingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trainingLevel', trainingLevel);
+  }
+
+  Future<void> loadTrainingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    trainingUpgradeCost = prefs.getInt('trainingUpgradeCost') ?? 100000;
+  }
+
+  Future<void> saveTrainingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('trainingUpgradeCost', trainingUpgradeCost);
+  }
+
+  // Nowe metody do ładowania i zapisywania poziomu medical i kosztu
+  Future<void> loadMedicalLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    medicalLevel = prefs.getInt('medicalLevel') ?? 1;
+  }
+
+  Future<void> saveMedicalLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('medicalLevel', medicalLevel);
+  }
+
+  Future<void> loadMedicalUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    medicalUpgradeCost = prefs.getInt('medicalUpgradeCost') ?? 100000;
+  }
+
+  Future<void> saveMedicalUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('medicalUpgradeCost', medicalUpgradeCost);
+  }
+
+  // Nowe metody do ładowania i zapisywania poziomu youth i kosztu
+  Future<void> loadYouthLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    youthLevel = prefs.getInt('youthLevel') ?? 1;
+  }
+
+  Future<void> saveYouthLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('youthLevel', youthLevel);
+  }
+
+  Future<void> loadYouthUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    youthUpgradeCost = prefs.getInt('youthUpgradeCost') ?? 100000;
+  }
+
+  Future<void> saveYouthUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('youthUpgradeCost', youthUpgradeCost);
   }
 
   // Load and save methods

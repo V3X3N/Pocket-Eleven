@@ -15,30 +15,30 @@ class ClubStadiumPage extends StatefulWidget {
 class _ClubStadiumPageState extends State<ClubStadiumPage> {
   late Image _clubStadiumImage;
   int level = 1;
-  int upgradeCost = 100000;
+  int stadiumUpgradeCost = 100000;
 
   @override
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
     level = UserManager.stadiumLevel;
-    upgradeCost = UserManager.upgradeCost;
+    stadiumUpgradeCost = UserManager.stadiumUpgradeCost;
   }
 
   void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
+    if (UserManager.money >= stadiumUpgradeCost) {
       setState(() {
         level++;
-        UserManager.money -= upgradeCost;
+        UserManager.money -= stadiumUpgradeCost;
         UserManager.stadiumLevel = level;
-        UserManager.upgradeCost = (upgradeCost * 1.8).round();
-        upgradeCost = UserManager.upgradeCost;
+        UserManager.stadiumUpgradeCost = (stadiumUpgradeCost * 1.8).round();
+        stadiumUpgradeCost = UserManager.stadiumUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
       UserManager().saveStadiumLevel();
-      UserManager().saveUpgradeCost();
+      UserManager().saveStadiumUpgradeCost();
     }
   }
 
@@ -172,7 +172,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: UserManager.money >= upgradeCost
+                            onPressed: UserManager.money >= stadiumUpgradeCost
                                 ? increaseLevel
                                 : null,
                             style: ElevatedButton.styleFrom(
@@ -189,9 +189,9 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                           ),
                           const SizedBox(height: 8.0),
                           Text(
-                            'Cost: $upgradeCost',
+                            'Cost: $stadiumUpgradeCost',
                             style: TextStyle(
-                              color: UserManager.money >= upgradeCost
+                              color: UserManager.money >= stadiumUpgradeCost
                                   ? AppColors.green
                                   : Colors.grey,
                               fontSize: 16.0,
