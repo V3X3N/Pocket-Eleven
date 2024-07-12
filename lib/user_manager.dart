@@ -13,40 +13,65 @@ class UserManager {
   UserManager._internal();
 
   // Private properties
-  double _money = 500000.0;
-  int _trainingPoints = 50;
-  int _medicalPoints = 50;
-  int _youthPoints = 50;
+  static double _money = 500000.0;
+  static int _trainingPoints = 50;
+  static int _medicalPoints = 50;
+  static int _youthPoints = 50;
+
+  // Nowe właściwości
+  static int stadiumLevel = 1;
+  static int upgradeCost = 100000;
 
   // Static getters and setters to access the properties
-  static double get money => _instance._money;
+  static double get money => _money;
   static set money(double value) {
-    _instance._money = value;
+    _money = value;
     _instance.saveMoney();
   }
 
-  static int get trainingPoints => _instance._trainingPoints;
+  static int get trainingPoints => _trainingPoints;
   static set trainingPoints(int value) {
-    _instance._trainingPoints = value;
+    _trainingPoints = value;
     _instance.saveTrainingPoints();
   }
 
-  static int get medicalPoints => _instance._medicalPoints;
+  static int get medicalPoints => _medicalPoints;
   static set medicalPoints(int value) {
-    _instance._medicalPoints = value;
+    _medicalPoints = value;
     _instance.saveMedicalPoints();
   }
 
-  static int get youthPoints => _instance._youthPoints;
+  static int get youthPoints => _youthPoints;
   static set youthPoints(int value) {
-    _instance._youthPoints = value;
+    _youthPoints = value;
     _instance.saveYouthPoints();
+  }
+
+  // Nowe metody do ładowania i zapisywania poziomu stadionu i kosztu
+  Future<void> loadStadiumLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    stadiumLevel = prefs.getInt('stadiumLevel') ?? 1;
+  }
+
+  Future<void> saveStadiumLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('stadiumLevel', stadiumLevel);
+  }
+
+  Future<void> loadUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    upgradeCost = prefs.getInt('upgradeCost') ?? 100000;
+  }
+
+  Future<void> saveUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('upgradeCost', upgradeCost);
   }
 
   // Load and save methods
   Future<void> loadMoney() async {
     final prefs = await SharedPreferences.getInstance();
-    _money = prefs.getDouble('money') ?? 50000.0;
+    _money = prefs.getDouble('money') ?? 500000.0;
   }
 
   Future<void> saveMoney() async {

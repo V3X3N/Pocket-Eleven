@@ -21,6 +21,8 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
+    level = UserManager.stadiumLevel;
+    upgradeCost = UserManager.upgradeCost;
   }
 
   void increaseLevel() {
@@ -28,9 +30,15 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        upgradeCost = (upgradeCost * 1.8).round();
+        UserManager.stadiumLevel = level;
+        UserManager.upgradeCost = (upgradeCost * 1.8).round();
+        upgradeCost = UserManager.upgradeCost;
       });
+
       widget.onCurrencyChange();
+
+      UserManager().saveStadiumLevel();
+      UserManager().saveUpgradeCost();
     }
   }
 

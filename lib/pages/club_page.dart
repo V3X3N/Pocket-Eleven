@@ -34,6 +34,8 @@ class _ClubPageState extends State<ClubPage> {
         await UserManager().loadTrainingPoints();
         await UserManager().loadMedicalPoints();
         await UserManager().loadYouthPoints();
+        await UserManager().loadStadiumLevel();
+        await UserManager().loadUpgradeCost();
         setState(() {});
       }
     } catch (error) {
