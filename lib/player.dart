@@ -131,8 +131,8 @@ class Player {
     String flagPath = 'assets/flags/flag_$nationality.png';
 
     // Calculate value and salary based on the new OVR and age
-    int value = (ovr * 450000 / age).round();
-    int salary = age * ovr;
+    int value = ((ovr * 450000 / age) / 10000).round() * 10000;
+    int salary = ((age * ovr) / 10).round() * 10;
 
     return Player(
       name: name,

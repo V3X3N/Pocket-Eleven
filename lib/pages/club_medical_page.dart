@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/user_manager.dart';
+import 'package:unicons/unicons.dart';
 
 class ClubMedicalPage extends StatefulWidget {
-  const ClubMedicalPage({super.key});
+  final VoidCallback onCurrencyChange;
+
+  const ClubMedicalPage({super.key, required this.onCurrencyChange});
 
   @override
   State<ClubMedicalPage> createState() => _ClubMedicalPageState();
@@ -11,31 +15,116 @@ class ClubMedicalPage extends StatefulWidget {
 class _ClubMedicalPageState extends State<ClubMedicalPage> {
   late Image _clubStadiumImage;
   int level = 1;
+  int upgradeCost = 100000;
 
   @override
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_medical.png');
+    level = UserManager.medicalLevel;
+    upgradeCost = UserManager.medicalUpgradeCost;
   }
 
   void increaseLevel() {
-    setState(() {
-      level++;
-    });
+    if (UserManager.money >= upgradeCost) {
+      setState(() {
+        level++;
+        UserManager.money -= upgradeCost;
+        UserManager.medicalLevel = level;
+        UserManager.medicalUpgradeCost = (upgradeCost * 1.8).round();
+        upgradeCost = UserManager.medicalUpgradeCost;
+      });
+
+      widget.onCurrencyChange();
+
+      UserManager().saveMedicalLevel();
+      UserManager().saveMedicalUpgradeCost();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.hoverColor,
         iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
-        title: const Text(
-          'Club Medical',
-          style: TextStyle(
-            fontSize: 20.0,
-            color: AppColors.textEnabledColor,
-          ),
+        backgroundColor: AppColors.hoverColor,
+        toolbarHeight: 50,
+        centerTitle: true,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Row(
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.no_entry,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      UserManager.trainingPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.medkit,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      UserManager.medicalPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.six_plus,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      UserManager.youthPoints.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 20),
+                Row(
+                  children: [
+                    const Icon(
+                      UniconsLine.usd_circle,
+                      color: AppColors.textEnabledColor,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      UserManager.money.toStringAsFixed(0),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       body: Column(
@@ -80,19 +169,36 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
                           ),
                         ],
                       ),
-                      ElevatedButton(
-                        onPressed: increaseLevel,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondaryColor,
-                        ),
-                        child: const Text(
-                          'Upgrade',
-                          style: TextStyle(
-                            color: AppColors.textEnabledColor,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
+                      Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed: UserManager.money >= upgradeCost
+                                ? increaseLevel
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.secondaryColor,
+                            ),
+                            child: const Text(
+                              'Upgrade',
+                              style: TextStyle(
+                                color: AppColors.textEnabledColor,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            'Cost: $upgradeCost',
+                            style: TextStyle(
+                              color: UserManager.money >= upgradeCost
+                                  ? AppColors.green
+                                  : Colors.grey,
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
