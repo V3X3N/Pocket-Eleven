@@ -21,6 +21,9 @@ class Player {
   final String param3Name;
   final String param4Name;
 
+  late final int value;
+  late final int salary;
+
   Player({
     required this.name,
     required this.position,
@@ -29,6 +32,8 @@ class Player {
     required this.nationality,
     required this.imagePath,
     required this.flagPath,
+    required this.value,
+    required this.salary,
     required this.param1,
     required this.param2,
     required this.param3,
@@ -50,6 +55,8 @@ class Player {
       nationality: json['nationality'],
       imagePath: json['imagePath'],
       flagPath: json['flagPath'],
+      value: json['value'],
+      salary: json['salary'],
       param1: json['param1'],
       param2: json['param2'],
       param3: json['param3'],
@@ -70,6 +77,8 @@ class Player {
       'nationality': nationality,
       'imagePath': imagePath,
       'flagPath': flagPath,
+      'value': value,
+      'salary': salary,
       'param1': param1,
       'param2': param2,
       'param3': param3,
@@ -121,6 +130,10 @@ class Player {
     String imagePath = _getImagePath(ovr);
     String flagPath = 'assets/flags/flag_$nationality.png';
 
+    // Calculate value and salary based on the new OVR and age
+    int value = (ovr * 450000 / age).round();
+    int salary = age * ovr;
+
     return Player(
       name: name,
       position: position,
@@ -129,6 +142,8 @@ class Player {
       nationality: nationality,
       imagePath: imagePath,
       flagPath: flagPath,
+      value: value,
+      salary: salary,
       param1: param1,
       param2: param2,
       param3: param3,

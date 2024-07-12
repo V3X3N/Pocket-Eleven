@@ -78,38 +78,38 @@ class PlayerDetailsDialog extends StatelessWidget {
                       'Age: ${player.age}',
                       style: const TextStyle(
                         color: AppColors.textEnabledColor,
-                        fontSize: 18,
+                        fontSize: 15,
                       ),
                     ),
                   ],
                 ),
-                const Column(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Salary: \$',
-                      style: TextStyle(
+                      'Salary: ${player.salary}',
+                      style: const TextStyle(
                         color: AppColors.textEnabledColor,
-                        fontSize: 18,
+                        fontSize: 15,
                       ),
                     ),
                   ],
                 ),
-                const Column(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Value: \$',
-                      style: TextStyle(
+                      'Value: ${player.value}',
+                      style: const TextStyle(
                         color: AppColors.textEnabledColor,
-                        fontSize: 18,
+                        fontSize: 15,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             GridView.count(
               shrinkWrap: true,
               crossAxisCount: 2,
