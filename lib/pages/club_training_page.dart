@@ -21,6 +21,8 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_training.png');
+    level = UserManager.trainingLevel;
+    upgradeCost = UserManager.trainingUpgradeCost;
   }
 
   void increaseLevel() {
@@ -28,9 +30,15 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        upgradeCost = (upgradeCost * 1.8).round();
+        UserManager.trainingLevel = level;
+        UserManager.trainingUpgradeCost = (upgradeCost * 1.8).round();
+        upgradeCost = UserManager.trainingUpgradeCost;
       });
+
       widget.onCurrencyChange();
+
+      UserManager().saveTrainingLevel();
+      UserManager().saveTrainingUpgradeCost();
     }
   }
 

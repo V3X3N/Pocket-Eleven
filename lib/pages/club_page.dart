@@ -34,8 +34,19 @@ class _ClubPageState extends State<ClubPage> {
         await UserManager().loadTrainingPoints();
         await UserManager().loadMedicalPoints();
         await UserManager().loadYouthPoints();
+        // Stadium
         await UserManager().loadStadiumLevel();
         await UserManager().loadStadiumUpgradeCost();
+        // Training
+        await UserManager().loadTrainingLevel();
+        await UserManager().loadTrainingUpgradeCost();
+        // Medical
+        await UserManager().loadMedicalLevel();
+        await UserManager().loadMedicalUpgradeCost();
+        // Youth
+        await UserManager().loadMedicalLevel();
+        await UserManager().loadMedicalUpgradeCost();
+
         setState(() {});
       }
     } catch (error) {
