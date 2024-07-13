@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/profile_page.dart';
-
 import 'tactic_page.dart';
 import 'play_page.dart';
 import 'club_page.dart';
@@ -28,29 +27,28 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     //Stadium page
     const ClubPage(),
-
     //Play page
     const PlayPage(),
-
     //Transfer page
     const TransferPage(),
-
     //League page
     const TacticPage(),
-
     //Profile page
     const ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    double navBarHeight = MediaQuery.of(context).size.height * 0.08;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    double navBarHeight = screenHeight * 0.08;
 
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       bottomNavigationBar: BottomNavBar(
         onTabChange: (index) => navigateBottomBar(index),
         navBarHeight: navBarHeight,
+        screenWidth: screenWidth,
       ),
       body: _pages[_selectedIndex],
     );

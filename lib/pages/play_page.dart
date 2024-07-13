@@ -11,12 +11,15 @@ class PlayPage extends StatefulWidget {
 class _PlayPageState extends State<PlayPage> {
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        toolbarHeight: 1,
+        toolbarHeight: screenHeight * 0.01,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -25,16 +28,16 @@ class _PlayPageState extends State<PlayPage> {
           Align(
             alignment: Alignment.topCenter,
             child: Container(
-              margin: const EdgeInsets.all(20.0),
-              padding: const EdgeInsets.all(16.0),
+              margin: EdgeInsets.all(screenWidth * 0.05),
+              padding: EdgeInsets.all(screenWidth * 0.04),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.025),
                 image: const DecorationImage(
                   image: AssetImage('assets/background/next_match_banner.png'),
                   fit: BoxFit.cover,
                 ),
               ),
-              height: 200,
+              height: screenHeight * 0.25,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -42,20 +45,20 @@ class _PlayPageState extends State<PlayPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        height: 90,
-                        width: 90,
+                        height: screenWidth * 0.225,
+                        width: screenWidth * 0.225,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.025),
                           image: const DecorationImage(
                             image: AssetImage('assets/crests/crest_1.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8.0),
+                      SizedBox(height: screenHeight * 0.01),
                       const Text(
-                        // TODO: Display proper Players Club name
-                        "ClubName",
+                        "ClubName", // TODO: Display proper Players Club name
                         style: TextStyle(
                             color: AppColors.textEnabledColor, fontSize: 18),
                       ),
@@ -66,17 +69,18 @@ class _PlayPageState extends State<PlayPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        height: 90,
-                        width: 90,
+                        height: screenWidth * 0.225,
+                        width: screenWidth * 0.225,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
+                          borderRadius:
+                              BorderRadius.circular(screenWidth * 0.025),
                           image: const DecorationImage(
                             image: AssetImage('assets/crests/crest_2.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8.0),
+                      SizedBox(height: screenHeight * 0.01),
                       const Text(
                         'Klub 2',
                         style: TextStyle(
@@ -88,18 +92,18 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16.0),
+          SizedBox(height: screenHeight * 0.02),
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20.0),
-            height: 80,
+            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+            height: screenHeight * 0.1,
             child: MaterialButton(
               onPressed: () {
                 // TODO: Handle button press for PLAY
               },
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(screenWidth * 0.04),
               color: AppColors.secondaryColor,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(screenWidth * 0.025),
               ),
               child: const Center(
                 child: Text(
@@ -113,23 +117,25 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16.0),
+          SizedBox(height: screenHeight * 0.02),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
                 child: Container(
-                  margin:
-                      const EdgeInsets.only(left: 20.0, right: 10.0, top: 10.0),
+                  margin: EdgeInsets.only(
+                      left: screenWidth * 0.05,
+                      right: screenWidth * 0.025,
+                      top: screenWidth * 0.025),
                   child: MaterialButton(
                     onPressed: () {
                       // TODO: Handle button press for Container 1
                     },
-                    height: 120,
-                    padding: const EdgeInsets.all(16.0),
+                    height: screenHeight * 0.15,
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     color: AppColors.hoverColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.025),
                     ),
                     child: const Center(
                       child: Text(
@@ -145,17 +151,19 @@ class _PlayPageState extends State<PlayPage> {
               ),
               Expanded(
                 child: Container(
-                  margin:
-                      const EdgeInsets.only(right: 20.0, left: 10.0, top: 10.0),
+                  margin: EdgeInsets.only(
+                      right: screenWidth * 0.05,
+                      left: screenWidth * 0.025,
+                      top: screenWidth * 0.025),
                   child: MaterialButton(
                     onPressed: () {
-                      // TODO: Handle button press for Container 1
+                      // TODO: Handle button press for Container 2
                     },
-                    height: 120,
-                    padding: const EdgeInsets.all(16.0),
+                    height: screenHeight * 0.15,
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     color: AppColors.hoverColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.025),
                     ),
                     child: const Center(
                       child: Text(
@@ -171,23 +179,25 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16.0),
+          SizedBox(height: screenHeight * 0.02),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
                 child: Container(
-                  margin:
-                      const EdgeInsets.only(left: 20.0, right: 10.0, top: 10.0),
+                  margin: EdgeInsets.only(
+                      left: screenWidth * 0.05,
+                      right: screenWidth * 0.025,
+                      top: screenWidth * 0.025),
                   child: MaterialButton(
                     onPressed: () {
                       // TODO: Handle button press for Container 3
                     },
-                    height: 120,
-                    padding: const EdgeInsets.all(16.0),
+                    height: screenHeight * 0.15,
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     color: AppColors.hoverColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.025),
                     ),
                     child: const Center(
                       child: Text(
@@ -203,17 +213,19 @@ class _PlayPageState extends State<PlayPage> {
               ),
               Expanded(
                 child: Container(
-                  margin:
-                      const EdgeInsets.only(right: 20.0, left: 10.0, top: 10.0),
+                  margin: EdgeInsets.only(
+                      right: screenWidth * 0.05,
+                      left: screenWidth * 0.025,
+                      top: screenWidth * 0.025),
                   child: MaterialButton(
                     onPressed: () {
                       // TODO: Handle button press for Container 4
                     },
-                    height: 120,
-                    padding: const EdgeInsets.all(16.0),
+                    height: screenHeight * 0.15,
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     color: AppColors.hoverColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(screenWidth * 0.025),
                     ),
                     child: const Center(
                       child: Text(
