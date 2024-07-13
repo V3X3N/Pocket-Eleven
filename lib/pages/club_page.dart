@@ -44,8 +44,8 @@ class _ClubPageState extends State<ClubPage> {
         await UserManager().loadMedicalLevel();
         await UserManager().loadMedicalUpgradeCost();
         // Youth
-        await UserManager().loadMedicalLevel();
-        await UserManager().loadMedicalUpgradeCost();
+        await UserManager().loadYouthLevel();
+        await UserManager().loadYouthUpgradeCost();
 
         setState(() {});
       }
@@ -66,86 +66,35 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.hoverColor,
-        toolbarHeight: 50,
-        centerTitle: true,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Row(
-              children: [
-                Row(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(screenHeight * 0.07),
+        child: AppBar(
+          backgroundColor: AppColors.hoverColor,
+          centerTitle: true,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      UniconsLine.no_entry,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.trainingPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
+                    _buildInfoRow(UniconsLine.no_entry,
+                        UserManager.trainingPoints.toString()),
+                    _buildInfoRow(UniconsLine.medkit,
+                        UserManager.medicalPoints.toString()),
+                    _buildInfoRow(UniconsLine.six_plus,
+                        UserManager.youthPoints.toString()),
+                    _buildInfoRow(UniconsLine.usd_circle,
+                        UserManager.money.toStringAsFixed(0)),
                   ],
                 ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.medkit,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.medicalPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.six_plus,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.youthPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.usd_circle,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.money.toStringAsFixed(0),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
       body: Container(
@@ -154,7 +103,9 @@ class _ClubPageState extends State<ClubPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenHeight * 0.02),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -167,20 +118,21 @@ class _ClubPageState extends State<ClubPage> {
                   ),
                   Image.asset(
                     'assets/crests/crest_1.png',
-                    height: 40,
-                    width: 40,
+                    height: screenHeight * 0.05,
+                    width: screenHeight * 0.05,
                     fit: BoxFit.contain,
                   ),
                 ],
               ),
             ),
             Container(
-              height: 350,
+              height: screenHeight * 0.4,
               color: AppColors.primaryColor,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
                   _buildListItem(
+                    screenWidth: screenWidth,
                     image: _clubStadiumImage,
                     text: 'Stadium',
                     onTap: () {
@@ -199,6 +151,7 @@ class _ClubPageState extends State<ClubPage> {
                     },
                   ),
                   _buildListItem(
+                    screenWidth: screenWidth,
                     image: _clubTrainingImage,
                     text: 'Training',
                     onTap: () {
@@ -217,6 +170,7 @@ class _ClubPageState extends State<ClubPage> {
                     },
                   ),
                   _buildListItem(
+                    screenWidth: screenWidth,
                     image: _clubMedicalImage,
                     text: 'Medical',
                     onTap: () {
@@ -235,6 +189,7 @@ class _ClubPageState extends State<ClubPage> {
                     },
                   ),
                   _buildListItem(
+                    screenWidth: screenWidth,
                     image: _clubYouthImage,
                     text: 'Youth',
                     onTap: () {
@@ -266,7 +221,24 @@ class _ClubPageState extends State<ClubPage> {
     );
   }
 
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.textEnabledColor),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 20,
+            color: AppColors.textEnabledColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildListItem({
+    required double screenWidth,
     required Image image,
     required String text,
     VoidCallback? onTap,
@@ -274,8 +246,8 @@ class _ClubPageState extends State<ClubPage> {
     return GestureDetector(
       onTap: onTap ?? () {},
       child: Container(
-        width: 200,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
+        width: screenWidth * 0.5,
+        margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
@@ -293,7 +265,7 @@ class _ClubPageState extends State<ClubPage> {
             Align(
               alignment: Alignment.bottomLeft,
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(screenWidth * 0.02),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(10),

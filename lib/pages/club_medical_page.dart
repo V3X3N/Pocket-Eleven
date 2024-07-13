@@ -45,165 +45,63 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double appBarHeight = screenHeight * 0.07;
+
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
-        backgroundColor: AppColors.hoverColor,
-        toolbarHeight: 50,
-        centerTitle: true,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Row(
-              children: [
-                Row(
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(appBarHeight),
+        child: AppBar(
+          iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
+          backgroundColor: AppColors.hoverColor,
+          centerTitle: true,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(
-                      UniconsLine.no_entry,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.trainingPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
+                    _buildInfoRow(UniconsLine.no_entry,
+                        UserManager.trainingPoints.toString()),
+                    _buildInfoRow(UniconsLine.medkit,
+                        UserManager.medicalPoints.toString()),
+                    _buildInfoRow(UniconsLine.six_plus,
+                        UserManager.youthPoints.toString()),
+                    _buildInfoRow(UniconsLine.usd_circle,
+                        UserManager.money.toStringAsFixed(0)),
                   ],
                 ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.medkit,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.medicalPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.six_plus,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.youthPoints.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 20),
-                Row(
-                  children: [
-                    const Icon(
-                      UniconsLine.usd_circle,
-                      color: AppColors.textEnabledColor,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      UserManager.money.toStringAsFixed(0),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: AppColors.textEnabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
       body: Column(
         children: [
-          Container(
-            height: MediaQuery.of(context).size.height / 3,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: _clubStadiumImage.image,
-                fit: BoxFit.cover,
+          AspectRatio(
+            aspectRatio: 3 / 2,
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: _clubStadiumImage.image,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
           Expanded(
             child: Container(
               color: AppColors.primaryColor,
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.02),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Medical Center',
-                            style: TextStyle(
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textEnabledColor,
-                            ),
-                          ),
-                          Text(
-                            'Level $level',
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textEnabledColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: UserManager.money >= upgradeCost
-                                ? increaseLevel
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondaryColor,
-                            ),
-                            child: const Text(
-                              'Upgrade',
-                              style: TextStyle(
-                                color: AppColors.textEnabledColor,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            'Cost: $upgradeCost',
-                            style: TextStyle(
-                              color: UserManager.money >= upgradeCost
-                                  ? AppColors.green
-                                  : Colors.grey,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40.0),
+                  _buildMedicalInfo(),
+                  SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
                     style: TextStyle(
@@ -212,15 +110,19 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  const SizedBox(height: 10.0),
-                  const Text(
-                    "Our medical center is an essential part of our commitment to our players' health and fitness. "
-                    "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
-                    "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
-                    "It’s a place where we prioritize every aspect of our athletes' health, providing safety and support throughout their careers.",
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: AppColors.textEnabledColor,
+                  SizedBox(height: screenHeight * 0.01),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: const Text(
+                        "Our medical center is an essential part of our commitment to our players' health and fitness. "
+                        "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
+                        "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
+                        "It’s a place where we prioritize every aspect of our athletes' health, providing safety and support throughout their careers.",
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          color: AppColors.textEnabledColor,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -229,6 +131,83 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.textEnabledColor),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 20,
+            color: AppColors.textEnabledColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMedicalInfo() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Medical Center',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+              Text(
+                'Level $level',
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          children: [
+            ElevatedButton(
+              onPressed:
+                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondaryColor,
+              ),
+              child: const Text(
+                'Upgrade',
+                style: TextStyle(
+                  color: AppColors.textEnabledColor,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'Cost: $upgradeCost',
+              style: TextStyle(
+                color: UserManager.money >= upgradeCost
+                    ? AppColors.green
+                    : Colors.grey,
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
