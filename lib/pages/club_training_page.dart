@@ -111,9 +111,9 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.01),
-                  Expanded(
+                  const Expanded(
                     child: SingleChildScrollView(
-                      child: const Text(
+                      child: Text(
                         'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
                         'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
                         'players hone their skills, preparing for the most significant challenges on the field.',
@@ -193,7 +193,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
                 ),
               ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(

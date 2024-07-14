@@ -111,9 +111,9 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.01),
-                  Expanded(
+                  const Expanded(
                     child: SingleChildScrollView(
-                      child: const Text(
+                      child: Text(
                         "Our medical center is an essential part of our commitment to our players' health and fitness. "
                         "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
                         "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
@@ -194,7 +194,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
                 ),
               ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
