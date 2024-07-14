@@ -11,10 +11,10 @@ class TransferPage extends StatefulWidget {
 }
 
 class _TransferPageState extends State<TransferPage> {
-  late Image _clubStadiumImage;
-  late Image _clubTrainingImage;
-  late Image _clubMedicalImage;
-  late Image _clubYouthImage;
+  late Image _europeImage;
+  late Image _asiaImage;
+  late Image _northAmericaImage;
+  late Image _southAmericaImage;
   int _selectedIndex = 0;
 
   Future<void> _loadUserData() async {
@@ -35,10 +35,18 @@ class _TransferPageState extends State<TransferPage> {
   void initState() {
     super.initState();
     _loadUserData();
-    _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
-    _clubTrainingImage = Image.asset('assets/background/club_training.png');
-    _clubMedicalImage = Image.asset('assets/background/club_medical.png');
-    _clubYouthImage = Image.asset('assets/background/club_youth.png');
+    _europeImage = Image.asset(
+      'assets/background/Europe.png',
+    );
+    _asiaImage = Image.asset(
+      'assets/background/Asia.png',
+    );
+    _northAmericaImage = Image.asset(
+      'assets/background/North_America.png',
+    );
+    _southAmericaImage = Image.asset(
+      'assets/background/South_America.png',
+    );
   }
 
   void _onOptionSelected(int index) {
@@ -179,7 +187,7 @@ class _TransferPageState extends State<TransferPage> {
           ),
           child: Text(
             'Transfer Item ${index + 1}',
-            style: TextStyle(color: AppColors.textEnabledColor),
+            style: const TextStyle(color: AppColors.textEnabledColor),
           ),
         );
       },
@@ -200,7 +208,7 @@ class _TransferPageState extends State<TransferPage> {
           ),
           child: Text(
             'Stuff Item ${index + 1}',
-            style: TextStyle(color: AppColors.textEnabledColor),
+            style: const TextStyle(color: AppColors.textEnabledColor),
           ),
         );
       },
@@ -213,23 +221,23 @@ class _TransferPageState extends State<TransferPage> {
       children: [
         _buildListItem(
           screenWidth: screenWidth,
-          image: _clubStadiumImage,
-          text: 'Stadium',
+          image: _europeImage,
+          text: 'Europe',
         ),
         _buildListItem(
           screenWidth: screenWidth,
-          image: _clubTrainingImage,
-          text: 'Training',
+          image: _asiaImage,
+          text: 'Asia',
         ),
         _buildListItem(
           screenWidth: screenWidth,
-          image: _clubMedicalImage,
-          text: 'Medical',
+          image: _northAmericaImage,
+          text: 'North America',
         ),
         _buildListItem(
           screenWidth: screenWidth,
-          image: _clubYouthImage,
-          text: 'Youth',
+          image: _southAmericaImage,
+          text: 'South America',
         ),
       ],
     );

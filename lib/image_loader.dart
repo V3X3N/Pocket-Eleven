@@ -28,6 +28,11 @@ class ImageLoader {
       'assets/background/club_medical.png',
       'assets/background/club_training.png',
       'assets/background/club_stadion.png',
+      //Continent
+      'assets/background/Europe.png',
+      'assets/background/Asia.png',
+      'assets/background/North_America.png',
+      'assets/background/South_America.png',
     ];
 
     for (var imagePath in imagePaths) {
