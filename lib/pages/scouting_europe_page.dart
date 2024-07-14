@@ -15,16 +15,16 @@ class ScoutingEuropePage extends StatefulWidget {
 class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   late Image _europeImage;
   int level = 1;
-  int upgradeCost = 100000;
-  String selectedPosition = 'ST';
-  String selectedNationality = 'PL';
+  int upgradeCost = 200000;
+  String selectedPosition = 'LW';
+  String selectedNationality = 'AUT';
 
   @override
   void initState() {
     super.initState();
     _europeImage = Image.asset('assets/background/europe.png');
-    level = UserManager.stadiumLevel;
-    upgradeCost = UserManager.stadiumUpgradeCost;
+    level = UserManager.europeScoutingLevel;
+    upgradeCost = UserManager.europeScoutingUpgradeCost;
   }
 
   void increaseLevel() {
@@ -32,16 +32,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.stadiumLevel = level;
-        UserManager.stadiumUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.stadiumUpgradeCost;
+        UserManager.europeScoutingLevel = level;
+        UserManager.europeScoutingUpgradeCost =
+            ((upgradeCost * 2.3) / 10000).round() * 10000;
+        upgradeCost = UserManager.europeScoutingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveStadiumLevel();
-      UserManager().saveStadiumUpgradeCost();
+      UserManager().saveEuropeScoutingLevel();
+      UserManager().saveEuropeScoutingUpgradeCost();
     }
   }
 
@@ -80,21 +80,21 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 3 / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _europeImage.image,
-                  fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            AspectRatio(
+              aspectRatio: 3 / 2,
+              child: Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: _europeImage.image,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
+            Container(
               color: AppColors.primaryColor,
               padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
@@ -102,7 +102,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStadiumInfo(),
+                  _buildEuropeScoutInfo(),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Select Position',
@@ -125,11 +125,34 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                   ),
                   SizedBox(height: screenHeight * 0.01),
                   _buildNationalitySelector(),
+                  SizedBox(height: screenHeight * 0.04),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Add your scout functionality here
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondaryColor,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.2,
+                          vertical: screenHeight * 0.02,
+                        ),
+                      ),
+                      child: const Text(
+                        'Scout',
+                        style: TextStyle(
+                          color: AppColors.textEnabledColor,
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -150,7 +173,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     );
   }
 
-  Widget _buildStadiumInfo() {
+  Widget _buildEuropeScoutInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -217,16 +240,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
+          'LW',
           'ST',
           'RW',
-          'LW',
           'LM',
           'CAM',
           'CM',
           'CDM',
           'RM',
-          'CB',
           'LB',
+          'CB',
           'RB',
           'GK'
         ].map((position) {

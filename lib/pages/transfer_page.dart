@@ -37,16 +37,16 @@ class _TransferPageState extends State<TransferPage> {
     super.initState();
     _loadUserData();
     _europeImage = Image.asset(
-      'assets/background/Europe.png',
+      'assets/background/europe.png',
     );
     _asiaImage = Image.asset(
-      'assets/background/Asia.png',
+      'assets/background/asia.png',
     );
     _northAmericaImage = Image.asset(
-      'assets/background/North_America.png',
+      'assets/background/north_america.png',
     );
     _southAmericaImage = Image.asset(
-      'assets/background/South_America.png',
+      'assets/background/south_america.png',
     );
   }
 
