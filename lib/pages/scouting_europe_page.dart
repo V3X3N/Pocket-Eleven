@@ -162,7 +162,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildEuropeScoutInfo(),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: screenHeight * 0.06),
                   const Text(
                     'Select Position',
                     style: TextStyle(
@@ -171,9 +171,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
+                  SizedBox(height: screenHeight * 0.03),
                   _buildPositionSelector(),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: screenHeight * 0.06),
                   const Text(
                     'Select Nationality',
                     style: TextStyle(
@@ -182,9 +182,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
+                  SizedBox(height: screenHeight * 0.03),
                   _buildNationalitySelector(),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: screenHeight * 0.06),
                   if (!canScout)
                     Column(
                       children: [
@@ -204,6 +204,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                         ),
                       ],
                     ),
+                  SizedBox(height: screenHeight * 0.04),
                   Center(
                     child: ElevatedButton(
                       onPressed: canScout ? () {
@@ -212,7 +213,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                         });
                         scheduleScoutAvailability();
                         // Add your scout functionality here
-                      } : null, // Przycisk będzie wyszarzony, gdy onPressed jest null
+                      } : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondaryColor,
                         padding: EdgeInsets.symmetric(
@@ -230,6 +231,10 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       ),
                     ),
                   ),
+                  if (screenHeight > 600) // Condition to check screen height and add more widgets if there's extra space
+                    ...[
+                      SizedBox(height: screenHeight * 0.05),
+                    ],
                 ],
               ),
             ),
