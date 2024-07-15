@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/user_manager.dart';
 import 'package:unicons/unicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ScoutingEuropePage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -18,6 +21,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   int upgradeCost = 200000;
   String selectedPosition = 'LW';
   String selectedNationality = 'AUT';
+  bool canScout = true;
+  Timer? _timer;
+  Duration _remainingTime = const Duration(hours: 8);
 
   @override
   void initState() {
@@ -25,6 +31,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     _europeImage = Image.asset('assets/background/europe.png');
     level = UserManager.europeScoutingLevel;
     upgradeCost = UserManager.europeScoutingUpgradeCost;
+    checkScoutAvailability();
   }
 
   void increaseLevel() {
@@ -32,17 +39,69 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.europeScoutingLevel = level;
-        UserManager.europeScoutingUpgradeCost =
-            ((upgradeCost * 2.3) / 10000).round() * 10000;
-        upgradeCost = UserManager.europeScoutingUpgradeCost;
+        UserManager.trainingLevel = level;
+        UserManager.trainingUpgradeCost =
+            ((upgradeCost * 1.8) / 10000).round() * 10000;
+        upgradeCost = UserManager.trainingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveEuropeScoutingLevel();
-      UserManager().saveEuropeScoutingUpgradeCost();
+      UserManager().saveTrainingLevel();
+      UserManager().saveTrainingUpgradeCost();
     }
+  }
+
+  Future<void> checkScoutAvailability() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastScoutTime = prefs.getInt('lastScoutTime') ?? 0;
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    final diff = currentTime - lastScoutTime;
+
+    if (diff < 8 * 60 * 60 * 1000) {
+      setState(() {
+        canScout = false;
+        _remainingTime = Duration(milliseconds: 8 * 60 * 60 * 1000 - diff);
+      });
+      startScoutTimer();
+    }
+  }
+
+  void startScoutTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_remainingTime.inSeconds > 0) {
+          _remainingTime = _remainingTime - const Duration(seconds: 1);
+        } else {
+          canScout = true;
+          _timer?.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> scheduleScoutAvailability() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    await prefs.setInt('lastScoutTime', currentTime);
+    setState(() {
+      canScout = false;
+      _remainingTime = const Duration(hours: 8);
+    });
+    startScoutTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   @override
@@ -126,11 +185,34 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                   SizedBox(height: screenHeight * 0.01),
                   _buildNationalitySelector(),
                   SizedBox(height: screenHeight * 0.04),
+                  if (!canScout)
+                    Column(
+                      children: [
+                        LinearProgressIndicator(
+                          value: 1 - _remainingTime.inSeconds / (8 * 60 * 60),
+                          color: AppColors.secondaryColor,
+                          backgroundColor: AppColors.hoverColor,
+                        ),
+                        SizedBox(height: screenHeight * 0.01),
+                        Text(
+                          'Next scout available in: ${formatDuration(_remainingTime)}',
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textEnabledColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: canScout ? () {
+                        setState(() {
+                          canScout = false;
+                        });
+                        scheduleScoutAvailability();
                         // Add your scout functionality here
-                      },
+                      } : null, // Przycisk będzie wyszarzony, gdy onPressed jest null
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondaryColor,
                         padding: EdgeInsets.symmetric(
@@ -204,7 +286,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
           children: [
             ElevatedButton(
               onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              UserManager.money >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
               ),
@@ -262,7 +344,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10.0),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
                 color: selectedPosition == position
                     ? AppColors.secondaryColor
@@ -312,7 +394,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10.0),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
                 color: selectedNationality == countryCode
                     ? AppColors.secondaryColor
