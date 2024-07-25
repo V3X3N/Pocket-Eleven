@@ -166,9 +166,8 @@ class _TransferPageState extends State<TransferPage> {
         Text(
           text,
           style: const TextStyle(
-            fontSize: 20,
-            color: AppColors.textEnabledColor,
-          ),
+              fontSize: 20,
+              color: AppColors.textEnabledColor),
         ),
       ],
     );
@@ -217,42 +216,49 @@ class _TransferPageState extends State<TransferPage> {
   }
 
   Widget _buildScoutingView(double screenWidth, double screenHeight) {
-    return ListView(
-      scrollDirection: Axis.horizontal,
+    return Column(
       children: [
-        _buildListItem(
-          screenWidth: screenWidth,
-          image: _europeImage,
-          text: 'Europe',
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ScoutingEuropePage(
-                  onCurrencyChange: () {
+        Container(
+          height: screenHeight * 0.5,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _europeImage,
+                text: 'Europe',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingEuropePage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
                     _loadUserData();
-                  },
-                ),
+                  });
+                },
               ),
-            ).then((_) {
-              _loadUserData();
-            });
-          },
-        ),
-        _buildListItem(
-          screenWidth: screenWidth,
-          image: _asiaImage,
-          text: 'Asia',
-        ),
-        _buildListItem(
-          screenWidth: screenWidth,
-          image: _northAmericaImage,
-          text: 'North America',
-        ),
-        _buildListItem(
-          screenWidth: screenWidth,
-          image: _southAmericaImage,
-          text: 'South America',
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _asiaImage,
+                text: 'Asia',
+              ),
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _northAmericaImage,
+                text: 'North America',
+              ),
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _southAmericaImage,
+                text: 'South America',
+              ),
+            ],
+          ),
         ),
       ],
     );
