@@ -23,7 +23,8 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   String selectedNationality = 'AUT';
   bool canScout = true;
   Timer? _timer;
-  Duration _remainingTime = const Duration(hours: 8);
+  Duration _remainingTime = Duration(minutes: 5);
+  final Duration _scoutCooldown = Duration(minutes: 5);
 
   @override
   void initState() {
@@ -58,10 +59,10 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     final diff = currentTime - lastScoutTime;
 
-    if (diff < 8 * 60 * 60 * 1000) {
+    if (diff < _scoutCooldown.inMilliseconds) {
       setState(() {
         canScout = false;
-        _remainingTime = Duration(milliseconds: 8 * 60 * 60 * 1000 - diff);
+        _remainingTime = Duration(milliseconds: _scoutCooldown.inMilliseconds - diff);
       });
       startScoutTimer();
     }
@@ -86,7 +87,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     await prefs.setInt('lastScoutTime', currentTime);
     setState(() {
       canScout = false;
-      _remainingTime = const Duration(hours: 8);
+      _remainingTime = _scoutCooldown;
     });
     startScoutTimer();
   }
@@ -189,7 +190,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                     Column(
                       children: [
                         LinearProgressIndicator(
-                          value: 1 - _remainingTime.inSeconds / (8 * 60 * 60),
+                          value: 1 - _remainingTime.inSeconds / _scoutCooldown.inSeconds,
                           color: AppColors.secondaryColor,
                           backgroundColor: AppColors.hoverColor,
                         ),
