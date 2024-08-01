@@ -111,9 +111,9 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.01),
-                  Expanded(
+                  const Expanded(
                     child: SingleChildScrollView(
-                      child: const Text(
+                      child: Text(
                         "Our youth academies are where future football stars develop their skills under the guidance of experienced coaches. "
                         "We provide an inspiring environment for learning and nurturing a passion for soccer, "
                         "shaping not just athletic abilities but also teamwork and determination.",
@@ -193,7 +193,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
                 ),
               ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(

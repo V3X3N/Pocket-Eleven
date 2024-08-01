@@ -111,9 +111,9 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.01),
-                  Expanded(
+                  const Expanded(
                     child: SingleChildScrollView(
-                      child: const Text(
+                      child: Text(
                         'The club stadium is the heart of our community, where fans gather '
                         'to cheer for their favorite teams. With a capacity of 50,000 seats, '
                         'it has hosted numerous memorable matches and events.',
@@ -194,7 +194,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                 ),
               ),
             ),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             Text(
               'Cost: $stadiumUpgradeCost',
               style: TextStyle(

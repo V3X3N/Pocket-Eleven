@@ -1,9 +1,10 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_eleven/player.dart';
+import 'package:unicons/unicons.dart';
+import 'package:pocket_eleven/user_manager.dart';
+import 'package:pocket_eleven/pages/scouting_europe_page.dart';
+import 'package:pocket_eleven/pages/scouting_asia_page.dart';
+import 'package:pocket_eleven/pages/scouting_america_page.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -13,183 +14,326 @@ class TransferPage extends StatefulWidget {
 }
 
 class _TransferPageState extends State<TransferPage> {
-  List<Player> selectedFootballers = [];
-  bool _isLoadingImages = true;
+  late Image _europeImage;
+  late Image _asiaImage;
+  late Image _americaImage;
+  int _selectedIndex = 0;
+
+  Future<void> _loadUserData() async {
+    try {
+      // Assuming UserManager has the relevant methods for loading user data
+      await UserManager().loadMoney();
+      await UserManager().loadTrainingPoints();
+      await UserManager().loadMedicalPoints();
+      await UserManager().loadYouthPoints();
+      // Europe
+      await UserManager().loadEuropeScoutingLevel();
+      await UserManager().loadEuropeScoutingUpgradeCost();
+      // Asia
+      await UserManager().loadAsiaScoutingLevel();
+      await UserManager().loadAsiaScoutingUpgradeCost();
+      // America
+      await UserManager().loadAmericaScoutingLevel();
+      await UserManager().loadAmericaScoutingUpgradeCost();
+
+      setState(() {});
+    } catch (error) {
+      print('Error loading user data: $error');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadSelectedFootballers();
+    _loadUserData();
+    _europeImage = Image.asset(
+      'assets/background/europe.png',
+    );
+    _asiaImage = Image.asset(
+      'assets/background/asia.png',
+    );
+    _americaImage = Image.asset(
+      'assets/background/north_america.png',
+    );
   }
 
-  Future<void> _loadSelectedFootballers() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? footballersJson = prefs.getString('selectedFootballers');
-    if (footballersJson != null) {
-      setState(() {
-        Iterable list = jsonDecode(footballersJson);
-        selectedFootballers =
-            list.map((model) => Player.fromJson(model)).toList();
-      });
-    }
-    await _loadImages();
-  }
-
-  Future<void> _loadImages() async {
-    await Future.wait(selectedFootballers.map((player) async {
-      // Load badge image
-      await precacheImage(AssetImage(player.imagePath), context);
-      // Load flag image
-      await precacheImage(AssetImage(player.flagPath), context);
-    }));
+  void _onOptionSelected(int index) {
     setState(() {
-      _isLoadingImages = false;
-    });
-  }
-
-  Future<void> _generateRandomFootballers() async {
-    List<Player> tempList = [];
-    for (int i = 0; i < 6; i++) {
-      tempList.add(await Player.generateRandomFootballer());
-    }
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedFootballers', jsonEncode(tempList));
-    setState(() {
-      selectedFootballers = tempList;
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      backgroundColor: AppColors.primaryColor,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 20),
-          _isLoadingImages
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: ListView.builder(
-                      itemCount: selectedFootballers.length,
-                      itemBuilder: (context, index) {
-                        Player player = selectedFootballers[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.hoverColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Image.asset(
-                                    player.imagePath,
-                                    width: 64,
-                                    height: 64,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${player.name} (${player.position})',
-                                        style: const TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-                                      Text(
-                                        'Badge: ${player.badge}',
-                                        style: const TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 4,
-                                      ),
-                                      Text(
-                                        'Age: ${player.age}',
-                                        style: const TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: Column(
-                                  children: [
-                                    Image.asset(
-                                      player.flagPath,
-                                      width: 32,
-                                      height: 32,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${player.ovr}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: AppColors.textEnabledColor,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(screenHeight * 0.07),
+        child: AppBar(
+          backgroundColor: AppColors.hoverColor,
+          centerTitle: true,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildInfoRow(UniconsLine.no_entry,
+                        UserManager.trainingPoints.toString()),
+                    _buildInfoRow(UniconsLine.medkit,
+                        UserManager.medicalPoints.toString()),
+                    _buildInfoRow(UniconsLine.six_plus,
+                        UserManager.youthPoints.toString()),
+                    _buildInfoRow(UniconsLine.usd_circle,
+                        UserManager.money.toStringAsFixed(0)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: Container(
+        color: AppColors.primaryColor,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenHeight * 0.02),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => _onOptionSelected(0),
+                    child: Text(
+                      'Transfers',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: _selectedIndex == 0
+                            ? AppColors.secondaryColor
+                            : AppColors.textEnabledColor,
+                      ),
                     ),
                   ),
-                ),
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20.0),
-            height: 80,
-            child: MaterialButton(
-              onPressed: () {
-                _generateRandomFootballers();
-              },
-              padding: const EdgeInsets.all(16.0),
-              color: AppColors.secondaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: const Center(
-                child: Text(
-                  'DRAW',
-                  style: TextStyle(
-                    color: AppColors.textEnabledColor,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  SizedBox(width: screenWidth * 0.04),
+                  GestureDetector(
+                    onTap: () => _onOptionSelected(1),
+                    child: Text(
+                      'Stuff',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: _selectedIndex == 1
+                            ? AppColors.secondaryColor
+                            : AppColors.textEnabledColor,
+                      ),
+                    ),
                   ),
+                  SizedBox(width: screenWidth * 0.04),
+                  GestureDetector(
+                    onTap: () => _onOptionSelected(2),
+                    child: Text(
+                      'Scouting',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: _selectedIndex == 2
+                            ? AppColors.secondaryColor
+                            : AppColors.textEnabledColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: [
+                  _buildTransfersView(screenWidth, screenHeight),
+                  _buildStuffView(screenWidth, screenHeight),
+                  _buildScoutingView(screenWidth, screenHeight),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.textEnabledColor),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style:
+              const TextStyle(fontSize: 20, color: AppColors.textEnabledColor),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransfersView(double screenWidth, double screenHeight) {
+    return ListView.builder(
+      padding: EdgeInsets.all(screenWidth * 0.04),
+      itemCount: 10, // Example count
+      itemBuilder: (context, index) {
+        return Container(
+          margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+          padding: EdgeInsets.all(screenWidth * 0.04),
+          decoration: BoxDecoration(
+            color: AppColors.secondaryColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'Transfer Item ${index + 1}',
+            style: const TextStyle(color: AppColors.textEnabledColor),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStuffView(double screenWidth, double screenHeight) {
+    return ListView.builder(
+      padding: EdgeInsets.all(screenWidth * 0.04),
+      itemCount: 10, // Example count
+      itemBuilder: (context, index) {
+        return Container(
+          margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+          padding: EdgeInsets.all(screenWidth * 0.04),
+          decoration: BoxDecoration(
+            color: AppColors.secondaryColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'Stuff Item ${index + 1}',
+            style: const TextStyle(color: AppColors.textEnabledColor),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildScoutingView(double screenWidth, double screenHeight) {
+    return Column(
+      children: [
+        SizedBox(
+          height: screenHeight * 0.5,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _europeImage,
+                text: 'Europe',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingEuropePage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadUserData();
+                  });
+                },
+              ),
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _americaImage,
+                text: 'America',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingAmericaPage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadUserData();
+                  });
+                },
+              ),
+              _buildListItem(
+                screenWidth: screenWidth,
+                image: _asiaImage,
+                text: 'Asia',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingAsiaPage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadUserData();
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildListItem({
+    required double screenWidth,
+    required Image image,
+    required String text,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap ?? () {},
+      child: Container(
+        width: screenWidth * 0.5,
+        margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image(
+                image: image.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.02),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  text,
+                  style: const TextStyle(color: AppColors.textEnabledColor),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
+          ],
+        ),
       ),
     );
   }

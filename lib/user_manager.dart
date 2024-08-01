@@ -34,6 +34,18 @@ class UserManager {
   static int youthLevel = 1;
   static int youthUpgradeCost = 100000;
 
+  // Europe Scouting
+  static int europeScoutingLevel = 1;
+  static int europeScoutingUpgradeCost = 200000;
+
+  // Asia Scouting
+  static int asiaScoutingLevel = 1;
+  static int asiaScoutingUpgradeCost = 200000;
+
+  // America Scouting
+  static int americaScoutingLevel = 1;
+  static int americaScoutingUpgradeCost = 200000;
+
   // Static getters and setters to access the properties
   static double get money => _money;
   static set money(double value) {
@@ -59,7 +71,6 @@ class UserManager {
     _instance.saveYouthPoints();
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu stadionu i kosztu
   Future<void> loadStadiumLevel() async {
     final prefs = await SharedPreferences.getInstance();
     stadiumLevel = prefs.getInt('stadiumLevel') ?? 1;
@@ -80,7 +91,6 @@ class UserManager {
     await prefs.setInt('stadiumUpgradeCost', stadiumUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu treningu i kosztu
   Future<void> loadTrainingLevel() async {
     final prefs = await SharedPreferences.getInstance();
     trainingLevel = prefs.getInt('trainingLevel') ?? 1;
@@ -101,7 +111,6 @@ class UserManager {
     await prefs.setInt('trainingUpgradeCost', trainingUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu medical i kosztu
   Future<void> loadMedicalLevel() async {
     final prefs = await SharedPreferences.getInstance();
     medicalLevel = prefs.getInt('medicalLevel') ?? 1;
@@ -122,7 +131,6 @@ class UserManager {
     await prefs.setInt('medicalUpgradeCost', medicalUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu youth i kosztu
   Future<void> loadYouthLevel() async {
     final prefs = await SharedPreferences.getInstance();
     youthLevel = prefs.getInt('youthLevel') ?? 1;
@@ -182,5 +190,70 @@ class UserManager {
   Future<void> saveYouthPoints() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('youthPoints', _youthPoints);
+  }
+
+  // Europe Scouting
+  Future<void> loadEuropeScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    europeScoutingLevel = prefs.getInt('europeScoutingLevel') ?? 1;
+  }
+
+  Future<void> saveEuropeScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('europeScoutingLevel', europeScoutingLevel);
+  }
+
+  Future<void> loadEuropeScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    europeScoutingUpgradeCost =
+        prefs.getInt('europeScoutingUpgradeCost') ?? 200000;
+  }
+
+  Future<void> saveEuropeScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('europeScoutingUpgradeCost', europeScoutingUpgradeCost);
+  }
+
+  // Asia Scouting
+  Future<void> loadAsiaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    asiaScoutingLevel = prefs.getInt('asiaScoutingLevel') ?? 1;
+  }
+
+  Future<void> saveAsiaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('asiaScoutingLevel', asiaScoutingLevel);
+  }
+
+  Future<void> loadAsiaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    asiaScoutingUpgradeCost = prefs.getInt('asiaScoutingUpgradeCost') ?? 200000;
+  }
+
+  Future<void> saveAsiaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('asiaScoutingUpgradeCost', asiaScoutingUpgradeCost);
+  }
+
+  // Asia Scouting
+  Future<void> loadAmericaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    americaScoutingLevel = prefs.getInt('americaScoutingLevel') ?? 1;
+  }
+
+  Future<void> saveAmericaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('americaScoutingLevel', americaScoutingLevel);
+  }
+
+  Future<void> loadAmericaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    americaScoutingUpgradeCost =
+        prefs.getInt('americaScoutingUpgradeCost') ?? 200000;
+  }
+
+  Future<void> saveAmericaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('americaScoutingUpgradeCost', asiaScoutingUpgradeCost);
   }
 }
