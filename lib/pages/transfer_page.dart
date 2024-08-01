@@ -4,6 +4,7 @@ import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/user_manager.dart';
 import 'package:pocket_eleven/pages/scouting_europe_page.dart';
 import 'package:pocket_eleven/pages/scouting_asia_page.dart';
+import 'package:pocket_eleven/pages/scouting_america_page.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -15,8 +16,7 @@ class TransferPage extends StatefulWidget {
 class _TransferPageState extends State<TransferPage> {
   late Image _europeImage;
   late Image _asiaImage;
-  late Image _northAmericaImage;
-  late Image _southAmericaImage;
+  late Image _americaImage;
   int _selectedIndex = 0;
 
   Future<void> _loadUserData() async {
@@ -32,12 +32,9 @@ class _TransferPageState extends State<TransferPage> {
       // Asia
       await UserManager().loadAsiaScoutingLevel();
       await UserManager().loadAsiaScoutingUpgradeCost();
-      // North America
-      //await UserManager().loadNorthAmericaScoutingLevel();
-      //await UserManager().loadNorthAmericaScoutingUpgradeCost();
-      // South America
-      //await UserManager().loadSouthAmericaScoutingLevel();
-      //await UserManager().loadSouthAmericaScoutingUpgradeCost();
+      // America
+      await UserManager().loadAmericaScoutingLevel();
+      await UserManager().loadAmericaScoutingUpgradeCost();
 
       setState(() {});
     } catch (error) {
@@ -55,11 +52,8 @@ class _TransferPageState extends State<TransferPage> {
     _asiaImage = Image.asset(
       'assets/background/asia.png',
     );
-    _northAmericaImage = Image.asset(
+    _americaImage = Image.asset(
       'assets/background/north_america.png',
-    );
-    _southAmericaImage = Image.asset(
-      'assets/background/south_america.png',
     );
   }
 
@@ -256,6 +250,25 @@ class _TransferPageState extends State<TransferPage> {
               ),
               _buildListItem(
                 screenWidth: screenWidth,
+                image: _americaImage,
+                text: 'America',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingAmericaPage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadUserData();
+                  });
+                },
+              ),
+              _buildListItem(
+                screenWidth: screenWidth,
                 image: _asiaImage,
                 text: 'Asia',
                 onTap: () {
@@ -272,16 +285,6 @@ class _TransferPageState extends State<TransferPage> {
                     _loadUserData();
                   });
                 },
-              ),
-              _buildListItem(
-                screenWidth: screenWidth,
-                image: _northAmericaImage,
-                text: 'North America',
-              ),
-              _buildListItem(
-                screenWidth: screenWidth,
-                image: _southAmericaImage,
-                text: 'South America',
               ),
             ],
           ),
