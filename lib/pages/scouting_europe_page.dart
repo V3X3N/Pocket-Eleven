@@ -28,31 +28,45 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   List<Player> scoutedPlayers = [];
 
   @override
+  @override
   void initState() {
     super.initState();
     _europeImage = Image.asset('assets/background/europe.png');
-    level = UserManager.europeScoutingLevel;
-    upgradeCost = UserManager.europeScoutingUpgradeCost;
-    checkScoutAvailability();
+    _loadScoutingData();
   }
 
-  void increaseLevel() {
+  Future<void> _loadScoutingData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      level = prefs.getInt('europeScoutingLevel') ?? 1;
+      upgradeCost = prefs.getInt('europeScoutingUpgradeCost') ?? 200000;
+    });
+  }
+
+
+  void increaseLevel() async {
     if (UserManager.money >= upgradeCost) {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.trainingLevel = level;
-        UserManager.trainingUpgradeCost =
+        UserManager.europeScoutingLevel = level;
+        UserManager.europeScoutingUpgradeCost =
             ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.trainingUpgradeCost;
+        upgradeCost = UserManager.europeScoutingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveTrainingLevel();
-      UserManager().saveTrainingUpgradeCost();
+      await _saveScoutingData();
     }
   }
+
+  Future<void> _saveScoutingData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('europeScoutingLevel', level);
+    await prefs.setInt('europeScoutingUpgradeCost', upgradeCost);
+  }
+
 
   Future<void> checkScoutAvailability() async {
     final prefs = await SharedPreferences.getInstance();
