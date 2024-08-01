@@ -5,6 +5,7 @@ import 'package:pocket_eleven/user_manager.dart';
 import 'package:unicons/unicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_eleven/player.dart';
+import 'package:pocket_eleven/components/player_details.dart';
 
 class ScoutingEuropePage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -457,27 +458,57 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   }
 
   Widget _buildPlayerCard(Player player) {
-    return Card(
-      color: AppColors.primaryColor,
-      child: ListTile(
-        title: Text(
-          player.name,
-          style: const TextStyle(
-            color: AppColors.textEnabledColor,
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return PlayerDetailsDialog(player: player);
+          },
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 10.0),
+        color: AppColors.hoverColor,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                player.name,
+                style: const TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+              const SizedBox(height: 10.0),
+              Text(
+                'Position: ${player.position}',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+              const SizedBox(height: 5.0),
+              Text(
+                'Nationality: ${player.nationality}',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+              const SizedBox(height: 5.0),
+              Text(
+                'Rating: ${player.ovr}',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  color: AppColors.textEnabledColor,
+                ),
+              ),
+            ],
           ),
-        ),
-        subtitle: Text(
-          '${player.nationality} - ${player.position}',
-          style: const TextStyle(
-            color: AppColors.textEnabledColor,
-            fontSize: 16.0,
-          ),
-        ),
-        trailing: const Icon(
-          UniconsLine.football,
-          color: AppColors.textEnabledColor,
         ),
       ),
     );
