@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/user_manager.dart';
 import 'package:unicons/unicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_eleven/player.dart';
 
 class ScoutingEuropePage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -23,8 +23,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   String selectedNationality = 'AUT';
   bool canScout = true;
   Timer? _timer;
-  Duration _remainingTime = Duration(minutes: 5);
-  final Duration _scoutCooldown = Duration(minutes: 5);
+  Duration _remainingTime = const Duration(minutes: 1);
+  final Duration _scoutCooldown = const Duration(minutes: 1);
+  List<Player> scoutedPlayers = [];
 
   @override
   void initState() {
@@ -62,7 +63,8 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     if (diff < _scoutCooldown.inMilliseconds) {
       setState(() {
         canScout = false;
-        _remainingTime = Duration(milliseconds: _scoutCooldown.inMilliseconds - diff);
+        _remainingTime =
+            Duration(milliseconds: _scoutCooldown.inMilliseconds - diff);
       });
       startScoutTimer();
     }
@@ -90,6 +92,23 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       _remainingTime = _scoutCooldown;
     });
     startScoutTimer();
+  }
+
+  Future<void> generatePlayersAfterCooldown() async {
+    // Wait until cooldown is finished
+    await Future.delayed(_scoutCooldown);
+
+    List<Player> newPlayers = [];
+    for (int i = 0; i < 3; i++) {
+      Player player = await Player.generateRandomFootballer(
+        nationality: selectedNationality,
+        position: selectedPosition,
+      );
+      newPlayers.add(player);
+    }
+    setState(() {
+      scoutedPlayers = newPlayers;
+    });
   }
 
   @override
@@ -190,7 +209,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                     Column(
                       children: [
                         LinearProgressIndicator(
-                          value: 1 - _remainingTime.inSeconds / _scoutCooldown.inSeconds,
+                          value: 1 -
+                              _remainingTime.inSeconds /
+                                  _scoutCooldown.inSeconds,
                           color: AppColors.secondaryColor,
                           backgroundColor: AppColors.hoverColor,
                         ),
@@ -208,13 +229,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                   SizedBox(height: screenHeight * 0.04),
                   Center(
                     child: ElevatedButton(
-                      onPressed: canScout ? () {
-                        setState(() {
-                          canScout = false;
-                        });
-                        scheduleScoutAvailability();
-                        // Add your scout functionality here
-                      } : null,
+                      onPressed: canScout
+                          ? () async {
+                              setState(() {
+                                canScout = false;
+                                _disableSelectors(); // Disable selectors when scouting
+                              });
+                              await scheduleScoutAvailability();
+                              await generatePlayersAfterCooldown(); // Generate players after cooldown
+                            }
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondaryColor,
                         padding: EdgeInsets.symmetric(
@@ -232,10 +256,10 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       ),
                     ),
                   ),
-                  if (screenHeight > 600) // Condition to check screen height and add more widgets if there's extra space
-                    ...[
-                      SizedBox(height: screenHeight * 0.05),
-                    ],
+                  if (scoutedPlayers.isNotEmpty) // Display scouted players
+                    ...scoutedPlayers
+                        .map((player) => _buildPlayerCard(player))
+                        .toList(),
                 ],
               ),
             ),
@@ -243,6 +267,14 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
         ),
       ),
     );
+  }
+
+  void _disableSelectors() {
+    // Function to disable position and nationality selectors
+    setState(() {
+      // Optionally, disable the selectors visually
+      // For simplicity, this can just be a flag to ignore changes in the build method
+    });
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
@@ -292,7 +324,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
           children: [
             ElevatedButton(
               onPressed:
-              UserManager.money >= upgradeCost ? increaseLevel : null,
+                  UserManager.money >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
               ),
@@ -323,34 +355,38 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   }
 
   Widget _buildPositionSelector() {
+    final positions = [
+      'LW',
+      'ST',
+      'RW',
+      'LM',
+      'CAM',
+      'CM',
+      'CDM',
+      'RM',
+      'LB',
+      'CB',
+      'RB',
+      'GK'
+    ];
+
     return SizedBox(
       height: 50,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: [
-          'LW',
-          'ST',
-          'RW',
-          'LM',
-          'CAM',
-          'CM',
-          'CDM',
-          'RM',
-          'LB',
-          'CB',
-          'RB',
-          'GK'
-        ].map((position) {
+        children: positions.map((position) {
           return GestureDetector(
             onTap: () {
-              setState(() {
-                selectedPosition = position;
-              });
+              if (canScout) {
+                setState(() {
+                  selectedPosition = position;
+                });
+              }
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10.0),
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
                 color: selectedPosition == position
                     ? AppColors.secondaryColor
@@ -393,14 +429,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
         children: nationalities.map((countryCode) {
           return GestureDetector(
             onTap: () {
-              setState(() {
-                selectedNationality = countryCode;
-              });
+              if (canScout) {
+                setState(() {
+                  selectedNationality = countryCode;
+                });
+              }
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 10.0),
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
                 color: selectedNationality == countryCode
                     ? AppColors.secondaryColor
@@ -408,12 +446,42 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Center(
-                child: Image.asset('assets/flags/flag_$countryCode.png',
-                    width: 30, height: 20),
+                child: Image.asset(
+                  'assets/flags/flag_$countryCode.png',
+                  width: 30,
+                  height: 20,
+                ),
               ),
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildPlayerCard(Player player) {
+    return Card(
+      color: AppColors.primaryColor,
+      child: ListTile(
+        title: Text(
+          player.name,
+          style: const TextStyle(
+            color: AppColors.textEnabledColor,
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        subtitle: Text(
+          '${player.nationality} - ${player.position}',
+          style: const TextStyle(
+            color: AppColors.textEnabledColor,
+            fontSize: 16.0,
+          ),
+        ),
+        trailing: const Icon(
+          UniconsLine.football,
+          color: AppColors.textEnabledColor,
+        ),
       ),
     );
   }
