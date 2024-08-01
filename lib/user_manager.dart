@@ -63,7 +63,6 @@ class UserManager {
     _instance.saveYouthPoints();
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu stadionu i kosztu
   Future<void> loadStadiumLevel() async {
     final prefs = await SharedPreferences.getInstance();
     stadiumLevel = prefs.getInt('stadiumLevel') ?? 1;
@@ -84,7 +83,6 @@ class UserManager {
     await prefs.setInt('stadiumUpgradeCost', stadiumUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu treningu i kosztu
   Future<void> loadTrainingLevel() async {
     final prefs = await SharedPreferences.getInstance();
     trainingLevel = prefs.getInt('trainingLevel') ?? 1;
@@ -105,7 +103,6 @@ class UserManager {
     await prefs.setInt('trainingUpgradeCost', trainingUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu medical i kosztu
   Future<void> loadMedicalLevel() async {
     final prefs = await SharedPreferences.getInstance();
     medicalLevel = prefs.getInt('medicalLevel') ?? 1;
@@ -126,7 +123,6 @@ class UserManager {
     await prefs.setInt('medicalUpgradeCost', medicalUpgradeCost);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu youth i kosztu
   Future<void> loadYouthLevel() async {
     final prefs = await SharedPreferences.getInstance();
     youthLevel = prefs.getInt('youthLevel') ?? 1;
@@ -188,7 +184,6 @@ class UserManager {
     await prefs.setInt('youthPoints', _youthPoints);
   }
 
-  // Nowe metody do ładowania i zapisywania poziomu scoutingu europy i kosztu
   Future<void> loadEuropeScoutingLevel() async {
     final prefs = await SharedPreferences.getInstance();
     europeScoutingLevel = prefs.getInt('europeScoutingLevel') ?? 1;

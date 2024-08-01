@@ -25,6 +25,9 @@ class _TransferPageState extends State<TransferPage> {
       await UserManager().loadTrainingPoints();
       await UserManager().loadMedicalPoints();
       await UserManager().loadYouthPoints();
+      // Europe
+      await UserManager().loadEuropeScoutingLevel();
+      await UserManager().loadEuropeScoutingUpgradeCost();
 
       setState(() {});
     } catch (error) {
@@ -165,9 +168,8 @@ class _TransferPageState extends State<TransferPage> {
         const SizedBox(width: 5),
         Text(
           text,
-          style: const TextStyle(
-              fontSize: 20,
-              color: AppColors.textEnabledColor),
+          style:
+              const TextStyle(fontSize: 20, color: AppColors.textEnabledColor),
         ),
       ],
     );
@@ -218,7 +220,7 @@ class _TransferPageState extends State<TransferPage> {
   Widget _buildScoutingView(double screenWidth, double screenHeight) {
     return Column(
       children: [
-        Container(
+        SizedBox(
           height: screenHeight * 0.5,
           child: ListView(
             scrollDirection: Axis.horizontal,
