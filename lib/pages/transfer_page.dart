@@ -3,6 +3,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/user_manager.dart';
 import 'package:pocket_eleven/pages/scouting_europe_page.dart';
+import 'package:pocket_eleven/pages/scouting_asia_page.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -28,6 +29,15 @@ class _TransferPageState extends State<TransferPage> {
       // Europe
       await UserManager().loadEuropeScoutingLevel();
       await UserManager().loadEuropeScoutingUpgradeCost();
+      // Asia
+      await UserManager().loadAsiaScoutingLevel();
+      await UserManager().loadAsiaScoutingUpgradeCost();
+      // North America
+      //await UserManager().loadNorthAmericaScoutingLevel();
+      //await UserManager().loadNorthAmericaScoutingUpgradeCost();
+      // South America
+      //await UserManager().loadSouthAmericaScoutingLevel();
+      //await UserManager().loadSouthAmericaScoutingUpgradeCost();
 
       setState(() {});
     } catch (error) {
@@ -248,6 +258,20 @@ class _TransferPageState extends State<TransferPage> {
                 screenWidth: screenWidth,
                 image: _asiaImage,
                 text: 'Asia',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ScoutingAsiaPage(
+                        onCurrencyChange: () {
+                          _loadUserData();
+                        },
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadUserData();
+                  });
+                },
               ),
               _buildListItem(
                 screenWidth: screenWidth,

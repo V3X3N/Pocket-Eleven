@@ -7,21 +7,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_eleven/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 
-class ScoutingEuropePage extends StatefulWidget {
+class ScoutingAsiaPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
 
-  const ScoutingEuropePage({super.key, required this.onCurrencyChange});
+  const ScoutingAsiaPage({super.key, required this.onCurrencyChange});
 
   @override
-  State<ScoutingEuropePage> createState() => _ScoutingEuropePageState();
+  State<ScoutingAsiaPage> createState() => _ScoutingAsiaPageState();
 }
 
-class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
-  late Image _europeImage;
+class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
+  late Image _asiaImage;
   int level = 1;
   int upgradeCost = 200000;
   String selectedPosition = 'LW';
-  String selectedNationality = 'AUT';
+  String selectedNationality = 'JPN';
   bool canScout = true;
   Timer? _timer;
   Duration _remainingTime = const Duration(minutes: 1);
@@ -31,9 +31,9 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   @override
   void initState() {
     super.initState();
-    _europeImage = Image.asset('assets/background/europe.png');
-    level = UserManager.europeScoutingLevel;
-    upgradeCost = UserManager.europeScoutingUpgradeCost;
+    _asiaImage = Image.asset('assets/background/asia.png');
+    level = UserManager.asiaScoutingLevel;
+    upgradeCost = UserManager.asiaScoutingUpgradeCost;
   }
 
   void increaseLevel() {
@@ -41,16 +41,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.europeScoutingLevel = level;
-        UserManager.europeScoutingUpgradeCost =
+        UserManager.asiaScoutingLevel = level;
+        UserManager.asiaScoutingUpgradeCost =
             ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.europeScoutingUpgradeCost;
+        upgradeCost = UserManager.asiaScoutingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveEuropeScoutingLevel();
-      UserManager().saveEuropeScoutingUpgradeCost();
+      UserManager().saveAsiaScoutingLevel();
+      UserManager().saveAsiaScoutingUpgradeCost();
     }
   }
 
@@ -167,7 +167,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
               child: Container(
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: _europeImage.image,
+                    image: _asiaImage.image,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -408,17 +408,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   }
 
   Widget _buildNationalitySelector() {
-    final nationalities = [
-      'AUT',
-      'BEL',
-      'ENG',
-      'ESP',
-      'FRA',
-      'GER',
-      'ITA',
-      'POL',
-      'TUR'
-    ];
+    final nationalities = ['JPN'];
 
     return SizedBox(
       height: 50,

@@ -38,6 +38,10 @@ class UserManager {
   static int europeScoutingLevel = 1;
   static int europeScoutingUpgradeCost = 200000;
 
+  // Asia Scouting
+  static int asiaScoutingLevel = 1;
+  static int asiaScoutingUpgradeCost = 200000;
+
   // Static getters and setters to access the properties
   static double get money => _money;
   static set money(double value) {
@@ -184,6 +188,7 @@ class UserManager {
     await prefs.setInt('youthPoints', _youthPoints);
   }
 
+  // Europe Scouting
   Future<void> loadEuropeScoutingLevel() async {
     final prefs = await SharedPreferences.getInstance();
     europeScoutingLevel = prefs.getInt('europeScoutingLevel') ?? 1;
@@ -203,5 +208,26 @@ class UserManager {
   Future<void> saveEuropeScoutingUpgradeCost() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('europeScoutingUpgradeCost', europeScoutingUpgradeCost);
+  }
+
+  // Asia Scouting
+  Future<void> loadAsiaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    asiaScoutingLevel = prefs.getInt('asiaScoutingLevel') ?? 1;
+  }
+
+  Future<void> saveAsiaScoutingLevel() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('asiaScoutingLevel', asiaScoutingLevel);
+  }
+
+  Future<void> loadAsiaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    asiaScoutingUpgradeCost = prefs.getInt('asiaScoutingUpgradeCost') ?? 200000;
+  }
+
+  Future<void> saveAsiaScoutingUpgradeCost() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('asiaScoutingUpgradeCost', asiaScoutingUpgradeCost);
   }
 }
