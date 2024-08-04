@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _loading = false;
       });
     } catch (error) {
-      print('Error loading user data: $error');
+      debugPrint('Error loading user data: $error');
       setState(() {
         _loading = false;
       });

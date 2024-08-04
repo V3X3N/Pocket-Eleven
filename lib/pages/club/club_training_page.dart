@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/controller/user_manager.dart';
-import 'package:unicons/unicons.dart';
+import 'package:pocket_eleven/managers/training_manager.dart';
+import 'package:pocket_eleven/managers/user_manager.dart';
 
 class ClubTrainingPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -21,8 +22,8 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_training.png');
-    level = UserManager.trainingLevel;
-    upgradeCost = UserManager.trainingUpgradeCost;
+    level = TrainingManager.trainingLevel;
+    upgradeCost = TrainingManager.trainingUpgradeCost;
   }
 
   void increaseLevel() {
@@ -30,16 +31,16 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.trainingLevel = level;
-        UserManager.trainingUpgradeCost =
+        TrainingManager.trainingLevel = level;
+        TrainingManager.trainingUpgradeCost =
             ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.trainingUpgradeCost;
+        upgradeCost = TrainingManager.trainingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveTrainingLevel();
-      UserManager().saveTrainingUpgradeCost();
+      TrainingManager().saveTrainingLevel();
+      TrainingManager().saveTrainingUpgradeCost();
     }
   }
 
@@ -47,37 +48,9 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double appBarHeight = screenHeight * 0.07;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(appBarHeight),
-        child: AppBar(
-          iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
-          backgroundColor: AppColors.hoverColor,
-          centerTitle: true,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoRow(UniconsLine.no_entry,
-                        UserManager.trainingPoints.toString()),
-                    _buildInfoRow(UniconsLine.medkit,
-                        UserManager.medicalPoints.toString()),
-                    _buildInfoRow(UniconsLine.six_plus,
-                        UserManager.youthPoints.toString()),
-                    _buildInfoRow(UniconsLine.usd_circle,
-                        UserManager.money.toStringAsFixed(0)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
       body: Column(
         children: [
           AspectRatio(
@@ -130,22 +103,6 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.textEnabledColor),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 20,
-            color: AppColors.textEnabledColor,
-          ),
-        ),
-      ],
     );
   }
 

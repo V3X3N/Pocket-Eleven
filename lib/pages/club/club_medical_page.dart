@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/controller/user_manager.dart';
-import 'package:unicons/unicons.dart';
+import 'package:pocket_eleven/managers/medical_manager.dart';
+import 'package:pocket_eleven/managers/user_manager.dart';
 
 class ClubMedicalPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -21,8 +22,8 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_medical.png');
-    level = UserManager.medicalLevel;
-    upgradeCost = UserManager.medicalUpgradeCost;
+    level = MedicalManager.medicalLevel;
+    upgradeCost = MedicalManager.medicalUpgradeCost;
   }
 
   void increaseLevel() {
@@ -30,16 +31,16 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.medicalLevel = level;
-        UserManager.medicalUpgradeCost =
+        MedicalManager.medicalLevel = level;
+        MedicalManager.medicalUpgradeCost =
             ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.medicalUpgradeCost;
+        upgradeCost = MedicalManager.medicalUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveMedicalLevel();
-      UserManager().saveMedicalUpgradeCost();
+      MedicalManager().saveMedicalLevel();
+      MedicalManager().saveMedicalUpgradeCost();
     }
   }
 
@@ -50,34 +51,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
     final double appBarHeight = screenHeight * 0.07;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(appBarHeight),
-        child: AppBar(
-          iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
-          backgroundColor: AppColors.hoverColor,
-          centerTitle: true,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoRow(UniconsLine.no_entry,
-                        UserManager.trainingPoints.toString()),
-                    _buildInfoRow(UniconsLine.medkit,
-                        UserManager.medicalPoints.toString()),
-                    _buildInfoRow(UniconsLine.six_plus,
-                        UserManager.youthPoints.toString()),
-                    _buildInfoRow(UniconsLine.usd_circle,
-                        UserManager.money.toStringAsFixed(0)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      appBar: ReusableAppBar(appBarHeight: appBarHeight),
       body: Column(
         children: [
           AspectRatio(
@@ -131,22 +105,6 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.textEnabledColor),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 20,
-            color: AppColors.textEnabledColor,
-          ),
-        ),
-      ],
     );
   }
 

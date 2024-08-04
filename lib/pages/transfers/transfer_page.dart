@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:unicons/unicons.dart';
-import 'package:pocket_eleven/controller/user_manager.dart';
+import 'package:pocket_eleven/managers/medical_manager.dart';
+import 'package:pocket_eleven/managers/scouting_manager.dart';
+import 'package:pocket_eleven/managers/training_manager.dart';
+import 'package:pocket_eleven/managers/user_manager.dart';
+import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_europe_page.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_asia_page.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_america_page.dart';
@@ -23,22 +27,22 @@ class _TransferPageState extends State<TransferPage> {
     try {
       // Assuming UserManager has the relevant methods for loading user data
       await UserManager().loadMoney();
-      await UserManager().loadTrainingPoints();
-      await UserManager().loadMedicalPoints();
-      await UserManager().loadYouthPoints();
+      await TrainingManager().loadTrainingPoints();
+      await MedicalManager().loadMedicalPoints();
+      await YouthManager().loadYouthPoints();
       // Europe
-      await UserManager().loadEuropeScoutingLevel();
-      await UserManager().loadEuropeScoutingUpgradeCost();
+      await ScoutingManager().loadEuropeScoutingLevel();
+      await ScoutingManager().loadEuropeScoutingUpgradeCost();
       // Asia
-      await UserManager().loadAsiaScoutingLevel();
-      await UserManager().loadAsiaScoutingUpgradeCost();
+      await ScoutingManager().loadAsiaScoutingLevel();
+      await ScoutingManager().loadAsiaScoutingUpgradeCost();
       // America
-      await UserManager().loadAmericaScoutingLevel();
-      await UserManager().loadAmericaScoutingUpgradeCost();
+      await ScoutingManager().loadAmericaScoutingLevel();
+      await ScoutingManager().loadAmericaScoutingUpgradeCost();
 
       setState(() {});
     } catch (error) {
-      print('Error loading user data: $error');
+      debugPrint('Error loading user data: $error');
     }
   }
 
@@ -69,33 +73,7 @@ class _TransferPageState extends State<TransferPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenHeight * 0.07),
-        child: AppBar(
-          backgroundColor: AppColors.hoverColor,
-          centerTitle: true,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Flexible(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoRow(UniconsLine.no_entry,
-                        UserManager.trainingPoints.toString()),
-                    _buildInfoRow(UniconsLine.medkit,
-                        UserManager.medicalPoints.toString()),
-                    _buildInfoRow(UniconsLine.six_plus,
-                        UserManager.youthPoints.toString()),
-                    _buildInfoRow(UniconsLine.usd_circle,
-                        UserManager.money.toStringAsFixed(0)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
       body: Container(
         color: AppColors.primaryColor,
         child: Column(
@@ -162,20 +140,6 @@ class _TransferPageState extends State<TransferPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.textEnabledColor),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style:
-              const TextStyle(fontSize: 20, color: AppColors.textEnabledColor),
-        ),
-      ],
     );
   }
 

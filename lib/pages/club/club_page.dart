@@ -4,11 +4,11 @@ import 'package:pocket_eleven/components/list_item.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
+import 'package:pocket_eleven/managers/user_manager.dart';
 import 'package:pocket_eleven/pages/club/club_stadium_page.dart';
 import 'package:pocket_eleven/pages/club/club_training_page.dart';
 import 'package:pocket_eleven/pages/club/club_medical_page.dart';
 import 'package:pocket_eleven/pages/club/club_youth_page.dart';
-import 'package:pocket_eleven/controller/user_manager.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -53,10 +53,7 @@ class _ClubPageState extends State<ClubPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenHeight * 0.07),
-        child: CustomAppBar(screenHeight: screenHeight),
-      ),
+      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
       body: Container(
         color: AppColors.primaryColor,
         child: Column(

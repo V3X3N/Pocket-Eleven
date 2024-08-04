@@ -212,7 +212,7 @@ class _LoginPageState extends State<LoginPage> {
                                         );
                                       }
                                     } catch (error) {
-                                      print('Error: $error');
+                                      debugPrint('Error: $error');
                                     } finally {
                                       setState(() {
                                         _isLoading = false;

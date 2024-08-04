@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/controller/user_manager.dart';
+import 'package:pocket_eleven/managers/medical_manager.dart';
+import 'package:pocket_eleven/managers/training_manager.dart';
+import 'package:pocket_eleven/managers/user_manager.dart';
+import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:unicons/unicons.dart';
+import 'package:pocket_eleven/design/colors.dart';
 
-import '../design/colors.dart';
+class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final double appBarHeight;
 
-class CustomAppBar extends StatelessWidget {
-  final double screenHeight;
-
-  const CustomAppBar({required this.screenHeight});
+  const ReusableAppBar({
+    super.key,
+    required this.appBarHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
       backgroundColor: AppColors.hoverColor,
       centerTitle: true,
       title: Row(
@@ -22,11 +28,11 @@ class CustomAppBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildInfoRow(UniconsLine.no_entry,
-                    UserManager.trainingPoints.toString()),
+                    TrainingManager.trainingPoints.toString()),
+                _buildInfoRow(UniconsLine.medkit,
+                    MedicalManager.medicalPoints.toString()),
                 _buildInfoRow(
-                    UniconsLine.medkit, UserManager.medicalPoints.toString()),
-                _buildInfoRow(
-                    UniconsLine.six_plus, UserManager.youthPoints.toString()),
+                    UniconsLine.six_plus, YouthManager.youthPoints.toString()),
                 _buildInfoRow(UniconsLine.usd_circle,
                     UserManager.money.toStringAsFixed(0)),
               ],
@@ -52,4 +58,7 @@ class CustomAppBar extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  Size get preferredSize => Size.fromHeight(appBarHeight);
 }
