@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/player.dart';
+import 'package:pocket_eleven/controller/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 
 class TacticPage extends StatefulWidget {

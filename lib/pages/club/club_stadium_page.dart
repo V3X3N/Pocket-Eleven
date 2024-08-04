@@ -1,45 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/user_manager.dart';
+import 'package:pocket_eleven/controller/user_manager.dart';
 import 'package:unicons/unicons.dart';
 
-class ClubMedicalPage extends StatefulWidget {
+class ClubStadiumPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
 
-  const ClubMedicalPage({super.key, required this.onCurrencyChange});
+  const ClubStadiumPage({super.key, required this.onCurrencyChange});
 
   @override
-  State<ClubMedicalPage> createState() => _ClubMedicalPageState();
+  State<ClubStadiumPage> createState() => _ClubStadiumPageState();
 }
 
-class _ClubMedicalPageState extends State<ClubMedicalPage> {
+class _ClubStadiumPageState extends State<ClubStadiumPage> {
   late Image _clubStadiumImage;
   int level = 1;
-  int upgradeCost = 100000;
+  int stadiumUpgradeCost = 100000;
 
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_medical.png');
-    level = UserManager.medicalLevel;
-    upgradeCost = UserManager.medicalUpgradeCost;
+    _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
+    level = UserManager.stadiumLevel;
+    stadiumUpgradeCost = UserManager.stadiumUpgradeCost;
   }
 
   void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
+    if (UserManager.money >= stadiumUpgradeCost) {
       setState(() {
         level++;
-        UserManager.money -= upgradeCost;
-        UserManager.medicalLevel = level;
-        UserManager.medicalUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.medicalUpgradeCost;
+        UserManager.money -= stadiumUpgradeCost;
+        UserManager.stadiumLevel = level;
+        UserManager.stadiumUpgradeCost =
+            ((stadiumUpgradeCost * 1.8) / 10000).round() * 10000;
+        stadiumUpgradeCost = UserManager.stadiumUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveMedicalLevel();
-      UserManager().saveMedicalUpgradeCost();
+      UserManager().saveStadiumLevel();
+      UserManager().saveStadiumUpgradeCost();
     }
   }
 
@@ -100,7 +100,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMedicalInfo(),
+                  _buildStadiumInfo(),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
@@ -114,10 +114,9 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
                   const Expanded(
                     child: SingleChildScrollView(
                       child: Text(
-                        "Our medical center is an essential part of our commitment to our players' health and fitness. "
-                        "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
-                        "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
-                        "It’s a place where we prioritize every aspect of our athletes' health, providing safety and support throughout their careers.",
+                        'The club stadium is the heart of our community, where fans gather '
+                        'to cheer for their favorite teams. With a capacity of 50,000 seats, '
+                        'it has hosted numerous memorable matches and events.',
                         style: TextStyle(
                           fontSize: 16.0,
                           color: AppColors.textEnabledColor,
@@ -150,7 +149,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
     );
   }
 
-  Widget _buildMedicalInfo() {
+  Widget _buildStadiumInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -159,7 +158,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Medical Center',
+                'Stadium',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -180,8 +179,9 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: UserManager.money >= stadiumUpgradeCost
+                  ? increaseLevel
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
               ),
@@ -196,9 +196,9 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
             ),
             const SizedBox(height: 8.0),
             Text(
-              'Cost: $upgradeCost',
+              'Cost: $stadiumUpgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: UserManager.money >= stadiumUpgradeCost
                     ? AppColors.green
                     : Colors.grey,
                 fontSize: 16.0,

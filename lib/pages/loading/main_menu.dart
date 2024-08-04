@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/pages/club_create_page.dart';
-import 'package:pocket_eleven/pages/login_page.dart';
+import 'package:pocket_eleven/pages/loading/club_create_page.dart';
+import 'package:pocket_eleven/pages/loading/login_page.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class MainMenu extends StatefulWidget {

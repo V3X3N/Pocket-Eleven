@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
-import 'package:pocket_eleven/pages/club_create_page.dart';
+import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/design/colors.dart';
 

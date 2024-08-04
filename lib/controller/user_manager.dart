@@ -256,4 +256,19 @@ class UserManager {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('americaScoutingUpgradeCost', asiaScoutingUpgradeCost);
   }
+
+  Future<void> loadAllUserData() async {
+    await loadMoney();
+    await loadTrainingPoints();
+    await loadMedicalPoints();
+    await loadYouthPoints();
+    await loadStadiumLevel();
+    await loadStadiumUpgradeCost();
+    await loadTrainingLevel();
+    await loadTrainingUpgradeCost();
+    await loadMedicalLevel();
+    await loadMedicalUpgradeCost();
+    await loadYouthLevel();
+    await loadYouthUpgradeCost();
+  }
 }

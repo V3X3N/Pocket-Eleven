@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/image_loader.dart';
+import 'package:pocket_eleven/functions/image_loader.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/club_create_page.dart';
-import 'package:pocket_eleven/pages/main_menu.dart';
+import 'package:pocket_eleven/pages/loading/club_create_page.dart';
+import 'package:pocket_eleven/pages/loading/main_menu.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 
 class LoadingPage extends StatefulWidget {

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/user_manager.dart';
+import 'package:pocket_eleven/controller/user_manager.dart';
 import 'package:unicons/unicons.dart';
 
-class ClubYouthPage extends StatefulWidget {
+class ClubTrainingPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
 
-  const ClubYouthPage({super.key, required this.onCurrencyChange});
+  const ClubTrainingPage({super.key, required this.onCurrencyChange});
 
   @override
-  State<ClubYouthPage> createState() => _ClubYouthPageState();
+  State<ClubTrainingPage> createState() => _ClubTrainingPageState();
 }
 
-class _ClubYouthPageState extends State<ClubYouthPage> {
+class _ClubTrainingPageState extends State<ClubTrainingPage> {
   late Image _clubStadiumImage;
   int level = 1;
   int upgradeCost = 100000;
@@ -20,9 +20,9 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_youth.png');
-    level = UserManager.youthLevel;
-    upgradeCost = UserManager.youthUpgradeCost;
+    _clubStadiumImage = Image.asset('assets/background/club_training.png');
+    level = UserManager.trainingLevel;
+    upgradeCost = UserManager.trainingUpgradeCost;
   }
 
   void increaseLevel() {
@@ -30,16 +30,16 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        UserManager.youthLevel = level;
-        UserManager.youthUpgradeCost =
+        UserManager.trainingLevel = level;
+        UserManager.trainingUpgradeCost =
             ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = UserManager.youthUpgradeCost;
+        upgradeCost = UserManager.trainingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      UserManager().saveYouthLevel();
-      UserManager().saveYouthUpgradeCost();
+      UserManager().saveTrainingLevel();
+      UserManager().saveTrainingUpgradeCost();
     }
   }
 
@@ -100,7 +100,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildYouthInfo(),
+                  _buildTrainingInfo(),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
@@ -114,9 +114,9 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
                   const Expanded(
                     child: SingleChildScrollView(
                       child: Text(
-                        "Our youth academies are where future football stars develop their skills under the guidance of experienced coaches. "
-                        "We provide an inspiring environment for learning and nurturing a passion for soccer, "
-                        "shaping not just athletic abilities but also teamwork and determination.",
+                        'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
+                        'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
+                        'players hone their skills, preparing for the most significant challenges on the field.',
                         style: TextStyle(
                           fontSize: 16.0,
                           color: AppColors.textEnabledColor,
@@ -149,7 +149,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
     );
   }
 
-  Widget _buildYouthInfo() {
+  Widget _buildTrainingInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -158,7 +158,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Youth Academy',
+                'Training Facilities',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,

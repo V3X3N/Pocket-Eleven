@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/user_manager.dart';
+import 'package:pocket_eleven/controller/user_manager.dart';
 import 'package:unicons/unicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_eleven/player.dart';
+import 'package:pocket_eleven/controller/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 
 class ScoutingAmericaPage extends StatefulWidget {

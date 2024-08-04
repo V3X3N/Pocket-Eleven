@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:unicons/unicons.dart';
-import 'package:pocket_eleven/user_manager.dart';
-import 'package:pocket_eleven/pages/scouting_europe_page.dart';
-import 'package:pocket_eleven/pages/scouting_asia_page.dart';
-import 'package:pocket_eleven/pages/scouting_america_page.dart';
+import 'package:pocket_eleven/controller/user_manager.dart';
+import 'package:pocket_eleven/pages/transfers/scouting_europe_page.dart';
+import 'package:pocket_eleven/pages/transfers/scouting_asia_page.dart';
+import 'package:pocket_eleven/pages/transfers/scouting_america_page.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
