@@ -7,7 +7,9 @@ import 'package:pocket_eleven/managers/scouting_manager.dart';
 import 'package:pocket_eleven/managers/user_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_eleven/controller/player.dart';
-import 'package:pocket_eleven/components/player_details.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/player_card.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 
 class ScoutingAsiaPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -130,6 +132,7 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
+    final nationalities = ['JPN'];
 
     return Scaffold(
       appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
@@ -155,7 +158,7 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildEuropeScoutInfo(),
+                  _buildAsiaScoutInfo(),
                   SizedBox(height: screenHeight * 0.06),
                   const Text(
                     'Select Position',
@@ -166,7 +169,15 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  _buildPositionSelector(),
+                  PositionSelector(
+                    selectedPosition: selectedPosition,
+                    canScout: canScout,
+                    onPositionChange: (position) {
+                      setState(() {
+                        selectedPosition = position;
+                      });
+                    },
+                  ),
                   SizedBox(height: screenHeight * 0.06),
                   const Text(
                     'Select Nationality',
@@ -177,7 +188,16 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  _buildNationalitySelector(),
+                  NationalitySelector(
+                    selectedNationality: selectedNationality,
+                    canScout: canScout,
+                    onNationalityChange: (nationality) {
+                      setState(() {
+                        selectedNationality = nationality;
+                      });
+                    },
+                    nationalities: nationalities,
+                  ),
                   SizedBox(height: screenHeight * 0.06),
                   if (!canScout)
                     Column(
@@ -231,7 +251,8 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
                     ),
                   ),
                   if (scoutedPlayers.isNotEmpty)
-                    ...scoutedPlayers.map((player) => _buildPlayerCard(player)),
+                    ...scoutedPlayers
+                        .map((player) => PlayerCard(player: player)),
                 ],
               ),
             ),
@@ -249,7 +270,7 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
     });
   }
 
-  Widget _buildEuropeScoutInfo() {
+  Widget _buildAsiaScoutInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -258,7 +279,7 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Europe Scouting',
+                'Asia Scouting',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -279,186 +300,34 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: increaseLevel,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.1,
+                  vertical: MediaQuery.of(context).size.height * 0.02,
+                ),
               ),
               child: const Text(
                 'Upgrade',
                 style: TextStyle(
-                  color: AppColors.textEnabledColor,
                   fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
+                  color: AppColors.textEnabledColor,
                 ),
               ),
             ),
-            const SizedBox(height: 8.0),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
             Text(
-              'Cost: $upgradeCost',
-              style: TextStyle(
-                color: UserManager.money >= upgradeCost
-                    ? AppColors.green
-                    : Colors.grey,
+              'Cost: \$${upgradeCost.toString()}',
+              style: const TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textEnabledColor,
               ),
             ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildPositionSelector() {
-    final positions = [
-      'LW',
-      'ST',
-      'RW',
-      'LM',
-      'CAM',
-      'CM',
-      'CDM',
-      'RM',
-      'LB',
-      'CB',
-      'RB',
-      'GK'
-    ];
-
-    return SizedBox(
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: positions.map((position) {
-          return GestureDetector(
-            onTap: () {
-              if (canScout) {
-                setState(() {
-                  selectedPosition = position;
-                });
-              }
-            },
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10.0),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: selectedPosition == position
-                    ? AppColors.secondaryColor
-                    : AppColors.hoverColor,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Center(
-                child: Text(
-                  position,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textEnabledColor,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildNationalitySelector() {
-    final nationalities = ['JPN'];
-
-    return SizedBox(
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: nationalities.map((countryCode) {
-          return GestureDetector(
-            onTap: () {
-              if (canScout) {
-                setState(() {
-                  selectedNationality = countryCode;
-                });
-              }
-            },
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 10.0),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              decoration: BoxDecoration(
-                color: selectedNationality == countryCode
-                    ? AppColors.secondaryColor
-                    : AppColors.hoverColor,
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Center(
-                child: Image.asset(
-                  'assets/flags/flag_$countryCode.png',
-                  width: 30,
-                  height: 20,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildPlayerCard(Player player) {
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return PlayerDetailsDialog(player: player);
-          },
-        );
-      },
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 10.0),
-        color: AppColors.hoverColor,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                player.name,
-                style: const TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-              const SizedBox(height: 10.0),
-              Text(
-                'Position: ${player.position}',
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-              const SizedBox(height: 5.0),
-              Text(
-                'Nationality: ${player.nationality}',
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-              const SizedBox(height: 5.0),
-              Text(
-                'Rating: ${player.ovr}',
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

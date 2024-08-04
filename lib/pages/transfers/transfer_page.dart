@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
+import 'package:pocket_eleven/components/list_item.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/managers/medical_manager.dart';
 import 'package:pocket_eleven/managers/scouting_manager.dart';
@@ -193,112 +194,28 @@ class _TransferPageState extends State<TransferPage> {
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              _buildListItem(
+              ListItem(
                 screenWidth: screenWidth,
                 image: _europeImage,
                 text: 'Europe',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScoutingEuropePage(
-                        onCurrencyChange: () {
-                          _loadUserData();
-                        },
-                      ),
-                    ),
-                  ).then((_) {
-                    _loadUserData();
-                  });
-                },
+                page: ScoutingEuropePage(onCurrencyChange: _loadUserData),
               ),
-              _buildListItem(
+              ListItem(
                 screenWidth: screenWidth,
                 image: _americaImage,
                 text: 'America',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScoutingAmericaPage(
-                        onCurrencyChange: () {
-                          _loadUserData();
-                        },
-                      ),
-                    ),
-                  ).then((_) {
-                    _loadUserData();
-                  });
-                },
+                page: ScoutingAmericaPage(onCurrencyChange: _loadUserData),
               ),
-              _buildListItem(
+              ListItem(
                 screenWidth: screenWidth,
                 image: _asiaImage,
                 text: 'Asia',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScoutingAsiaPage(
-                        onCurrencyChange: () {
-                          _loadUserData();
-                        },
-                      ),
-                    ),
-                  ).then((_) {
-                    _loadUserData();
-                  });
-                },
+                page: ScoutingAsiaPage(onCurrencyChange: _loadUserData),
               ),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildListItem({
-    required double screenWidth,
-    required Image image,
-    required String text,
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap ?? () {},
-      child: Container(
-        width: screenWidth * 0.5,
-        margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image(
-                image: image.image,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomLeft,
-              child: Container(
-                padding: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  text,
-                  style: const TextStyle(color: AppColors.textEnabledColor),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

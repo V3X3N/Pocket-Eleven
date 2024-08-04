@@ -5,20 +5,29 @@ class ListItem extends StatelessWidget {
   final double screenWidth;
   final Image image;
   final String text;
-  final VoidCallback onTap;
+  final Widget page;
 
   const ListItem({
     super.key,
     required this.screenWidth,
     required this.image,
     required this.text,
-    required this.onTap,
+    required this.page,
   });
+
+  void _navigateToPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    ).then((_) {
+      // Optional: you might want to call some callback here if needed
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => _navigateToPage(context),
       child: Container(
         width: screenWidth * 0.5,
         margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),

@@ -92,29 +92,25 @@ class _ClubPageState extends State<ClubPage> {
                     screenWidth: screenWidth,
                     image: _clubStadiumImage,
                     text: 'Stadium',
-                    onTap: () => _navigateToPage(context,
-                        ClubStadiumPage(onCurrencyChange: _loadUserData)),
+                    page: ClubStadiumPage(onCurrencyChange: _loadUserData),
                   ),
                   ListItem(
                     screenWidth: screenWidth,
                     image: _clubTrainingImage,
                     text: 'Training',
-                    onTap: () => _navigateToPage(context,
-                        ClubTrainingPage(onCurrencyChange: _loadUserData)),
+                    page: ClubTrainingPage(onCurrencyChange: _loadUserData),
                   ),
                   ListItem(
                     screenWidth: screenWidth,
                     image: _clubMedicalImage,
                     text: 'Medical',
-                    onTap: () => _navigateToPage(context,
-                        ClubMedicalPage(onCurrencyChange: _loadUserData)),
+                    page: ClubMedicalPage(onCurrencyChange: _loadUserData),
                   ),
                   ListItem(
                     screenWidth: screenWidth,
                     image: _clubYouthImage,
                     text: 'Youth',
-                    onTap: () => _navigateToPage(context,
-                        ClubYouthPage(onCurrencyChange: _loadUserData)),
+                    page: ClubYouthPage(onCurrencyChange: _loadUserData),
                   ),
                 ],
               ),
@@ -128,14 +124,5 @@ class _ClubPageState extends State<ClubPage> {
         ),
       ),
     );
-  }
-
-  void _navigateToPage(BuildContext context, Widget page) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => page),
-    ).then((_) {
-      _loadUserData();
-    });
   }
 }
