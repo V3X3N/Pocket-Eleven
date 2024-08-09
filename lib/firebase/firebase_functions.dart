@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class FirebaseFunctions {
   static Future<void> saveUser(
@@ -9,7 +10,7 @@ class FirebaseFunctions {
           .doc(uid)
           .set({'email': email, 'managerName': managerName});
     } catch (error) {
-      print('Error saving user data: $error');
+      debugPrint('Error saving user data: $error');
     }
   }
 
@@ -18,7 +19,7 @@ class FirebaseFunctions {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
       return userDoc.get('managerName') ?? '';
     } catch (error) {
-      print('Error loading manager name: $error');
+      debugPrint('Error loading manager name: $error');
       return '';
     }
   }
@@ -35,7 +36,7 @@ class FirebaseFunctions {
       }
       return '';
     } catch (error) {
-      print('Error loading club name: $error');
+      debugPrint('Error loading club name: $error');
       return '';
     }
   }
@@ -45,7 +46,7 @@ class FirebaseFunctions {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
       return userDoc.get('email') ?? '';
     } catch (error) {
-      print('Error loading email: $error');
+      debugPrint('Error loading email: $error');
       return '';
     }
   }
@@ -67,10 +68,10 @@ class FirebaseFunctions {
           await clubRef.update({'clubName': clubName});
         }
       } else {
-        print('User not found');
+        debugPrint('User not found');
       }
     } catch (e) {
-      print('Error updating club name: $e');
+      debugPrint('Error updating club name: $e');
     }
   }
 
@@ -89,10 +90,10 @@ class FirebaseFunctions {
         DocumentSnapshot userDoc = querySnapshot.docs.first;
         await userDoc.reference.update({'club': clubRef});
       } else {
-        print('User not found');
+        debugPrint('User not found');
       }
     } catch (e) {
-      print('Error creating club: $e');
+      debugPrint('Error creating club: $e');
     }
   }
 
