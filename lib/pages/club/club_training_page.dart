@@ -1,112 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/training_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
+import 'package:pocket_eleven/pages/club/bloc/training_bloc.dart';
 
-class ClubTrainingPage extends StatefulWidget {
+class ClubTrainingPage extends StatelessWidget {
   final VoidCallback onCurrencyChange;
 
   const ClubTrainingPage({super.key, required this.onCurrencyChange});
-
-  @override
-  State<ClubTrainingPage> createState() => _ClubTrainingPageState();
-}
-
-class _ClubTrainingPageState extends State<ClubTrainingPage> {
-  late Image _clubStadiumImage;
-  int level = 1;
-  int upgradeCost = 100000;
-
-  @override
-  void initState() {
-    super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_training.png');
-    level = TrainingManager.trainingLevel;
-    upgradeCost = TrainingManager.trainingUpgradeCost;
-  }
-
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        TrainingManager.trainingLevel = level;
-        TrainingManager.trainingUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = TrainingManager.trainingUpgradeCost;
-      });
-
-      widget.onCurrencyChange();
-
-      TrainingManager().saveTrainingLevel();
-      TrainingManager().saveTrainingUpgradeCost();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
-      body: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 3 / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _clubStadiumImage.image,
-                  fit: BoxFit.cover,
+    return BlocProvider(
+      create: (context) => TrainingBloc()..add(LoadTrainingDataEvent()),
+      child: Scaffold(
+        appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
+        body: Column(
+          children: [
+            AspectRatio(
+              aspectRatio: 3 / 2,
+              child: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/background/club_training.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Container(
-              color: AppColors.primaryColor,
-              padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: screenHeight * 0.02),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTrainingInfo(),
-                  SizedBox(height: screenHeight * 0.04),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textEnabledColor,
+            Expanded(
+              child: Container(
+                color: AppColors.primaryColor,
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical: screenHeight * 0.02),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BlocBuilder<TrainingBloc, TrainingState>(
+                      builder: (context, state) {
+                        if (state is TrainingLoaded) {
+                          return _buildTrainingInfo(
+                            context,
+                            state.level,
+                            state.upgradeCost,
+                            state.canUpgrade,
+                            onCurrencyChange,
+                          );
+                        } else {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                      },
                     ),
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  const Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
-                        'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
-                        'players hone their skills, preparing for the most significant challenges on the field.',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: AppColors.textEnabledColor,
+                    SizedBox(height: screenHeight * 0.04),
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.01),
+                    const Expanded(
+                      child: SingleChildScrollView(
+                        child: Text(
+                          'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
+                          'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
+                          'players hone their skills, preparing for the most significant challenges on the field.',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            color: AppColors.textEnabledColor,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTrainingInfo() {
+  Widget _buildTrainingInfo(
+    BuildContext context,
+    int level,
+    int upgradeCost,
+    bool canUpgrade,
+    VoidCallback onCurrencyChange,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -136,8 +125,12 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: canUpgrade
+                  ? () {
+                      context.read<TrainingBloc>().add(UpgradeTrainingEvent());
+                      onCurrencyChange();
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
               ),
@@ -154,9 +147,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
-                    ? AppColors.green
-                    : Colors.grey,
+                color: canUpgrade ? AppColors.green : Colors.grey,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
