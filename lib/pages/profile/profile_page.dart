@@ -8,13 +8,13 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  ProfilePageState createState() => ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
-  late String managerName = '';
-  late String clubName = '';
-  late String email = '';
+class ProfilePageState extends State<ProfilePage> {
+  String managerName = '';
+  String clubName = '';
+  String email = '';
   bool _loading = false;
 
   @override
@@ -24,11 +24,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserData() async {
-    try {
-      setState(() {
-        _loading = true;
-      });
+    setState(() {
+      _loading = true;
+    });
 
+    try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final String userId = user.uid;
@@ -36,12 +36,9 @@ class _ProfilePageState extends State<ProfilePage> {
         clubName = await FirebaseFunctions.getClubName(userId);
         email = await FirebaseFunctions.getEmail(userId);
       }
-
-      setState(() {
-        _loading = false;
-      });
     } catch (error) {
       debugPrint('Error loading user data: $error');
+    } finally {
       setState(() {
         _loading = false;
       });
@@ -81,45 +78,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: 90,
-                          width: 90,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            image: const DecorationImage(
-                              image: AssetImage('assets/crests/crest_1.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8.0),
-                        Text(
-                          clubName,
-                          style: const TextStyle(
-                            color: AppColors.textDisabledColor,
-                            fontSize: 18,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox.shrink(),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          managerName,
-                          style: const TextStyle(
-                            color: AppColors.textDisabledColor,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildClubInfo(),
+                    _buildManagerInfo(),
                   ],
                 ),
               ),
@@ -127,6 +87,50 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildClubInfo() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          height: 90,
+          width: 90,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.0),
+            image: const DecorationImage(
+              image: AssetImage('assets/crests/crest_1.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8.0),
+        Text(
+          clubName,
+          style: const TextStyle(
+            color: AppColors.textDisabledColor,
+            fontSize: 18,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildManagerInfo() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          managerName,
+          style: const TextStyle(
+            color: AppColors.textDisabledColor,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
