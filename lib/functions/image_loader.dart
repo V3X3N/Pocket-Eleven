@@ -29,10 +29,10 @@ class ImageLoader {
       'assets/background/club_training.png',
       'assets/background/club_stadion.png',
       //Continent
-      'assets/background/Europe.png',
-      'assets/background/Asia.png',
-      'assets/background/North_America.png',
-      'assets/background/South_America.png',
+      'assets/background/europe.png',
+      'assets/background/asia.png',
+      'assets/background/north_america.png',
+      'assets/background/south_america.png',
     ];
 
     for (var imagePath in imagePaths) {
