@@ -13,19 +13,57 @@ class ClubCreatePage extends StatefulWidget {
 
 class _ClubCreatePageState extends State<ClubCreatePage> {
   late TextEditingController _clubNameController;
-  late Image _loadingImage;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _clubNameController = TextEditingController();
+    // Preload the loading image.
     _loadLoadingImage();
   }
 
-  void _loadLoadingImage() {
-    _loadingImage = Image.asset('assets/background/loading_bg.png');
-    setState(() {});
+  Future<void> _loadLoadingImage() async {
+    await precacheImage(
+        const AssetImage('assets/background/loading_bg.png'), context);
+  }
+
+  Future<void> _createClub() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      String clubName = _clubNameController.text;
+      String managerEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+      await FirebaseFunctions.createClub(clubName, managerEmail);
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _clubNameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -35,74 +73,49 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
-                image: _loadingImage.image,
+                image: AssetImage('assets/background/loading_bg.png'),
                 fit: BoxFit.cover,
               ),
             ),
-            child: Stack(
-              children: [
-                Positioned(
-                  bottom: MediaQuery.of(context).size.height * 0.38,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _clubNameController,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your club name here!',
-                            filled: true,
-                            fillColor: AppColors.textEnabledColor,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        SizedBox(
-                          height: 40,
-                          width: 100,
-                          child: MaterialButton(
-                            color: Colors.blueAccent,
-                            onPressed: _isLoading
-                                ? null
-                                : () async {
-                                    setState(() {
-                                      _isLoading = true;
-                                    });
-                                    String clubName = _clubNameController.text;
-                                    String managerEmail = FirebaseAuth
-                                            .instance.currentUser?.email ??
-                                        '';
-                                    await FirebaseFunctions.createClub(
-                                        clubName, managerEmail);
-                                    Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const HomePage(),
-                                      ),
-                                      (route) => false,
-                                    );
-                                  },
-                            child: _isLoading
-                                ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.textEnabledColor),
-                                  )
-                                : const Text(
-                                    "Confirm",
-                                    style: TextStyle(
-                                        color: AppColors.textEnabledColor),
-                                  ),
-                          ),
-                        ),
-                      ],
+          ),
+          Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.38,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _clubNameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your club name here!',
+                      filled: true,
+                      fillColor: AppColors.textEnabledColor,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 40,
+                    width: 100,
+                    child: MaterialButton(
+                      color: Colors.blueAccent,
+                      onPressed: _isLoading ? null : _createClub,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.textEnabledColor),
+                            )
+                          : const Text(
+                              "Confirm",
+                              style:
+                                  TextStyle(color: AppColors.textEnabledColor),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

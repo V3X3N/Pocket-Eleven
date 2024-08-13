@@ -17,7 +17,7 @@ class LoadingPage extends StatefulWidget {
 
 class _LoadingPageState extends State<LoadingPage> {
   double _progress = 0.0;
-  double _oldProgress = 0.0; // Track the old progress value
+  double _oldProgress = 0.0;
   bool _isLoading = true;
   late Image _loadingImageAsset;
 
@@ -30,40 +30,53 @@ class _LoadingPageState extends State<LoadingPage> {
 
   Future<void> _loadLoadingImage() async {
     _loadingImageAsset = Image.asset('assets/background/loading_bg.png');
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadResources() async {
     await Future.delayed(const Duration(seconds: 2), () {
-      setState(() {
-        _updateProgress(0.3);
-      });
+      if (mounted) {
+        setState(() {
+          _updateProgress(0.3);
+        });
+      }
     });
 
     await ImageLoader.precacheImages(context);
 
-    setState(() {
-      _updateProgress(0.9);
-    });
+    if (mounted) {
+      setState(() {
+        _updateProgress(0.9);
+      });
+    }
 
     await Future.delayed(const Duration(seconds: 1));
 
-    Future<void> checkAuthentication() async {
-      User? user = await FirebaseAuth.instance.authStateChanges().first;
+    _handleAuthentication();
+  }
+
+  Future<void> _handleAuthentication() async {
+    User? user = await FirebaseAuth.instance.authStateChanges().first;
+
+    if (mounted) {
       if (user != null) {
         bool userHasClub = await AuthServices.userHasClub(user.email!);
-        if (userHasClub) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ClubCreatePage()),
-          );
+        if (mounted) {
+          if (userHasClub) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ClubCreatePage()),
+            );
+          }
         }
       } else {
         Navigator.pushReplacement(
@@ -71,15 +84,13 @@ class _LoadingPageState extends State<LoadingPage> {
           MaterialPageRoute(builder: (context) => const MainMenu()),
         );
       }
+
+      setState(() {
+        _updateProgress(1.0);
+      });
+
+      await Future.delayed(const Duration(seconds: 3));
     }
-
-    await checkAuthentication();
-
-    setState(() {
-      _updateProgress(1.0);
-    });
-
-    await Future.delayed(const Duration(seconds: 3));
   }
 
   void _updateProgress(double newProgress) {
