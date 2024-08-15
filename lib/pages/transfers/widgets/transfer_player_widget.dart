@@ -23,54 +23,53 @@ class TransfersPlayerWidget extends StatelessWidget {
           color: AppColors.secondaryColor,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Flag
-            Image.asset(
-              player.flagPath,
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(width: 12),
-
-            // Player Information
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    player.name,
-                    style: const TextStyle(
-                      color: AppColors.textEnabledColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Position: ${player.position}',
-                    style: const TextStyle(
-                      color: AppColors.textEnabledColor,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'OVR: ${player.ovr}',
-                    style: const TextStyle(
-                      color: AppColors.textEnabledColor,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+            Text(
+              player.name,
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
-
-            // Checkmark Button
-            IconButton(
-              icon: const Icon(Icons.check_circle, color: Colors.green),
-              onPressed: onTap,
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      player.position,
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${player.ovr}',
+                      style: const TextStyle(
+                        color: AppColors.textEnabledColor,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Image.asset(
+                      player.flagPath,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.cover,
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon:
+                      const Icon(Icons.check_box_rounded, color: Colors.green),
+                  onPressed: onTap,
+                ),
+              ],
             ),
           ],
         ),
