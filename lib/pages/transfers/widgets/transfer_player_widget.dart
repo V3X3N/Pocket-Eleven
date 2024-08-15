@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/components/player_details.dart';
 
 class TransfersPlayerWidget extends StatelessWidget {
   final Player player;
-  final VoidCallback onTap;
 
   const TransfersPlayerWidget({
     super.key,
     required this.player,
-    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return PlayerDetailsDialog(player: player);
+          },
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(vertical: 4.0),
@@ -49,7 +55,7 @@ class TransfersPlayerWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${player.ovr}',
+                      'OVR: ${player.ovr}',
                       style: const TextStyle(
                         color: AppColors.textEnabledColor,
                         fontSize: 14,
@@ -67,7 +73,7 @@ class TransfersPlayerWidget extends StatelessWidget {
                 IconButton(
                   icon:
                       const Icon(Icons.check_box_rounded, color: Colors.green),
-                  onPressed: onTap,
+                  onPressed: () {},
                 ),
               ],
             ),

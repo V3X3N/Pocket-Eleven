@@ -154,12 +154,7 @@ class _TransferPageState extends State<TransferPage> {
       padding: EdgeInsets.all(screenWidth * 0.04),
       itemCount: _players.length,
       itemBuilder: (context, index) {
-        return TransfersPlayerWidget(
-          player: _players[index],
-          onTap: () {
-            // Handle tap here
-          },
-        );
+        return TransfersPlayerWidget(player: _players[index]);
       },
     );
   }
