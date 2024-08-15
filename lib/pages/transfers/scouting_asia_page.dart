@@ -6,7 +6,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/managers/scouting_manager.dart';
 import 'package:pocket_eleven/managers/user_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_eleven/controller/player.dart';
+import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/player_card.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';

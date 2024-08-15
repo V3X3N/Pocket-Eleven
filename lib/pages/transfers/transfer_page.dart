@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/list_item.dart';
+import 'package:pocket_eleven/models/player.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/managers/medical_manager.dart';
 import 'package:pocket_eleven/managers/scouting_manager.dart';
@@ -10,6 +11,7 @@ import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_europe_page.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_asia_page.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_america_page.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
 
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
@@ -23,43 +25,45 @@ class _TransferPageState extends State<TransferPage> {
   late Image _asiaImage;
   late Image _americaImage;
   int _selectedIndex = 0;
+  List<Player> _players = [];
 
   Future<void> _loadUserData() async {
     try {
-      // Assuming UserManager has the relevant methods for loading user data
       await UserManager().loadMoney();
       await TrainingManager().loadTrainingPoints();
       await MedicalManager().loadMedicalPoints();
       await YouthManager().loadYouthPoints();
-      // Europe
       await ScoutingManager().loadEuropeScoutingLevel();
       await ScoutingManager().loadEuropeScoutingUpgradeCost();
-      // Asia
       await ScoutingManager().loadAsiaScoutingLevel();
       await ScoutingManager().loadAsiaScoutingUpgradeCost();
-      // America
       await ScoutingManager().loadAmericaScoutingLevel();
       await ScoutingManager().loadAmericaScoutingUpgradeCost();
-
       setState(() {});
     } catch (error) {
       debugPrint('Error loading user data: $error');
     }
   }
 
+  Future<void> _generatePlayers() async {
+    List<Player> players = [];
+    for (int i = 0; i < 10; i++) {
+      Player player = await Player.generateRandomFootballer();
+      players.add(player);
+    }
+    setState(() {
+      _players = players;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    _europeImage = Image.asset(
-      'assets/background/europe.png',
-    );
-    _asiaImage = Image.asset(
-      'assets/background/asia.png',
-    );
-    _americaImage = Image.asset(
-      'assets/background/north_america.png',
-    );
+    _generatePlayers();
+    _europeImage = Image.asset('assets/background/europe.png');
+    _asiaImage = Image.asset('assets/background/asia.png');
+    _americaImage = Image.asset('assets/background/north_america.png');
   }
 
   void _onOptionSelected(int index) {
@@ -82,8 +86,9 @@ class _TransferPageState extends State<TransferPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: screenHeight * 0.02),
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.02,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -147,19 +152,13 @@ class _TransferPageState extends State<TransferPage> {
   Widget _buildTransfersView(double screenWidth, double screenHeight) {
     return ListView.builder(
       padding: EdgeInsets.all(screenWidth * 0.04),
-      itemCount: 10, // Example count
+      itemCount: _players.length,
       itemBuilder: (context, index) {
-        return Container(
-          margin: EdgeInsets.only(bottom: screenHeight * 0.02),
-          padding: EdgeInsets.all(screenWidth * 0.04),
-          decoration: BoxDecoration(
-            color: AppColors.secondaryColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'Transfer Item ${index + 1}',
-            style: const TextStyle(color: AppColors.textEnabledColor),
-          ),
+        return TransfersPlayerWidget(
+          player: _players[index],
+          onTap: () {
+            // Handle tap here
+          },
         );
       },
     );

@@ -8,7 +8,7 @@ import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart'
 import 'package:pocket_eleven/pages/transfers/widgets/player_card.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_eleven/controller/player.dart';
+import 'package:pocket_eleven/models/player.dart';
 
 class ScoutingEuropePage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
