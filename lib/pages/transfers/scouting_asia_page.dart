@@ -1,15 +1,14 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/managers/scouting_manager.dart';
 import 'package:pocket_eleven/managers/user_manager.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_eleven/models/player.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/player_card.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 
 class ScoutingAsiaPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -199,6 +198,14 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
                     nationalities: nationalities,
                   ),
                   SizedBox(height: screenHeight * 0.06),
+                  // Display scouted players above the scout button
+                  if (scoutedPlayers.isNotEmpty)
+                    Column(
+                      children: scoutedPlayers
+                          .map(
+                              (player) => TransfersPlayerWidget(player: player))
+                          .toList(),
+                    ),
                   if (!canScout)
                     Column(
                       children: [
@@ -250,9 +257,6 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
                       ),
                     ),
                   ),
-                  if (scoutedPlayers.isNotEmpty)
-                    ...scoutedPlayers
-                        .map((player) => PlayerCard(player: player)),
                 ],
               ),
             ),
