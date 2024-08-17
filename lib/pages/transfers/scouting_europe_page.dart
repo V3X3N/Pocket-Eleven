@@ -1,14 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/components/custom_appbar.dart';
-import 'package:pocket_eleven/design/colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/managers/scouting_manager.dart';
 import 'package:pocket_eleven/managers/user_manager.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_eleven/models/player.dart';
+import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 
 class ScoutingEuropePage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -37,6 +38,25 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     _europeImage = Image.asset('assets/background/europe.png');
     level = ScoutingManager.europeScoutingLevel;
     upgradeCost = ScoutingManager.europeScoutingUpgradeCost;
+    _loadScoutedPlayers();
+    checkScoutAvailability();
+  }
+
+  Future<void> _loadScoutedPlayers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final playersJson = prefs.getString('scoutedPlayers');
+    if (playersJson != null) {
+      setState(() {
+        scoutedPlayers = (jsonDecode(playersJson) as List)
+            .map((data) => Player.fromJson(data))
+            .toList();
+      });
+    }
+  }
+
+  Future<void> _saveScoutedPlayers() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('scoutedPlayers', jsonEncode(scoutedPlayers));
   }
 
   void increaseLevel() {
@@ -70,6 +90,12 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
             Duration(milliseconds: _scoutCooldown.inMilliseconds - diff);
       });
       startScoutTimer();
+    } else {
+      // Odblokuj scouting po zakończeniu odliczania
+      setState(() {
+        canScout = true;
+        _remainingTime = Duration.zero;
+      });
     }
   }
 
@@ -79,8 +105,10 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
         if (_remainingTime.inSeconds > 0) {
           _remainingTime = _remainingTime - const Duration(seconds: 1);
         } else {
-          canScout = true;
           _timer?.cancel();
+          canScout = true;
+          // Generuj zawodników po zakończeniu odliczania
+          generatePlayersAfterCooldown();
         }
       });
     });
@@ -98,9 +126,6 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   }
 
   Future<void> generatePlayersAfterCooldown() async {
-    // Wait until cooldown is finished
-    await Future.delayed(_scoutCooldown);
-
     List<Player> newPlayers = [];
     for (int i = 0; i < 3; i++) {
       Player player = await Player.generateRandomFootballer(
@@ -112,6 +137,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     setState(() {
       scoutedPlayers = newPlayers;
     });
+    await _saveScoutedPlayers();
   }
 
   @override
@@ -246,7 +272,6 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                                 canScout = false;
                               });
                               await scheduleScoutAvailability();
-                              await generatePlayersAfterCooldown();
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
