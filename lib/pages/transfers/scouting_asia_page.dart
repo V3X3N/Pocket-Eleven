@@ -300,29 +300,29 @@ class _ScoutingAsiaPageState extends State<ScoutingAsiaPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed: increaseLevel,
+              onPressed:
+                  UserManager.money >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.secondaryColor,
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.1,
-                  vertical: MediaQuery.of(context).size.height * 0.02,
-                ),
               ),
               child: const Text(
                 'Upgrade',
                 style: TextStyle(
-                  fontSize: 16.0,
                   color: AppColors.textEnabledColor,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+            const SizedBox(height: 8.0),
             Text(
-              'Cost: \$${upgradeCost.toString()}',
-              style: const TextStyle(
+              'Cost: $upgradeCost',
+              style: TextStyle(
+                color: UserManager.money >= upgradeCost
+                    ? AppColors.green
+                    : Colors.grey,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textEnabledColor,
               ),
             ),
           ],
