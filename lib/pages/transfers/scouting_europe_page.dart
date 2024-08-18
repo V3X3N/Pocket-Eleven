@@ -32,6 +32,21 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   final Duration _scoutCooldown = const Duration(minutes: 1);
   List<Player> scoutedPlayers = [];
 
+  double get scoutingTimeReductionPercentage {
+    if (level > 1) {
+      return 7 * (level - 1);
+    }
+    return 0;
+  }
+
+  Duration get adjustedScoutCooldown {
+    final reductionPercentage = scoutingTimeReductionPercentage;
+    final reductionFactor = (100 - reductionPercentage) / 100;
+    return Duration(
+      milliseconds: (_scoutCooldown.inMilliseconds * reductionFactor).round(),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -92,11 +107,11 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
     final diff = currentTime - lastScoutTime;
 
-    if (diff < _scoutCooldown.inMilliseconds) {
+    if (diff < adjustedScoutCooldown.inMilliseconds) {
       setState(() {
         canScout = false;
         _remainingTime =
-            Duration(milliseconds: _scoutCooldown.inMilliseconds - diff);
+            Duration(milliseconds: adjustedScoutCooldown.inMilliseconds - diff);
       });
       startScoutTimer();
     } else {
@@ -127,7 +142,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     await prefs.setInt('lastScoutTime', currentTime);
     setState(() {
       canScout = false;
-      _remainingTime = _scoutCooldown;
+      _remainingTime = adjustedScoutCooldown;
     });
     startScoutTimer();
   }
@@ -266,7 +281,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                         LinearProgressIndicator(
                           value: 1 -
                               _remainingTime.inSeconds /
-                                  _scoutCooldown.inSeconds,
+                                  adjustedScoutCooldown.inSeconds,
                           color: AppColors.secondaryColor,
                           backgroundColor: AppColors.hoverColor,
                         ),
@@ -319,6 +334,8 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   }
 
   Widget _buildEuropeScoutInfo() {
+    final reductionPercentage = scoutingTimeReductionPercentage;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -334,12 +351,20 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                   color: AppColors.textEnabledColor,
                 ),
               ),
-              Text(
-                'Level $level',
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
+              Tooltip(
+                waitDuration: const Duration(seconds: 1),
+                message: 'Current time reduction: $reductionPercentage%',
+                decoration: BoxDecoration(
+                  color: AppColors.hoverColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Text(
+                  'Level $level',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textEnabledColor,
+                  ),
                 ),
               ),
             ],
