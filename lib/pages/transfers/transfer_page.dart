@@ -92,43 +92,28 @@ class _TransferPageState extends State<TransferPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  GestureDetector(
+                  _buildOptionButton(
+                    index: 0,
+                    text: 'Transfers',
                     onTap: () => _onOptionSelected(0),
-                    child: Text(
-                      'Transfers',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: _selectedIndex == 0
-                            ? AppColors.secondaryColor
-                            : AppColors.textEnabledColor,
-                      ),
-                    ),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
                   ),
                   SizedBox(width: screenWidth * 0.04),
-                  GestureDetector(
+                  _buildOptionButton(
+                    index: 1,
+                    text: 'Stuff',
                     onTap: () => _onOptionSelected(1),
-                    child: Text(
-                      'Stuff',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: _selectedIndex == 1
-                            ? AppColors.secondaryColor
-                            : AppColors.textEnabledColor,
-                      ),
-                    ),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
                   ),
                   SizedBox(width: screenWidth * 0.04),
-                  GestureDetector(
+                  _buildOptionButton(
+                    index: 2,
+                    text: 'Scouting',
                     onTap: () => _onOptionSelected(2),
-                    child: Text(
-                      'Scouting',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: _selectedIndex == 2
-                            ? AppColors.secondaryColor
-                            : AppColors.textEnabledColor,
-                      ),
-                    ),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
                   ),
                 ],
               ),
@@ -144,6 +129,50 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionButton({
+    required int index,
+    required String text,
+    required VoidCallback onTap,
+    required double screenWidth,
+    required double screenHeight,
+  }) {
+    bool isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 1,
+            color: AppColors.enabledColor,
+          ),
+          color: isSelected ? AppColors.secondaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      offset: const Offset(0, 4),
+                      blurRadius: 6)
+                ]
+              : [],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 18,
+            color: isSelected
+                ? AppColors.textEnabledColor
+                : AppColors.textDisabledColor,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
