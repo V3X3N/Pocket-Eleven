@@ -9,8 +9,6 @@ import 'package:pocket_eleven/managers/training_manager.dart';
 import 'package:pocket_eleven/managers/user_manager.dart';
 import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:pocket_eleven/pages/transfers/scouting_europe_page.dart';
-import 'package:pocket_eleven/pages/transfers/scouting_asia_page.dart';
-import 'package:pocket_eleven/pages/transfers/scouting_america_page.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
 
 class TransferPage extends StatefulWidget {
@@ -22,8 +20,6 @@ class TransferPage extends StatefulWidget {
 
 class _TransferPageState extends State<TransferPage> {
   late Image _europeImage;
-  late Image _asiaImage;
-  late Image _americaImage;
   int _selectedIndex = 0;
   List<Player> _players = [];
 
@@ -33,12 +29,8 @@ class _TransferPageState extends State<TransferPage> {
       await TrainingManager().loadTrainingPoints();
       await MedicalManager().loadMedicalPoints();
       await YouthManager().loadYouthPoints();
-      await ScoutingManager().loadEuropeScoutingLevel();
-      await ScoutingManager().loadEuropeScoutingUpgradeCost();
-      await ScoutingManager().loadAsiaScoutingLevel();
-      await ScoutingManager().loadAsiaScoutingUpgradeCost();
-      await ScoutingManager().loadAmericaScoutingLevel();
-      await ScoutingManager().loadAmericaScoutingUpgradeCost();
+      await ScoutingManager().loadScoutingLevel();
+      await ScoutingManager().loadScoutingUpgradeCost();
       setState(() {});
     } catch (error) {
       debugPrint('Error loading user data: $error');
@@ -62,8 +54,6 @@ class _TransferPageState extends State<TransferPage> {
     _loadUserData();
     _generatePlayers();
     _europeImage = Image.asset('assets/background/europe.png');
-    _asiaImage = Image.asset('assets/background/asia.png');
-    _americaImage = Image.asset('assets/background/north_america.png');
   }
 
   void _onOptionSelected(int index) {
@@ -222,18 +212,6 @@ class _TransferPageState extends State<TransferPage> {
                 image: _europeImage,
                 text: 'Europe',
                 page: ScoutingEuropePage(onCurrencyChange: _loadUserData),
-              ),
-              ListItem(
-                screenWidth: screenWidth,
-                image: _americaImage,
-                text: 'America',
-                page: ScoutingAmericaPage(onCurrencyChange: _loadUserData),
-              ),
-              ListItem(
-                screenWidth: screenWidth,
-                image: _asiaImage,
-                text: 'Asia',
-                page: ScoutingAsiaPage(onCurrencyChange: _loadUserData),
               ),
             ],
           ),

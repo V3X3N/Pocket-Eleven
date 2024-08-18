@@ -51,8 +51,8 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
   void initState() {
     super.initState();
     _europeImage = Image.asset('assets/background/europe.png');
-    level = ScoutingManager.europeScoutingLevel;
-    upgradeCost = ScoutingManager.europeScoutingUpgradeCost;
+    level = ScoutingManager.scoutingLevel;
+    upgradeCost = ScoutingManager.scoutingUpgradeCost;
     _loadSelectedPositionAndNationality();
     _loadScoutedPlayers();
     checkScoutAvailability();
@@ -88,16 +88,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       setState(() {
         level++;
         UserManager.money -= upgradeCost;
-        ScoutingManager.europeScoutingLevel = level;
-        ScoutingManager.europeScoutingUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = ScoutingManager.europeScoutingUpgradeCost;
+        ScoutingManager.scoutingLevel = level;
+        ScoutingManager.scoutingUpgradeCost =
+            ((upgradeCost * 2.3) / 10000).round() * 10000;
+        upgradeCost = ScoutingManager.scoutingUpgradeCost;
       });
 
       widget.onCurrencyChange();
 
-      ScoutingManager().saveEuropeScoutingLevel();
-      ScoutingManager().saveEuropeScoutingUpgradeCost();
+      ScoutingManager().saveScoutingLevel();
+      ScoutingManager().saveScoutingUpgradeCost();
     }
   }
 
@@ -198,7 +198,10 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       'GER',
       'ITA',
       'POL',
-      'TUR'
+      'TUR',
+      'USA',
+      'BRA',
+      'JPN',
     ];
 
     return Scaffold(
