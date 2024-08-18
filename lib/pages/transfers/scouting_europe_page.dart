@@ -38,8 +38,17 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
     _europeImage = Image.asset('assets/background/europe.png');
     level = ScoutingManager.europeScoutingLevel;
     upgradeCost = ScoutingManager.europeScoutingUpgradeCost;
+    _loadSelectedPositionAndNationality();
     _loadScoutedPlayers();
     checkScoutAvailability();
+  }
+
+  Future<void> _loadSelectedPositionAndNationality() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedPosition = prefs.getString('selectedPosition') ?? 'LW';
+      selectedNationality = prefs.getString('selectedNationality') ?? 'AUT';
+    });
   }
 
   Future<void> _loadScoutedPlayers() async {
@@ -91,7 +100,6 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       });
       startScoutTimer();
     } else {
-      // Odblokuj scouting po zakończeniu odliczania
       setState(() {
         canScout = true;
         _remainingTime = Duration.zero;
@@ -107,7 +115,6 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
         } else {
           _timer?.cancel();
           canScout = true;
-          // Generuj zawodników po zakończeniu odliczania
           generatePlayersAfterCooldown();
         }
       });
@@ -138,6 +145,16 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
       scoutedPlayers = newPlayers;
     });
     await _saveScoutedPlayers();
+  }
+
+  Future<void> _saveSelectedPosition(String position) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedPosition', position);
+  }
+
+  Future<void> _saveSelectedNationality(String nationality) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedNationality', nationality);
   }
 
   @override
@@ -211,6 +228,7 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       setState(() {
                         selectedPosition = position;
                       });
+                      _saveSelectedPosition(position);
                     },
                   ),
                   SizedBox(height: screenHeight * 0.06),
@@ -230,11 +248,11 @@ class _ScoutingEuropePageState extends State<ScoutingEuropePage> {
                       setState(() {
                         selectedNationality = nationality;
                       });
+                      _saveSelectedNationality(nationality);
                     },
                     nationalities: nationalities,
                   ),
                   SizedBox(height: screenHeight * 0.06),
-                  // Display scouted players above the scout button
                   if (scoutedPlayers.isNotEmpty)
                     Column(
                       children: scoutedPlayers
