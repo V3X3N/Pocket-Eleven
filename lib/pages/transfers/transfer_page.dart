@@ -327,34 +327,47 @@ class _TransferPageState extends State<TransferPage> {
   }
 
   Widget _buildTransfersView(double screenWidth, double screenHeight) {
-    return ListView.builder(
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      itemCount: _players.length,
-      itemBuilder: (context, index) {
-        return TransfersPlayerWidget(player: _players[index]);
-      },
+    return Container(
+      margin: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.enabledColor, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: ListView.builder(
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        itemCount: _players.length,
+        itemBuilder: (context, index) {
+          return TransfersPlayerWidget(player: _players[index]);
+        },
+      ),
     );
   }
 
   Widget _buildStuffView(double screenWidth, double screenHeight) {
-    return ListView.builder(
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      itemCount: 10, // Example count
-      itemBuilder: (context, index) {
-        return Container(
-          margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+    return Container(
+        margin: EdgeInsets.all(screenWidth * 0.04),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.enabledColor, width: 1),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: ListView.builder(
           padding: EdgeInsets.all(screenWidth * 0.04),
-          decoration: BoxDecoration(
-            color: AppColors.secondaryColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'Stuff Item ${index + 1}',
-            style: const TextStyle(color: AppColors.textEnabledColor),
-          ),
-        );
-      },
-    );
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Stuff Item ${index + 1}',
+                style: const TextStyle(color: AppColors.textEnabledColor),
+              ),
+            );
+          },
+        ));
   }
 
   Widget _buildScoutingView(double screenWidth, double screenHeight) {
@@ -372,8 +385,13 @@ class _TransferPageState extends State<TransferPage> {
       'BRA',
       'JPN',
     ];
-    return Scaffold(
-      body: SingleChildScrollView(
+    return Container(
+      margin: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.enabledColor, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: SingleChildScrollView(
         child: Column(
           children: [
             Container(
@@ -384,7 +402,7 @@ class _TransferPageState extends State<TransferPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildScoutInfo(),
+                  _buildScoutInfo(screenWidth, screenHeight),
                   SizedBox(height: screenHeight * 0.06),
                   const Text(
                     'Select Position',
@@ -456,29 +474,51 @@ class _TransferPageState extends State<TransferPage> {
                       ],
                     ),
                   SizedBox(height: screenHeight * 0.04),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: canScout
-                          ? () async {
-                              setState(() {
-                                canScout = false;
-                              });
-                              await scheduleScoutAvailability();
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondaryColor,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.2,
-                          vertical: screenHeight * 0.02,
-                        ),
+                  GestureDetector(
+                    onTap: canScout
+                        ? () async {
+                            setState(() {
+                              canScout = false;
+                            });
+                            await scheduleScoutAvailability();
+                          }
+                        : null,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenHeight * 0.02,
+                        horizontal: screenWidth * 0.2,
                       ),
-                      child: const Text(
-                        'Scout',
-                        style: TextStyle(
-                          color: AppColors.textEnabledColor,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          width: 1,
+                          color:
+                              canScout ? AppColors.enabledColor : Colors.grey,
+                        ),
+                        color: canScout
+                            ? AppColors.secondaryColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: canScout
+                            ? [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: const Offset(0, 4),
+                                  blurRadius: 6,
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Scout',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: canScout
+                                ? AppColors.textEnabledColor
+                                : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -492,7 +532,7 @@ class _TransferPageState extends State<TransferPage> {
     );
   }
 
-  Widget _buildScoutInfo() {
+  Widget _buildScoutInfo(double screenWidth, double screenHeight) {
     final reductionPercentage = scoutingTimeReductionPercentage;
 
     return Row(
@@ -503,7 +543,7 @@ class _TransferPageState extends State<TransferPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Scouting',
+                'Europe Scouting',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -531,18 +571,46 @@ class _TransferPageState extends State<TransferPage> {
         ),
         Column(
           children: [
-            ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondaryColor,
-              ),
-              child: const Text(
-                'Upgrade',
-                style: TextStyle(
-                  color: AppColors.textEnabledColor,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: UserManager.money >= upgradeCost ? increaseLevel : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(
+                  vertical: screenHeight * 0.01,
+                  horizontal: screenWidth * 0.05,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    width: 1,
+                    color: UserManager.money >= upgradeCost
+                        ? AppColors.enabledColor
+                        : Colors.grey,
+                  ),
+                  color: UserManager.money >= upgradeCost
+                      ? AppColors.secondaryColor
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: UserManager.money >= upgradeCost
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            offset: const Offset(0, 4),
+                            blurRadius: 6,
+                          )
+                        ]
+                      : [],
+                ),
+                child: Center(
+                  child: Text(
+                    'Upgrade',
+                    style: TextStyle(
+                      fontSize: 12.0,
+                      color: UserManager.money >= upgradeCost
+                          ? AppColors.textEnabledColor
+                          : Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),
