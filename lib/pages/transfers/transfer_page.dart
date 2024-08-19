@@ -584,7 +584,7 @@ class _TransferPageState extends State<TransferPage> {
                   horizontal: screenWidth * 0.05,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(width: 1, color: AppColors.buttonColor),
+                  border: Border.all(width: 1, color: AppColors.borderColor),
                   color: UserManager.money >= upgradeCost
                       ? AppColors.blueColor
                       : AppColors.buttonColor,
