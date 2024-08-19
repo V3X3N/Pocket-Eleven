@@ -26,7 +26,7 @@ class TransfersPlayerWidget extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
-          color: AppColors.secondaryColor,
+          color: AppColors.blueColor,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(

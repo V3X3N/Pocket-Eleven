@@ -299,9 +299,9 @@ class _TransferPageState extends State<TransferPage> {
         decoration: BoxDecoration(
           border: Border.all(
             width: 1,
-            color: AppColors.enabledColor,
+            color: AppColors.borderColor,
           ),
-          color: isSelected ? AppColors.secondaryColor : Colors.transparent,
+          color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
@@ -318,7 +318,7 @@ class _TransferPageState extends State<TransferPage> {
             fontSize: 18,
             color: isSelected
                 ? AppColors.textEnabledColor
-                : AppColors.textDisabledColor,
+                : AppColors.textEnabledColor,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -330,7 +330,8 @@ class _TransferPageState extends State<TransferPage> {
     return Container(
       margin: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.enabledColor, width: 1),
+        color: AppColors.hoverColor,
+        border: Border.all(color: AppColors.borderColor, width: 1),
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: ListView.builder(
@@ -347,8 +348,9 @@ class _TransferPageState extends State<TransferPage> {
     return Container(
         margin: EdgeInsets.all(screenWidth * 0.04),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.enabledColor, width: 1),
+          border: Border.all(color: AppColors.borderColor, width: 1),
           borderRadius: BorderRadius.circular(10.0),
+          color: AppColors.hoverColor,
         ),
         child: ListView.builder(
           padding: EdgeInsets.all(screenWidth * 0.04),
@@ -358,7 +360,7 @@ class _TransferPageState extends State<TransferPage> {
               margin: EdgeInsets.only(bottom: screenHeight * 0.02),
               padding: EdgeInsets.all(screenWidth * 0.04),
               decoration: BoxDecoration(
-                color: AppColors.secondaryColor,
+                color: AppColors.blueColor,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -388,14 +390,14 @@ class _TransferPageState extends State<TransferPage> {
     return Container(
       margin: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.enabledColor, width: 1),
+        border: Border.all(color: AppColors.borderColor, width: 1),
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: SingleChildScrollView(
         child: Column(
           children: [
             Container(
-              color: AppColors.primaryColor,
+              color: AppColors.hoverColor,
               padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
                   vertical: screenHeight * 0.02),
@@ -403,7 +405,7 @@ class _TransferPageState extends State<TransferPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildScoutInfo(screenWidth, screenHeight),
-                  SizedBox(height: screenHeight * 0.06),
+                  SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Select Position',
                     style: TextStyle(
@@ -412,7 +414,7 @@ class _TransferPageState extends State<TransferPage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.02),
                   PositionSelector(
                     selectedPosition: selectedPosition,
                     canScout: canScout,
@@ -423,7 +425,7 @@ class _TransferPageState extends State<TransferPage> {
                       _saveSelectedPosition(position);
                     },
                   ),
-                  SizedBox(height: screenHeight * 0.06),
+                  SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Select Nationality',
                     style: TextStyle(
@@ -432,7 +434,7 @@ class _TransferPageState extends State<TransferPage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: screenHeight * 0.02),
                   NationalitySelector(
                     selectedNationality: selectedNationality,
                     canScout: canScout,
@@ -444,7 +446,7 @@ class _TransferPageState extends State<TransferPage> {
                     },
                     nationalities: nationalities,
                   ),
-                  SizedBox(height: screenHeight * 0.06),
+                  SizedBox(height: screenHeight * 0.02),
                   if (scoutedPlayers.isNotEmpty)
                     Column(
                       children: scoutedPlayers
@@ -455,14 +457,15 @@ class _TransferPageState extends State<TransferPage> {
                   if (!canScout)
                     Column(
                       children: [
+                        SizedBox(height: screenHeight * 0.02),
                         LinearProgressIndicator(
                           value: 1 -
                               _remainingTime.inSeconds /
                                   adjustedScoutCooldown.inSeconds,
-                          color: AppColors.secondaryColor,
+                          color: AppColors.blueColor,
                           backgroundColor: AppColors.hoverColor,
                         ),
-                        SizedBox(height: screenHeight * 0.01),
+                        SizedBox(height: screenHeight * 0.02),
                         Text(
                           'Next scout available in: ${formatDuration(_remainingTime)}',
                           style: const TextStyle(
@@ -473,7 +476,7 @@ class _TransferPageState extends State<TransferPage> {
                         ),
                       ],
                     ),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: screenHeight * 0.02),
                   GestureDetector(
                     onTap: canScout
                         ? () async {
@@ -492,12 +495,12 @@ class _TransferPageState extends State<TransferPage> {
                       decoration: BoxDecoration(
                         border: Border.all(
                           width: 1,
-                          color:
-                              canScout ? AppColors.enabledColor : Colors.grey,
+                          color: canScout
+                              ? AppColors.textEnabledColor
+                              : AppColors.textEnabledColor,
                         ),
-                        color: canScout
-                            ? AppColors.secondaryColor
-                            : Colors.transparent,
+                        color:
+                            canScout ? AppColors.blueColor : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: canScout
                             ? [
@@ -516,7 +519,7 @@ class _TransferPageState extends State<TransferPage> {
                             fontSize: 20.0,
                             color: canScout
                                 ? AppColors.textEnabledColor
-                                : Colors.grey,
+                                : AppColors.textEnabledColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -583,11 +586,11 @@ class _TransferPageState extends State<TransferPage> {
                   border: Border.all(
                     width: 1,
                     color: UserManager.money >= upgradeCost
-                        ? AppColors.enabledColor
-                        : Colors.grey,
+                        ? AppColors.buttonColor
+                        : AppColors.textEnabledColor,
                   ),
                   color: UserManager.money >= upgradeCost
-                      ? AppColors.secondaryColor
+                      ? AppColors.blueColor
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: UserManager.money >= upgradeCost
@@ -606,8 +609,8 @@ class _TransferPageState extends State<TransferPage> {
                     style: TextStyle(
                       fontSize: 12.0,
                       color: UserManager.money >= upgradeCost
-                          ? AppColors.textEnabledColor
-                          : Colors.grey,
+                          ? AppColors.green
+                          : AppColors.textEnabledColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -620,7 +623,7 @@ class _TransferPageState extends State<TransferPage> {
               style: TextStyle(
                 color: UserManager.money >= upgradeCost
                     ? AppColors.green
-                    : Colors.grey,
+                    : AppColors.textEnabledColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),

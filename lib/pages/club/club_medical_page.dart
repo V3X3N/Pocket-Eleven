@@ -141,7 +141,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
               onPressed:
                   UserManager.money >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondaryColor,
+                backgroundColor: AppColors.blueColor,
               ),
               child: const Text(
                 'Upgrade',
@@ -158,7 +158,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
               style: TextStyle(
                 color: UserManager.money >= upgradeCost
                     ? AppColors.green
-                    : Colors.grey,
+                    : AppColors.textEnabledColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),

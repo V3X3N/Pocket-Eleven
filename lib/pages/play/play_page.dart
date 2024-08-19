@@ -101,7 +101,7 @@ class _PlayPageState extends State<PlayPage> {
                 // TODO: Handle button press for PLAY
               },
               padding: EdgeInsets.all(screenWidth * 0.04),
-              color: AppColors.secondaryColor,
+              color: AppColors.blueColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(screenWidth * 0.025),
               ),
@@ -141,7 +141,7 @@ class _PlayPageState extends State<PlayPage> {
                       child: Text(
                         'Container 1',
                         style: TextStyle(
-                          color: AppColors.textDisabledColor,
+                          color: AppColors.textEnabledColor,
                           fontSize: 18,
                         ),
                       ),
@@ -169,7 +169,7 @@ class _PlayPageState extends State<PlayPage> {
                       child: Text(
                         'Container 2',
                         style: TextStyle(
-                          color: AppColors.textDisabledColor,
+                          color: AppColors.textEnabledColor,
                           fontSize: 18,
                         ),
                       ),
@@ -203,7 +203,7 @@ class _PlayPageState extends State<PlayPage> {
                       child: Text(
                         'Container 3',
                         style: TextStyle(
-                          color: AppColors.textDisabledColor,
+                          color: AppColors.textEnabledColor,
                           fontSize: 18,
                         ),
                       ),
@@ -231,7 +231,7 @@ class _PlayPageState extends State<PlayPage> {
                       child: Text(
                         'Container 4',
                         style: TextStyle(
-                          color: AppColors.textDisabledColor,
+                          color: AppColors.textEnabledColor,
                           fontSize: 18,
                         ),
                       ),

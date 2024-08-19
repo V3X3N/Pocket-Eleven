@@ -109,7 +109,7 @@ class ProfilePageState extends State<ProfilePage> {
         Text(
           clubName,
           style: const TextStyle(
-            color: AppColors.textDisabledColor,
+            color: AppColors.textEnabledColor,
             fontSize: 18,
             fontStyle: FontStyle.italic,
           ),
@@ -125,7 +125,7 @@ class ProfilePageState extends State<ProfilePage> {
         Text(
           managerName,
           style: const TextStyle(
-            color: AppColors.textDisabledColor,
+            color: AppColors.textEnabledColor,
             fontSize: 30,
             fontWeight: FontWeight.bold,
           ),

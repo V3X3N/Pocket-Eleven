@@ -139,7 +139,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
               onPressed:
                   UserManager.money >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondaryColor,
+                backgroundColor: AppColors.blueColor,
               ),
               child: const Text(
                 'Upgrade',
@@ -156,7 +156,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
               style: TextStyle(
                 color: UserManager.money >= upgradeCost
                     ? AppColors.green
-                    : Colors.grey,
+                    : AppColors.textEnabledColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
