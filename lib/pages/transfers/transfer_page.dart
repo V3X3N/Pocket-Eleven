@@ -543,7 +543,7 @@ class _TransferPageState extends State<TransferPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Europe Scouting',
+                'Scouting',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
