@@ -27,7 +27,8 @@ class TransfersPlayerWidget extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
           color: AppColors.blueColor,
-          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderColor, width: 1),
+          borderRadius: BorderRadius.circular(10.0),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -499,8 +499,9 @@ class _TransferPageState extends State<TransferPage> {
                               ? AppColors.textEnabledColor
                               : AppColors.textEnabledColor,
                         ),
-                        color:
-                            canScout ? AppColors.blueColor : Colors.transparent,
+                        color: canScout
+                            ? AppColors.blueColor
+                            : AppColors.buttonColor,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: canScout
                             ? [
@@ -583,15 +584,10 @@ class _TransferPageState extends State<TransferPage> {
                   horizontal: screenWidth * 0.05,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    width: 1,
-                    color: UserManager.money >= upgradeCost
-                        ? AppColors.buttonColor
-                        : AppColors.textEnabledColor,
-                  ),
+                  border: Border.all(width: 1, color: AppColors.buttonColor),
                   color: UserManager.money >= upgradeCost
                       ? AppColors.blueColor
-                      : Colors.transparent,
+                      : AppColors.buttonColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: UserManager.money >= upgradeCost
                       ? [

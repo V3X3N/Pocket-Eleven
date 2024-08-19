@@ -33,10 +33,11 @@ class NationalitySelector extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
+                border: Border.all(color: AppColors.borderColor, width: 1),
+                borderRadius: BorderRadius.circular(10.0),
                 color: selectedNationality == countryCode
                     ? AppColors.blueColor
                     : AppColors.buttonColor,
-                borderRadius: BorderRadius.circular(10.0),
               ),
               child: Center(
                 child: Image.asset(

@@ -49,6 +49,7 @@ class PositionSelector extends StatelessWidget {
                 color: selectedPosition == position
                     ? AppColors.blueColor
                     : AppColors.buttonColor,
+                border: Border.all(color: AppColors.borderColor, width: 1),
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Center(
