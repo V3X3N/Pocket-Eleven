@@ -12,6 +12,7 @@ class BottomNavBar extends StatelessWidget {
     required this.onTabChange,
     required this.navBarHeight,
     required this.screenWidth,
+    required void Function(dynamic newCurrency) onCurrencyChange,
   });
 
   @override
