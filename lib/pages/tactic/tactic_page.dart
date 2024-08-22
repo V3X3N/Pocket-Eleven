@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
 
@@ -137,45 +138,49 @@ class _TacticPageState extends State<TacticPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Color Switch'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: [
-                _buildRedContainer(screenWidth, screenHeight),
-                _buildGreenContainer(screenWidth, screenHeight),
-              ],
+      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
+      body: Container(
+        color: AppColors.primaryColor,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.02,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildOptionButton(
+                    index: 0,
+                    text: 'Formation',
+                    onTap: () => _onOptionSelected(0),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+                  SizedBox(width: screenWidth * 0.04),
+                  _buildOptionButton(
+                    index: 1,
+                    text: 'Players',
+                    onTap: () => _onOptionSelected(1),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(
-                bottom: screenHeight * 0.02, top: screenHeight * 0.01),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildOptionButton(
-                  index: 0,
-                  text: 'Red',
-                  onTap: () => _onOptionSelected(0),
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                ),
-                SizedBox(width: screenWidth * 0.04),
-                _buildOptionButton(
-                  index: 1,
-                  text: 'Green',
-                  onTap: () => _onOptionSelected(1),
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                ),
-              ],
+            Expanded(
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: [
+                  _buildFormationContainer(screenWidth, screenHeight),
+                  _buildPlayersContainer(screenWidth, screenHeight),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -195,14 +200,28 @@ class _TacticPageState extends State<TacticPage> {
         padding: EdgeInsets.symmetric(
             vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.grey,
+          border: Border.all(
+            width: 1,
+            color: AppColors.borderColor,
+          ),
+          color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      offset: const Offset(0, 4),
+                      blurRadius: 6)
+                ]
+              : [],
         ),
         child: Text(
           text,
           style: TextStyle(
             fontSize: 18,
-            color: isSelected ? Colors.white : Colors.black,
+            color: isSelected
+                ? AppColors.textEnabledColor
+                : AppColors.textEnabledColor,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -210,66 +229,59 @@ class _TacticPageState extends State<TacticPage> {
     );
   }
 
-  Widget _buildRedContainer(double screenWidth, double screenHeight) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Tactic',
-          style: TextStyle(
-            color: AppColors.textEnabledColor,
-            fontSize: 25,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppColors.hoverColor,
-        centerTitle: true,
+  Widget _buildFormationContainer(double screenWidth, double screenHeight) {
+    return Container(
+      margin: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor,
+        border: Border.all(color: AppColors.borderColor, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
       ),
-      body: Container(
-        color: AppColors.primaryColor,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_left),
-                  onPressed: () {
-                    setState(() {
-                      selectedFormation = _previousFormation(selectedFormation);
-                      _changeFormation(selectedFormation);
-                    });
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    selectedFormation,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.textEnabledColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+      width: screenWidth,
+      height: screenHeight,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left),
+                onPressed: () {
+                  setState(() {
+                    selectedFormation = _previousFormation(selectedFormation);
+                    _changeFormation(selectedFormation);
+                  });
+                },
+              ),
+              Expanded(
+                child: Text(
+                  selectedFormation,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_right),
-                  onPressed: () {
-                    setState(() {
-                      selectedFormation = _nextFormation(selectedFormation);
-                      _changeFormation(selectedFormation);
-                    });
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-              flex: 3,
-              child: Stack(
-                children: _buildFieldPositions(),
               ),
+              IconButton(
+                icon: const Icon(Icons.arrow_right),
+                onPressed: () {
+                  setState(() {
+                    selectedFormation = _nextFormation(selectedFormation);
+                    _changeFormation(selectedFormation);
+                  });
+                },
+              ),
+            ],
+          ),
+          Expanded(
+            flex: 3,
+            child: Stack(
+              children: _buildFieldPositions(),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -287,22 +299,23 @@ class _TacticPageState extends State<TacticPage> {
     }
   }
 
+// TODO: Fix positions' placement
   List<Widget> _buildFieldPositions442() {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height * 0.5;
 
     Map<String, Offset> positions = {
-      'ST1': Offset(width * 0.5 - 75, height * 0.1),
-      'ST2': Offset(width * 0.5 + 15, height * 0.1),
-      'LM': Offset(width * 0.1, height * 0.33),
-      'CM1': Offset(width * 0.5 - 75, height * 0.37),
-      'CM2': Offset(width * 0.5 + 15, height * 0.37),
-      'RM': Offset(width * 0.9 - 60, height * 0.33),
+      'ST1': Offset(width * 0.5 - 100, height * 0.1),
+      'ST2': Offset(width * 0.5, height * 0.1),
+      'LM': Offset(width * 0.1 - 15, height * 0.33),
+      'CM1': Offset(width * 0.5 - 100, height * 0.37),
+      'CM2': Offset(width * 0.5, height * 0.37),
+      'RM': Offset(width * 0.9 - 75, height * 0.33),
       'LB': Offset(width * 0.1, height * 0.6),
       'CB1': Offset(width * 0.5 - 75, height * 0.65),
       'CB2': Offset(width * 0.5 + 15, height * 0.65),
       'RB': Offset(width * 0.9 - 60, height * 0.6),
-      'GK': Offset(width * 0.5 - 30, height * 0.9),
+      'GK': Offset(width * 0.4, height * 0.9),
     };
 
     return _buildFieldWidgets(positions);
@@ -368,7 +381,7 @@ class _TacticPageState extends State<TacticPage> {
                   decoration: BoxDecoration(
                     color: AppColors.hoverColor,
                     border: Border.all(
-                      color: AppColors.textEnabledColor,
+                      color: AppColors.borderColor,
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -414,21 +427,16 @@ class _TacticPageState extends State<TacticPage> {
     });
   }
 
-  Widget _buildGreenContainer(double screenWidth, double screenHeight) {
+  Widget _buildPlayersContainer(double screenWidth, double screenHeight) {
     return Container(
-      color: Colors.green,
+      margin: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor,
+        border: Border.all(color: AppColors.borderColor, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
       width: screenWidth,
       height: screenHeight,
-      child: const Center(
-        child: Text(
-          'Green Container',
-          style: TextStyle(
-            fontSize: 24,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 }
