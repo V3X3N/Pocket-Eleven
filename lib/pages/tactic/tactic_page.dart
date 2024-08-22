@@ -278,7 +278,7 @@ class _TacticPageState extends State<TacticPage> {
           Expanded(
             flex: 3,
             child: Stack(
-              children: _buildFieldPositions(),
+              children: _buildFieldPositions(screenWidth, screenHeight),
             ),
           ),
         ],
@@ -286,98 +286,89 @@ class _TacticPageState extends State<TacticPage> {
     );
   }
 
-  List<Widget> _buildFieldPositions() {
+  List<Widget> _buildFieldPositions(screenWidth, screenHeight) {
     switch (selectedFormation) {
       case '4-4-2':
-        return _buildFieldPositions442();
+        return _buildFieldPositions442(screenWidth, screenHeight);
       case '4-3-3':
-        return _buildFieldPositions433();
+        return _buildFieldPositions433(screenWidth, screenHeight);
       case '3-5-2':
-        return _buildFieldPositions352();
+        return _buildFieldPositions352(screenWidth, screenHeight);
       default:
-        return _buildFieldPositions442();
+        return _buildFieldPositions442(screenWidth, screenHeight);
     }
   }
 
 // TODO: Fix positions' placement
-  List<Widget> _buildFieldPositions442() {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height * 0.5;
-
+  List<Widget> _buildFieldPositions442(screenWidth, screenHeight) {
     Map<String, Offset> positions = {
-      'ST1': Offset(width * 0.5 - 100, height * 0.1),
-      'ST2': Offset(width * 0.5, height * 0.1),
-      'LM': Offset(width * 0.1 - 15, height * 0.33),
-      'CM1': Offset(width * 0.5 - 100, height * 0.37),
-      'CM2': Offset(width * 0.5, height * 0.37),
-      'RM': Offset(width * 0.9 - 75, height * 0.33),
-      'LB': Offset(width * 0.1, height * 0.6),
-      'CB1': Offset(width * 0.5 - 75, height * 0.65),
-      'CB2': Offset(width * 0.5 + 15, height * 0.65),
-      'RB': Offset(width * 0.9 - 60, height * 0.6),
-      'GK': Offset(width * 0.4, height * 0.9),
+      'ST1': Offset(screenWidth * 0.38, screenHeight * 0.05),
+      'ST2': Offset(screenWidth * 0.62, screenHeight * 0.05),
+      'LM': Offset(screenWidth * 0.15, screenHeight * 0.2),
+      'CM1': Offset(screenWidth * 0.38, screenHeight * 0.25),
+      'CM2': Offset(screenWidth * 0.62, screenHeight * 0.25),
+      'RM': Offset(screenWidth * 0.85, screenHeight * 0.2),
+      'LB': Offset(screenWidth * 0.15, screenHeight * 0.38),
+      'CB1': Offset(screenWidth * 0.38, screenHeight * 0.4),
+      'CB2': Offset(screenWidth * 0.62, screenHeight * 0.4),
+      'RB': Offset(screenWidth * 0.85, screenHeight * 0.38),
+      'GK': Offset(screenWidth * 0.5, screenHeight * 0.5),
     };
 
-    return _buildFieldWidgets(positions);
+    return _buildFieldWidgets(positions, screenWidth, screenHeight);
   }
 
-  List<Widget> _buildFieldPositions433() {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height * 0.5;
-
+  List<Widget> _buildFieldPositions433(screenWidth, screenHeight) {
     Map<String, Offset> positions = {
-      'ST1': Offset(width * 0.5 - 30, height * 0.1),
-      'LW': Offset(width * 0.1, height * 0.15),
-      'RW': Offset(width * 0.9 - 60, height * 0.15),
-      'CM1': Offset(width * 0.3 - 30, height * 0.37),
-      'CM2': Offset(width * 0.5 - 30, height * 0.37),
-      'CM3': Offset(width * 0.7 - 30, height * 0.37),
-      'LB': Offset(width * 0.1, height * 0.6),
-      'CB1': Offset(width * 0.5 - 75, height * 0.65),
-      'CB2': Offset(width * 0.5 + 15, height * 0.65),
-      'RB': Offset(width * 0.9 - 60, height * 0.6),
-      'GK': Offset(width * 0.5 - 30, height * 0.9),
+      'ST1': Offset(screenWidth * 0.5, screenHeight * 0.05),
+      'LW': Offset(screenWidth * 0.2, screenHeight * 0.1),
+      'RW': Offset(screenWidth * 0.8, screenHeight * 0.1),
+      'CM1': Offset(screenWidth * 0.3, screenHeight * 0.22),
+      'CM2': Offset(screenWidth * 0.5, screenHeight * 0.22),
+      'CM3': Offset(screenWidth * 0.7, screenHeight * 0.22),
+      'LB': Offset(screenWidth * 0.15, screenHeight * 0.38),
+      'CB1': Offset(screenWidth * 0.38, screenHeight * 0.4),
+      'CB2': Offset(screenWidth * 0.62, screenHeight * 0.4),
+      'RB': Offset(screenWidth * 0.85, screenHeight * 0.38),
+      'GK': Offset(screenWidth * 0.5, screenHeight * 0.5),
     };
 
-    return _buildFieldWidgets(positions);
+    return _buildFieldWidgets(positions, screenWidth, screenHeight);
   }
 
-  List<Widget> _buildFieldPositions352() {
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height * 0.5;
-
+  List<Widget> _buildFieldPositions352(screenWidth, screenHeight) {
     Map<String, Offset> positions = {
-      'ST1': Offset(width * 0.5 - 75, height * 0.1),
-      'ST2': Offset(width * 0.5 + 15, height * 0.1),
-      'CAM': Offset(width * 0.5 - 30, height * 0.33),
-      'LM': Offset(width * 0.1, height * 0.35),
-      'CDM1': Offset(width * 0.4 - 60, height * 0.38),
-      'CDM2': Offset(width * 0.6, height * 0.38),
-      'RM': Offset(width * 0.9 - 60, height * 0.35),
-      'CB2': Offset(width * 0.5 - 30, height * 0.65),
-      'CB1': Offset(width * 0.25 - 30, height * 0.65),
-      'CB3': Offset(width * 0.75 - 30, height * 0.65),
-      'GK': Offset(width * 0.5 - 30, height * 0.9),
+      'ST1': Offset(screenWidth * 0.38, screenHeight * 0.05),
+      'ST2': Offset(screenWidth * 0.62, screenHeight * 0.05),
+      'CAM': Offset(screenWidth * 0.5, screenHeight * 0.2),
+      'LM': Offset(screenWidth * 0.15, screenHeight * 0.23),
+      'CDM1': Offset(screenWidth * 0.33, screenHeight * 0.25),
+      'CDM2': Offset(screenWidth * 0.67, screenHeight * 0.25),
+      'RM': Offset(screenWidth * 0.85, screenHeight * 0.23),
+      'CB2': Offset(screenWidth * 0.5, screenHeight * 0.4),
+      'CB1': Offset(screenWidth * 0.25, screenHeight * 0.4),
+      'CB3': Offset(screenWidth * 0.75, screenHeight * 0.4),
+      'GK': Offset(screenWidth * 0.5, screenHeight * 0.5),
     };
 
-    return _buildFieldWidgets(positions);
+    return _buildFieldWidgets(positions, screenWidth, screenHeight);
   }
 
-  List<Widget> _buildFieldWidgets(Map<String, Offset> positions) {
+  List<Widget> _buildFieldWidgets(
+      Map<String, Offset> positions, screenWidth, screenHeight) {
     List<Widget> widgets = [];
+    const double widgetSize = 60;
     positions.forEach((position, offset) {
       widgets.add(Positioned(
-        left: offset.dx,
+        left: offset.dx - 45,
         top: offset.dy,
-        width: 60,
-        height: 100,
         child: DragTarget<Player>(
           builder: (context, candidateData, rejectedData) {
             return Column(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: widgetSize,
+                  height: widgetSize,
                   decoration: BoxDecoration(
                     color: AppColors.hoverColor,
                     border: Border.all(
