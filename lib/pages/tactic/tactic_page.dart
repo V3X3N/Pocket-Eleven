@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
-import 'package:pocket_eleven/components/player_details.dart';
 
 class TacticPage extends StatefulWidget {
   const TacticPage({super.key});
@@ -217,96 +216,6 @@ class _TacticPageState extends State<TacticPage> {
                       children: _buildFieldPositions(),
                     ),
                   ),
-                  const Divider(
-                    color: AppColors.textEnabledColor,
-                    height: 1,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 5,
-                          childAspectRatio: 0.7,
-                          mainAxisSpacing: 5,
-                          crossAxisSpacing: 5,
-                        ),
-                        itemCount: footballers.length,
-                        itemBuilder: (context, index) {
-                          Player player = footballers[index];
-                          return DragTarget<Player>(
-                            builder: (context, candidateData, rejectedData) {
-                              return Draggable<Player>(
-                                data: player,
-                                feedback: _buildPlayerAvatar(player),
-                                childWhenDragging: Container(),
-                                child: Container(
-                                  width: 80,
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryColor,
-                                    border: Border.all(
-                                        color: AppColors.textEnabledColor),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      _buildPlayerAvatar(player),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _truncateWithEllipsis(player.name, 6),
-                                        style: const TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      Text(
-                                        positionAbbreviations[
-                                                player.position] ??
-                                            player.position,
-                                        style: const TextStyle(
-                                          color: AppColors.textEnabledColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onDragStarted: () {
-                                  setState(() {
-                                    draggedPlayerOriginalPosition = null;
-                                  });
-                                },
-                                onDraggableCanceled: (_, __) {
-                                  setState(() {
-                                    draggedPlayerOriginalPosition = null;
-                                  });
-                                },
-                              );
-                            },
-                            onAccept: (data) {
-                              setState(() {
-                                footballers.remove(data);
-                                footballers.insert(index, data);
-                                if (draggedPlayerOriginalPosition != null) {
-                                  fieldPositions[
-                                      draggedPlayerOriginalPosition!] = player;
-                                }
-                                draggedPlayerOriginalPosition = null;
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -433,8 +342,6 @@ class _TacticPageState extends State<TacticPage> {
         child: DragTarget<Player>(
           builder: (context, candidateData, rejectedData) {
             Player? currentPlayer = fieldPositions[position];
-            bool isCorrectPosition = currentPlayer != null &&
-                currentPlayer.position == positionAbbreviations[position];
 
             return Column(
               children: [
@@ -442,106 +349,25 @@ class _TacticPageState extends State<TacticPage> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: currentPlayer != null
-                        ? (isCorrectPosition
-                            ? AppColors.green
-                            : Colors.orangeAccent)
-                        : AppColors.hoverColor,
+                    color: AppColors.hoverColor,
                     border: Border.all(
                       color: AppColors.textEnabledColor,
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Stack(
-                    children: [
-                      if (currentPlayer == null)
-                        Center(
-                          child: Text(
-                            abbreviation,
-                            style: const TextStyle(
-                              color: AppColors.textEnabledColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      if (currentPlayer != null)
-                        Positioned.fill(
-                          child: Draggable<Player>(
-                            data: currentPlayer,
-                            feedback: _buildPlayerAvatar(currentPlayer),
-                            child: _buildPlayerAvatar(currentPlayer),
-                            onDragStarted: () {
-                              setState(() {
-                                draggedPlayerOriginalPosition = position;
-                              });
-                            },
-                            onDraggableCanceled: (_, __) {
-                              setState(() {
-                                draggedPlayerOriginalPosition = null;
-                              });
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
                 ),
                 if (currentPlayer != null)
                   Text(
                     '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
-                    style: TextStyle(
-                      color: isCorrectPosition
-                          ? AppColors.green
-                          : Colors.orangeAccent,
-                      fontWeight: FontWeight.bold,
-                    ),
                     textAlign: TextAlign.center,
                   ),
               ],
             );
-          },
-          onAccept: (data) {
-            setState(() {
-              Player? currentPlayer = fieldPositions[position];
-              fieldPositions[position] = data;
-
-              if (draggedPlayerOriginalPosition != null) {
-                fieldPositions[draggedPlayerOriginalPosition!] = currentPlayer;
-              } else if (currentPlayer != null) {
-                footballers.add(currentPlayer);
-              }
-              footballers.remove(data);
-            });
           },
         ),
       ));
     });
 
     return widgets;
-  }
-
-  Widget _buildPlayerAvatar(Player player) {
-    return GestureDetector(
-      onTap: () => _showPlayerDetails(player),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(player.imagePath),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showPlayerDetails(Player player) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return PlayerDetailsDialog(player: player);
-      },
-    );
   }
 }
