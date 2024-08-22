@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
 
@@ -11,8 +10,7 @@ class TacticPage extends StatefulWidget {
 }
 
 class _TacticPageState extends State<TacticPage> {
-  bool _isLoading = true;
-  List<Player> footballers = [];
+  int _selectedIndex = 0;
   Map<String, Player?> fieldPositions = {
     'ST1': null,
     'ST2': null,
@@ -127,32 +125,92 @@ class _TacticPageState extends State<TacticPage> {
     },
   };
 
-  @override
-  void initState() {
-    super.initState();
-    _generateRandomFootballers();
-  }
-
-  Future<void> _generateRandomFootballers() async {
-    List<Player> tempList = [];
-    for (int i = 0; i < 20; i++) {
-      tempList.add(await Player.generateRandomFootballer());
-    }
-
+  void _onOptionSelected(int index) {
     setState(() {
-      footballers = tempList;
-      _isLoading = false;
+      _selectedIndex = index;
     });
-  }
-
-  String _truncateWithEllipsis(String text, int maxLength) {
-    return text.length > maxLength
-        ? '${text.substring(0, maxLength)}...'
-        : text;
   }
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Color Switch'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                _buildRedContainer(screenWidth, screenHeight),
+                _buildGreenContainer(screenWidth, screenHeight),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+                bottom: screenHeight * 0.02, top: screenHeight * 0.01),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildOptionButton(
+                  index: 0,
+                  text: 'Red',
+                  onTap: () => _onOptionSelected(0),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                ),
+                SizedBox(width: screenWidth * 0.04),
+                _buildOptionButton(
+                  index: 1,
+                  text: 'Green',
+                  onTap: () => _onOptionSelected(1),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionButton({
+    required int index,
+    required String text,
+    required VoidCallback onTap,
+    required double screenWidth,
+    required double screenHeight,
+  }) {
+    bool isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue : Colors.grey,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 18,
+            color: isSelected ? Colors.white : Colors.black,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRedContainer(double screenWidth, double screenHeight) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -166,91 +224,54 @@ class _TacticPageState extends State<TacticPage> {
         backgroundColor: AppColors.hoverColor,
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Container(
-              color: AppColors.primaryColor,
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_left),
-                        onPressed: () {
-                          setState(() {
-                            selectedFormation =
-                                _previousFormation(selectedFormation);
-                            _changeFormation(selectedFormation);
-                          });
-                        },
-                      ),
-                      Expanded(
-                        child: Text(
-                          selectedFormation,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.textEnabledColor,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_right),
-                        onPressed: () {
-                          setState(() {
-                            selectedFormation =
-                                _nextFormation(selectedFormation);
-                            _changeFormation(selectedFormation);
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Stack(
-                      children: _buildFieldPositions(),
+      body: Container(
+        color: AppColors.primaryColor,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_left),
+                  onPressed: () {
+                    setState(() {
+                      selectedFormation = _previousFormation(selectedFormation);
+                      _changeFormation(selectedFormation);
+                    });
+                  },
+                ),
+                Expanded(
+                  child: Text(
+                    selectedFormation,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.textEnabledColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_right),
+                  onPressed: () {
+                    setState(() {
+                      selectedFormation = _nextFormation(selectedFormation);
+                      _changeFormation(selectedFormation);
+                    });
+                  },
+                ),
+              ],
+            ),
+            Expanded(
+              flex: 3,
+              child: Stack(
+                children: _buildFieldPositions(),
               ),
             ),
+          ],
+        ),
+      ),
     );
-  }
-
-  String _previousFormation(String current) {
-    List<String> keys = formations.keys.toList();
-    int currentIndex = keys.indexOf(current);
-    return keys[(currentIndex - 1 + keys.length) % keys.length];
-  }
-
-  String _nextFormation(String current) {
-    List<String> keys = formations.keys.toList();
-    int currentIndex = keys.indexOf(current);
-    return keys[(currentIndex + 1) % keys.length];
-  }
-
-  void _changeFormation(String newFormation) {
-    Map<String, Player?> newFieldPositions = {};
-    Map<String, String> mapping = positionMapping[newFormation] ?? {};
-
-    fieldPositions.forEach((key, value) {
-      if (value != null) {
-        if (mapping.containsKey(key)) {
-          newFieldPositions[mapping[key]!] = value;
-        } else {
-          newFieldPositions[key] = value;
-        }
-      }
-    });
-
-    setState(() {
-      fieldPositions = newFieldPositions;
-    });
   }
 
   List<Widget> _buildFieldPositions() {
@@ -332,8 +353,6 @@ class _TacticPageState extends State<TacticPage> {
   List<Widget> _buildFieldWidgets(Map<String, Offset> positions) {
     List<Widget> widgets = [];
     positions.forEach((position, offset) {
-      String abbreviation = positionAbbreviations[position] ?? '';
-
       widgets.add(Positioned(
         left: offset.dx,
         top: offset.dy,
@@ -341,8 +360,6 @@ class _TacticPageState extends State<TacticPage> {
         height: 100,
         child: DragTarget<Player>(
           builder: (context, candidateData, rejectedData) {
-            Player? currentPlayer = fieldPositions[position];
-
             return Column(
               children: [
                 Container(
@@ -356,11 +373,6 @@ class _TacticPageState extends State<TacticPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                if (currentPlayer != null)
-                  Text(
-                    '$abbreviation ${_truncateWithEllipsis(currentPlayer.name, 6)}',
-                    textAlign: TextAlign.center,
-                  ),
               ],
             );
           },
@@ -369,5 +381,54 @@ class _TacticPageState extends State<TacticPage> {
     });
 
     return widgets;
+  }
+
+  String _previousFormation(String current) {
+    List<String> keys = formations.keys.toList();
+    int currentIndex = keys.indexOf(current);
+    return keys[(currentIndex - 1 + keys.length) % keys.length];
+  }
+
+  String _nextFormation(String current) {
+    List<String> keys = formations.keys.toList();
+    int currentIndex = keys.indexOf(current);
+    return keys[(currentIndex + 1) % keys.length];
+  }
+
+  void _changeFormation(String newFormation) {
+    Map<String, Player?> newFieldPositions = {};
+    Map<String, String> mapping = positionMapping[newFormation] ?? {};
+
+    fieldPositions.forEach((key, value) {
+      if (value != null) {
+        if (mapping.containsKey(key)) {
+          newFieldPositions[mapping[key]!] = value;
+        } else {
+          newFieldPositions[key] = value;
+        }
+      }
+    });
+
+    setState(() {
+      fieldPositions = newFieldPositions;
+    });
+  }
+
+  Widget _buildGreenContainer(double screenWidth, double screenHeight) {
+    return Container(
+      color: Colors.green,
+      width: screenWidth,
+      height: screenHeight,
+      child: const Center(
+        child: Text(
+          'Green Container',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
 }
