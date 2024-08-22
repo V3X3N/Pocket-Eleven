@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -240,28 +241,31 @@ class _TransferPageState extends State<TransferPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildOptionButton(
+                  OptionButton(
                     index: 0,
                     text: 'Transfers',
                     onTap: () => _onOptionSelected(0),
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
                   ),
                   SizedBox(width: screenWidth * 0.04),
-                  _buildOptionButton(
+                  OptionButton(
                     index: 1,
                     text: 'Stuff',
                     onTap: () => _onOptionSelected(1),
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
                   ),
                   SizedBox(width: screenWidth * 0.04),
-                  _buildOptionButton(
+                  OptionButton(
                     index: 2,
                     text: 'Scouting',
                     onTap: () => _onOptionSelected(2),
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
                   ),
                 ],
               ),
@@ -277,50 +281,6 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionButton({
-    required int index,
-    required String text,
-    required VoidCallback onTap,
-    required double screenWidth,
-    required double screenHeight,
-  }) {
-    bool isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(
-            vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
-        decoration: BoxDecoration(
-          border: Border.all(
-            width: 1,
-            color: AppColors.borderColor,
-          ),
-          color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 6)
-                ]
-              : [],
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 18,
-            color: isSelected
-                ? AppColors.textEnabledColor
-                : AppColors.textEnabledColor,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
         ),
       ),
     );
