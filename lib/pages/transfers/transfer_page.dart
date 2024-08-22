@@ -599,14 +599,12 @@ class _TransferPageState extends State<TransferPage> {
                         ]
                       : [],
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     'Upgrade',
                     style: TextStyle(
                       fontSize: 12.0,
-                      color: UserManager.money >= upgradeCost
-                          ? AppColors.green
-                          : AppColors.textEnabledColor,
+                      color: AppColors.textEnabledColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
