@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class PlayersView extends StatelessWidget {
-  const PlayersView({Key? key}) : super(key: key);
+  const PlayersView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +18,16 @@ class PlayersView extends StatelessWidget {
       ),
       width: screenWidth,
       height: screenHeight,
+      child: const Center(
+        child: Text(
+          // TODO: Implement players data from firestore
+          'Players Container',
+          style: TextStyle(
+            color: AppColors.textEnabledColor,
+            fontSize: 18,
+          ),
+        ),
+      ),
     );
   }
 }

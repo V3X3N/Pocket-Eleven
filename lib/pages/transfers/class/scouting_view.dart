@@ -14,8 +14,7 @@ import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dar
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScoutingView extends StatefulWidget {
-  const ScoutingView({Key? key, required this.onCurrencyChange})
-      : super(key: key);
+  const ScoutingView({super.key, required this.onCurrencyChange});
   final VoidCallback onCurrencyChange;
 
   @override
@@ -376,8 +375,9 @@ class _ScoutingViewState extends State<ScoutingView> {
                   if (scoutedPlayers.isNotEmpty)
                     Column(
                       children: scoutedPlayers
-                          .map(
-                              (player) => TransfersPlayerWidget(player: player))
+                          .map((player) => TransfersPlayerWidget(
+                              // TODO: Implement player data to firestore
+                              player: player))
                           .toList(),
                     ),
                   if (!canScout)

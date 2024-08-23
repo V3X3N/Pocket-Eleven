@@ -204,6 +204,7 @@ class _FormationViewState extends State<FormationView> {
     }
   }
 
+  // TODO: Fix position placement
   List<Widget> _buildFieldPositions442(
       double screenWidth, double screenHeight) {
     Map<String, Offset> positions = {

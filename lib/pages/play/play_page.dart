@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/play/widgets/match_container.dart';
-import 'package:pocket_eleven/pages/play/widgets/standings_container.dart';
+import 'package:pocket_eleven/pages/play/widgets/match_view.dart';
+import 'package:pocket_eleven/pages/play/widgets/league_view.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage({super.key});
@@ -65,9 +65,9 @@ class _PlayPageState extends State<PlayPage> {
               child: IndexedStack(
                 index: _selectedIndex,
                 children: [
-                  MatchContainer(
+                  MatchView(
                       screenWidth: screenWidth, screenHeight: screenHeight),
-                  StandingsContainer(
+                  LeagueView(
                       screenWidth: screenWidth, screenHeight: screenHeight),
                 ],
               ),

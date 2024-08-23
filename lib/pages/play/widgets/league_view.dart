@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-class StandingsContainer extends StatelessWidget {
-  const StandingsContainer(
+class LeagueView extends StatelessWidget {
+  const LeagueView(
       {required this.screenWidth, required this.screenHeight, super.key});
 
   final double screenWidth;
@@ -21,6 +21,7 @@ class StandingsContainer extends StatelessWidget {
       height: screenHeight,
       child: const Center(
         child: Text(
+          // TODO: Implement league data from firestore
           'Standings Container',
           style: TextStyle(
             color: AppColors.textEnabledColor,

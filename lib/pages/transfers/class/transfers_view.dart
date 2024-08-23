@@ -45,7 +45,9 @@ class _TransfersViewState extends State<TransfersView> {
         padding: EdgeInsets.all(screenWidth * 0.04),
         itemCount: _players.length,
         itemBuilder: (context, index) {
-          return TransfersPlayerWidget(player: _players[index]);
+          return TransfersPlayerWidget(
+              // TODO: Implement transfers data to firestore
+              player: _players[index]);
         },
       ),
     );
