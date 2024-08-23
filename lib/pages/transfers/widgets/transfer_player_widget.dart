@@ -5,6 +5,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
 class TransfersPlayerWidget extends StatelessWidget {
   final Player player;
@@ -56,7 +57,9 @@ class TransfersPlayerWidget extends StatelessWidget {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Player added to your club successfully')),
+      const SnackBar(
+          content: Text('Player added to your club successfully'),
+          duration: Duration(seconds: 1)),
     );
   }
 
@@ -77,7 +80,9 @@ class TransfersPlayerWidget extends StatelessWidget {
 
     if (!canAdd) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot add player: club limit reached')),
+        const SnackBar(
+            content: Text('Cannot add player: club limit reached'),
+            duration: Duration(seconds: 1)),
       );
       return;
     }
@@ -85,19 +90,15 @@ class TransfersPlayerWidget extends StatelessWidget {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Selection'),
-          content: Text('Are you sure you want to select ${player.name}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Yes'),
-            ),
-          ],
+        return CustomConfirmDialog(
+          title: 'Confirm Selection',
+          message: 'Are you sure you want to select ${player.name}?',
+          onConfirm: () async {
+            await _savePlayerToFirestore(context);
+          },
+          onCancel: () {
+            // TODO: Handle the cancel action if needed
+          },
         );
       },
     );
