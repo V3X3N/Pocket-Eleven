@@ -4,7 +4,6 @@ class ImageLoader {
   static Future<void> precacheImages(BuildContext context) async {
     List<String> imagePaths = [
       'assets/background/loading_bg.png',
-      'assets/background/league_bg.png',
       //Badges
       'assets/players/player_card_bronze.png',
       'assets/players/player_card_silver.png',
