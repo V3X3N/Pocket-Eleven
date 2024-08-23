@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 
 class FirebaseFunctions {
+  /// Saves a user's data to the Firestore database.
+  ///
+  /// Parameters:
+  ///   managerName (String): The name of the user's manager.
+  ///   email (String): The email address of the user.
+  ///   uid (String): The unique ID of the user.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that completes when the user's data has been saved.
   static Future<void> saveUser(
       String managerName, String email, String uid) async {
     try {
@@ -15,6 +24,13 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves the manager name associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the manager name for.
+  ///
+  /// Returns:
+  ///   Future<String>: A future that resolves to the manager name as a string, or an empty string if no manager name is found.
   static Future<String> getManagerName(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
@@ -25,6 +41,13 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves the club name associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the club name for.
+  ///
+  /// Returns:
+  ///   Future<String>: A future that resolves to the club name as a string, or an empty string if no club name is found.
   static Future<String> getClubName(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
@@ -42,6 +65,13 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves the email associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the email for.
+  ///
+  /// Returns:
+  ///   Future<String>: A future that resolves to the email as a string, or an empty string if no email is found.
   static Future<String> getEmail(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
@@ -52,6 +82,14 @@ class FirebaseFunctions {
     }
   }
 
+  /// Updates the club name associated with the given user email.
+  ///
+  /// Parameters:
+  ///   email (String): The email of the user to update the club name for.
+  ///   clubName (String): The new club name to be updated.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
   static Future<void> updateClubName(String email, String clubName) async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -76,6 +114,14 @@ class FirebaseFunctions {
     }
   }
 
+  /// Creates a new club with the given club name and assigns it to the user with the given manager email.
+  ///
+  /// Parameters:
+  ///   clubName (String): The name of the club to be created.
+  ///   managerEmail (String): The email of the user who will be assigned as the manager of the club.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the club creation operation is complete.
   static Future<void> createClub(String clubName, String managerEmail) async {
     try {
       DocumentReference clubRef = await FirebaseFirestore.instance
@@ -98,6 +144,13 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves the user document associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the document for.
+  ///
+  /// Returns:
+  ///   Future<DocumentSnapshot>: A future that resolves to the user document snapshot.
   static Future<DocumentSnapshot> _getUserDocument(String userId) async {
     DocumentSnapshot userDoc =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
@@ -119,16 +172,18 @@ class FirebaseFunctions {
     }
   }
 
+  /// Checks if a player can be added to a club.
+  ///
+  /// @param {String} clubId - The ID of the club.
+  /// @return {Future<bool>} A Future that resolves to a boolean indicating if a player can be added.
+  /// @throws {Error} If there is an error checking the player limit.
   static Future<bool> canAddPlayer(String clubId) async {
     try {
-      // Pobieranie ilości zawodników dla danego klubu
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('players')
           .where('club',
               isEqualTo: FirebaseFirestore.instance.doc('/clubs/$clubId'))
           .get();
-
-      // Sprawdzenie, czy liczba zawodników nie przekracza 30
       return snapshot.docs.length < 30;
     } catch (error) {
       debugPrint('Error checking player limit: $error');
@@ -136,19 +191,21 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves a list of players associated with a specific club.
+  ///
+  /// @param {String} clubId - The ID of the club.
+  /// @return {Future<List<Player>>} A Future that resolves to a list of Player objects.
+  /// @throws {Error} If there is an error fetching players.
   static Future<List<Player>> getPlayersForClub(String clubId) async {
     try {
-      // Pobieranie dokumentu klubu
       DocumentReference clubRef =
           FirebaseFirestore.instance.doc('/clubs/$clubId');
 
-      // Pobieranie zawodników, którzy należą do tego klubu
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('players')
           .where('club', isEqualTo: clubRef)
           .get();
 
-      // Mapowanie wyników na listę obiektów Player
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         return Player(
@@ -182,6 +239,11 @@ class FirebaseFunctions {
     }
   }
 
+  /// Retrieves the club ID associated with the given user ID.
+  ///
+  /// @param {String} userId - The ID of the user.
+  /// @return {Future<String>} A future that resolves to the club ID as a string, or an empty string if no club ID is found.
+  /// @throws {Exception} If there is an error loading the club ID.
   static Future<String> getClubId(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);

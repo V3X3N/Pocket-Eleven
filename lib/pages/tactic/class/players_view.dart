@@ -73,7 +73,7 @@ class _PlayersViewState extends State<PlayersView> {
                 )
               : GridView.builder(
                   padding: const EdgeInsets.all(8.0),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     crossAxisSpacing: 8.0,
                     mainAxisSpacing: 8.0,
