@@ -102,4 +102,19 @@ class FirebaseFunctions {
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
     return userDoc;
   }
+
+  static Future<DocumentReference> getClubReference(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+      if (userData != null && userData.containsKey('club')) {
+        return userData['club'];
+      }
+      throw 'Club reference not found';
+    } catch (error) {
+      debugPrint('Error loading club reference: $error');
+      rethrow;
+    }
+  }
 }

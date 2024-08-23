@@ -24,67 +24,36 @@ class TransfersPlayerWidget extends StatelessWidget {
     }
 
     final String userId = user.uid;
-    final String clubName = await FirebaseFunctions.getClubName(userId);
+    final DocumentReference clubRef =
+        await FirebaseFunctions.getClubReference(userId);
 
-    // Check if "players" collection exists
     final playersCollection = FirebaseFirestore.instance.collection('players');
-    final snapshot = await playersCollection.limit(1).get();
 
-    if (snapshot.docs.isEmpty) {
-      // If no documents exist, create the collection by adding the first player
-      await playersCollection.add({
-        'name': player.name,
-        'position': player.position,
-        'ovr': player.ovr,
-        'age': player.age,
-        'nationality': player.nationality,
-        'imagePath': player.imagePath,
-        'flagPath': player.flagPath,
-        'value': player.value,
-        'salary': player.salary,
-        'param1': player.param1,
-        'param2': player.param2,
-        'param3': player.param3,
-        'param4': player.param4,
-        'param1Name': player.param1Name,
-        'param2Name': player.param2Name,
-        'param3Name': player.param3Name,
-        'param4Name': player.param4Name,
-        'matchesPlayed': player.matchesPlayed,
-        'goals': player.goals,
-        'assists': player.assists,
-        'yellowCards': player.yellowCards,
-        'redCards': player.redCards,
-        'club': clubName,
-      });
-    } else {
-      // If the collection exists, add the player to the existing collection
-      await playersCollection.add({
-        'name': player.name,
-        'position': player.position,
-        'ovr': player.ovr,
-        'age': player.age,
-        'nationality': player.nationality,
-        'imagePath': player.imagePath,
-        'flagPath': player.flagPath,
-        'value': player.value,
-        'salary': player.salary,
-        'param1': player.param1,
-        'param2': player.param2,
-        'param3': player.param3,
-        'param4': player.param4,
-        'param1Name': player.param1Name,
-        'param2Name': player.param2Name,
-        'param3Name': player.param3Name,
-        'param4Name': player.param4Name,
-        'matchesPlayed': player.matchesPlayed,
-        'goals': player.goals,
-        'assists': player.assists,
-        'yellowCards': player.yellowCards,
-        'redCards': player.redCards,
-        'club': clubName,
-      });
-    }
+    await playersCollection.add({
+      'name': player.name,
+      'position': player.position,
+      'ovr': player.ovr,
+      'age': player.age,
+      'nationality': player.nationality,
+      'imagePath': player.imagePath,
+      'flagPath': player.flagPath,
+      'value': player.value,
+      'salary': player.salary,
+      'param1': player.param1,
+      'param2': player.param2,
+      'param3': player.param3,
+      'param4': player.param4,
+      'param1Name': player.param1Name,
+      'param2Name': player.param2Name,
+      'param3Name': player.param3Name,
+      'param4Name': player.param4Name,
+      'matchesPlayed': player.matchesPlayed,
+      'goals': player.goals,
+      'assists': player.assists,
+      'yellowCards': player.yellowCards,
+      'redCards': player.redCards,
+      'club': clubRef,
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Player added to your club successfully')),
