@@ -4,24 +4,29 @@ import 'package:random_name_generator/random_name_generator.dart';
 class Player {
   final String name;
   final String position;
-  final int ovr;
-  final int age;
   final String nationality;
-  final String imagePath;
   final String flagPath;
-  late final String badge;
 
-  final int param1;
-  final int param2;
-  final int param3;
-  final int param4;
-  final String param1Name;
-  final String param2Name;
-  final String param3Name;
-  final String param4Name;
+  int ovr;
+  int age;
+  int matchesPlayed = 0;
+  int goals = 0;
+  int assists = 0;
+  int yellowCards = 0;
+  int redCards = 0;
+  String imagePath;
+  late String badge;
+  late int value;
+  late int salary;
 
-  late final int value;
-  late final int salary;
+  int param1;
+  int param2;
+  int param3;
+  int param4;
+  String param1Name;
+  String param2Name;
+  String param3Name;
+  String param4Name;
 
   Player({
     required this.name,
@@ -41,6 +46,11 @@ class Player {
     required this.param2Name,
     required this.param3Name,
     required this.param4Name,
+    this.matchesPlayed = 0,
+    this.goals = 0,
+    this.assists = 0,
+    this.yellowCards = 0,
+    this.redCards = 0,
   }) {
     badge = _calculateBadge();
   }
@@ -64,6 +74,11 @@ class Player {
       param2Name: json['param2Name'],
       param3Name: json['param3Name'],
       param4Name: json['param4Name'],
+      matchesPlayed: json['matchesPlayed'] ?? 0,
+      goals: json['goals'] ?? 0,
+      assists: json['assists'] ?? 0,
+      yellowCards: json['yellowCards'] ?? 0,
+      redCards: json['redCards'] ?? 0,
     );
   }
 
@@ -86,6 +101,11 @@ class Player {
       'param2Name': param2Name,
       'param3Name': param3Name,
       'param4Name': param4Name,
+      'matchesPlayed': matchesPlayed,
+      'goals': goals,
+      'assists': assists,
+      'yellowCards': yellowCards,
+      'redCards': redCards,
     };
   }
 
@@ -112,7 +132,7 @@ class Player {
     position ??= _getRandomPosition(random);
     age ??= random.nextInt(14) + 18;
 
-    // Generate the parameters based on the position
+    // Generate the parameters based on the position with a limit of 99
     List<int> parameters = _generateParameters(random);
     int param1 = parameters[0];
     int param2 = parameters[1];
@@ -151,6 +171,11 @@ class Player {
       param2Name: paramNames['param2Name']!,
       param3Name: paramNames['param3Name']!,
       param4Name: paramNames['param4Name']!,
+      matchesPlayed: 0,
+      goals: 0,
+      assists: 0,
+      yellowCards: 0,
+      redCards: 0,
     );
   }
 
@@ -202,9 +227,9 @@ class Player {
   }
 
   static int _generateParameter(Random random) {
-    // Generate a value from 30 to 80 with a quadratic distribution
-    int baseValue = random.nextInt(51) + 30;
-    return (baseValue * sqrt(random.nextDouble())).round();
+    // Generate a value from 30 to 99 with a quadratic distribution
+    int baseValue = random.nextInt(70) + 30; // Generate a value from 30 to 99
+    return min((baseValue * sqrt(random.nextDouble())).round(), 99);
   }
 
   static Future<String> _getRandomNationality(Random random) async {
