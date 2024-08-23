@@ -61,6 +61,27 @@ class TransfersPlayerWidget extends StatelessWidget {
   }
 
   Future<void> _confirmPlayerSelection(BuildContext context) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    final String userId = user.uid;
+    final DocumentReference clubRef =
+        await FirebaseFunctions.getClubReference(userId);
+
+    final bool canAdd = await FirebaseFunctions.canAddPlayer(clubRef.id);
+
+    if (!canAdd) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cannot add player: club limit reached')),
+      );
+      return;
+    }
+
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {

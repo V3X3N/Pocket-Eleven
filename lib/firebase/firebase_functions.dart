@@ -119,6 +119,23 @@ class FirebaseFunctions {
     }
   }
 
+  static Future<bool> canAddPlayer(String clubId) async {
+    try {
+      // Pobieranie ilości zawodników dla danego klubu
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('players')
+          .where('club',
+              isEqualTo: FirebaseFirestore.instance.doc('/clubs/$clubId'))
+          .get();
+
+      // Sprawdzenie, czy liczba zawodników nie przekracza 30
+      return snapshot.docs.length < 30;
+    } catch (error) {
+      debugPrint('Error checking player limit: $error');
+      return false;
+    }
+  }
+
   static Future<List<Player>> getPlayersForClub(String clubId) async {
     try {
       // Pobieranie dokumentu klubu
