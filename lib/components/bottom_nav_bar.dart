@@ -12,6 +12,7 @@ class BottomNavBar extends StatelessWidget {
     required this.onTabChange,
     required this.navBarHeight,
     required this.screenWidth,
+    required void Function(dynamic newCurrency) onCurrencyChange,
   });
 
   @override
@@ -29,7 +30,7 @@ class BottomNavBar extends StatelessWidget {
               backgroundColor: AppColors.hoverColor,
               tabBackgroundColor: AppColors.primaryColor,
               activeColor: AppColors.textEnabledColor,
-              color: AppColors.textDisabledColor,
+              color: AppColors.textEnabledColor,
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.05,
                 vertical: navBarHeight * 0.25,

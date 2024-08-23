@@ -47,8 +47,9 @@ class PositionSelector extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               decoration: BoxDecoration(
                 color: selectedPosition == position
-                    ? AppColors.secondaryColor
-                    : AppColors.hoverColor,
+                    ? AppColors.blueColor
+                    : AppColors.buttonColor,
+                border: Border.all(color: AppColors.borderColor, width: 1),
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Center(

@@ -164,7 +164,7 @@ class _LoadingPageState extends State<LoadingPage> {
                       ),
                     ),
                     backgroundColor: AppColors.textEnabledColor,
-                    progressColor: AppColors.secondaryColor,
+                    progressColor: AppColors.blueColor,
                   );
                 },
               ),

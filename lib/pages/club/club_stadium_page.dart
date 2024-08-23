@@ -140,7 +140,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
                   ? increaseLevel
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondaryColor,
+                backgroundColor: AppColors.blueColor,
               ),
               child: const Text(
                 'Upgrade',
@@ -157,7 +157,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
               style: TextStyle(
                 color: UserManager.money >= stadiumUpgradeCost
                     ? AppColors.green
-                    : Colors.grey,
+                    : AppColors.textEnabledColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
