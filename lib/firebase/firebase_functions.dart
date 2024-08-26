@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 
@@ -114,14 +115,6 @@ class FirebaseFunctions {
     }
   }
 
-  /// Creates a new club with the given club name and assigns it to the user with the given manager email.
-  ///
-  /// Parameters:
-  ///   clubName (String): The name of the club to be created.
-  ///   managerEmail (String): The email of the user who will be assigned as the manager of the club.
-  ///
-  /// Returns:
-  ///   Future<void>: A future that resolves when the club creation operation is complete.
   static Future<void> createClub(String clubName, String managerEmail) async {
     try {
       DocumentReference clubRef = await FirebaseFirestore.instance
@@ -135,12 +128,55 @@ class FirebaseFunctions {
 
       if (querySnapshot.docs.isNotEmpty) {
         DocumentSnapshot userDoc = querySnapshot.docs.first;
-        await userDoc.reference.update({'club': clubRef});
+        await userDoc.reference.update({
+          'club': clubRef,
+          'money': 3000000,
+          'trainingPoints': 50,
+          'trainingLevel': 1,
+          'medicalPoints': 50,
+          'medicalLevel': 1,
+          'youthPoints': 50,
+          'youthLevel': 1,
+          'stadiumPoints': 50,
+          'stadiumLevel': 1,
+        });
       } else {
         debugPrint('User not found');
       }
     } catch (e) {
       debugPrint('Error creating club: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getUserData() async {
+    String? email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return {};
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      return querySnapshot.docs.first.data() as Map<String, dynamic>;
+    } else {
+      throw Exception('User not found');
+    }
+  }
+
+  static Future<void> updateUserData(Map<String, dynamic> data) async {
+    String? email = FirebaseAuth.instance.currentUser?.email;
+    if (email == null) return;
+
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      await querySnapshot.docs.first.reference.update(data);
+    } else {
+      throw Exception('User not found');
     }
   }
 
