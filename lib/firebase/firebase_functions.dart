@@ -295,4 +295,53 @@ class FirebaseFunctions {
       return '';
     }
   }
+
+  /// Retrieves the stadium level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the stadium level for.
+  ///
+  /// Returns:
+  ///   Future<int>: A future that resolves to the stadium level as an integer, or 1 if no stadium level is found.
+  static Future<int> getStadiumLevel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      return userDoc.get('stadiumLevel') ?? 1;
+    } catch (error) {
+      debugPrint('Error loading stadium level: $error');
+      return 1;
+    }
+  }
+
+  /// Updates the stadium level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to update the stadium level for.
+  ///   level (int): The new stadium level.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
+  static Future<void> updateStadiumLevel(String userId, int level) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      await userDoc.reference.update({'stadiumLevel': level});
+    } catch (error) {
+      debugPrint('Error updating stadium level: $error');
+    }
+  }
+
+  /// Retrieves the current stadium upgrade cost based on the level.
+  ///
+  /// Parameters:
+  ///   level (int): The current level of the stadium.
+  ///
+  /// Returns:
+  ///   int: The upgrade cost as an integer.
+  static int calculateStadiumUpgradeCost(int level) {
+    return ((100000 * level) * 2) * 3;
+  }
+
+  static Future<DocumentSnapshot> getUserDocument(String userId) async {
+    return FirebaseFirestore.instance.collection('users').doc(userId).get();
+  }
 }

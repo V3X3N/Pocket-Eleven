@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/stadium_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
 
 class ClubStadiumPage extends StatefulWidget {
   final VoidCallback onCurrencyChange;
@@ -17,30 +18,68 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
   late Image _clubStadiumImage;
   int level = 1;
   int stadiumUpgradeCost = 100000;
+  double userMoney = 0;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
     _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
-    level = StadiumManager.stadiumLevel;
-    stadiumUpgradeCost = StadiumManager.stadiumUpgradeCost;
+    _loadUserData();
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= stadiumUpgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= stadiumUpgradeCost;
-        StadiumManager.stadiumLevel = level;
-        StadiumManager.stadiumUpgradeCost =
-            ((stadiumUpgradeCost * 1.8) / 10000).round() * 10000;
-        stadiumUpgradeCost = StadiumManager.stadiumUpgradeCost;
-      });
+  Future<void> _loadUserData() async {
+    try {
+      // Fetch user data and update state
+      Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        level = await FirebaseFunctions.getStadiumLevel(userId!);
+        stadiumUpgradeCost =
+            FirebaseFunctions.calculateStadiumUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
+  }
 
-      widget.onCurrencyChange();
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        // Fetch the most recent user data
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['stadiumLevel'] ?? 1;
 
-      StadiumManager().saveStadiumLevel();
-      StadiumManager().saveStadiumUpgradeCost();
+        if (userMoney >= stadiumUpgradeCost) {
+          setState(() {
+            level = currentLevel + 1;
+            stadiumUpgradeCost =
+                FirebaseFunctions.calculateStadiumUpgradeCost(level);
+          });
+
+          // Update Firestore
+          await FirebaseFunctions.updateStadiumLevel(userId!, level);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - stadiumUpgradeCost});
+
+          widget.onCurrencyChange();
+        } else {
+          // Show an error or feedback to the user if they don't have enough money
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Not enough money to upgrade the stadium.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error upgrading stadium: $e');
+      }
     }
   }
 
@@ -136,9 +175,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed: UserManager.money >= stadiumUpgradeCost
-                  ? increaseLevel
-                  : null,
+              onPressed: userMoney >= stadiumUpgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blueColor,
               ),
@@ -155,7 +192,7 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
             Text(
               'Cost: $stadiumUpgradeCost',
               style: TextStyle(
-                color: UserManager.money >= stadiumUpgradeCost
+                color: userMoney >= stadiumUpgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,
