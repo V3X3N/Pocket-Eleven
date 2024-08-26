@@ -52,22 +52,31 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         DocumentSnapshot userDoc =
             await FirebaseFunctions.getUserDocument(userId!);
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        double userMoney = (userData['money'] ?? 0).toDouble();
+        double currentUserMoney = (userData['money'] ?? 0).toDouble();
         int currentLevel = userData['stadiumLevel'] ?? 1;
 
-        if (userMoney >= stadiumUpgradeCost) {
-          setState(() {
-            level = currentLevel + 1;
-            stadiumUpgradeCost =
-                FirebaseFunctions.calculateStadiumUpgradeCost(level);
-          });
+        if (currentUserMoney >= stadiumUpgradeCost) {
+          // Increase the level
+          int newLevel = currentLevel + 1;
+          double newUserMoney = currentUserMoney - stadiumUpgradeCost;
+          int newStadiumUpgradeCost =
+              FirebaseFunctions.calculateStadiumUpgradeCost(newLevel);
 
           // Update Firestore
-          await FirebaseFunctions.updateStadiumLevel(userId!, level);
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - stadiumUpgradeCost});
+          await FirebaseFunctions.updateStadiumLevel(userId!, newLevel);
+          await FirebaseFunctions.updateUserData({'money': newUserMoney});
+
+          // Update state with new values
+          setState(() {
+            level = newLevel;
+            userMoney = newUserMoney;
+            stadiumUpgradeCost = newStadiumUpgradeCost;
+          });
 
           widget.onCurrencyChange();
+
+          // Automatically check if the user can upgrade again and update the button state
+          _checkUpgradeEligibility(newUserMoney, newStadiumUpgradeCost);
         } else {
           // Show an error or feedback to the user if they don't have enough money
           ScaffoldMessenger.of(context).showSnackBar(
@@ -81,6 +90,15 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         debugPrint('Error upgrading stadium: $e');
       }
     }
+  }
+
+  void _checkUpgradeEligibility(
+      double currentUserMoney, int currentStadiumUpgradeCost) {
+    setState(() {
+      // Check if the user has enough money for another upgrade
+      userMoney = currentUserMoney;
+      stadiumUpgradeCost = currentStadiumUpgradeCost;
+    });
   }
 
   @override
