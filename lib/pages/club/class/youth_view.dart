@@ -1,46 +1,77 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/components/custom_appbar.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
-import 'package:pocket_eleven/managers/youth_manager.dart';
 
-class ClubYouthPage extends StatefulWidget {
-  final VoidCallback onCurrencyChange;
-
-  const ClubYouthPage({super.key, required this.onCurrencyChange});
+class YouthView extends StatefulWidget {
+  const YouthView({
+    super.key,
+  });
 
   @override
-  State<ClubYouthPage> createState() => _ClubYouthPageState();
+  State<YouthView> createState() => _YouthViewState();
 }
 
-class _ClubYouthPageState extends State<ClubYouthPage> {
-  late Image _clubStadiumImage;
+class _YouthViewState extends State<YouthView> {
+  late Image _image;
   int level = 1;
   int upgradeCost = 100000;
+  double userMoney = 0;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_youth.png');
-    level = YouthManager.youthLevel;
-    upgradeCost = YouthManager.youthUpgradeCost;
+    _image = Image.asset('assets/background/club_youth.png');
+    _loadUserData();
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        YouthManager.youthLevel = level;
-        YouthManager.youthUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = YouthManager.youthUpgradeCost;
-      });
+  Future<void> _loadUserData() async {
+    try {
+      Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        level = await FirebaseFunctions.getYouthLevel(userId!);
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
+  }
 
-      widget.onCurrencyChange();
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['youthLevel'] ?? 1;
 
-      YouthManager().saveYouthLevel();
-      YouthManager().saveYouthUpgradeCost();
+        if (userMoney >= upgradeCost) {
+          setState(() {
+            level = currentLevel + 1;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+          });
+
+          await FirebaseFunctions.updateYouthLevel(userId!, level);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - upgradeCost});
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade the youth.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error upgrading youth: $e');
+      }
     }
   }
 
@@ -50,7 +81,6 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
       body: Column(
         children: [
           AspectRatio(
@@ -58,7 +88,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: _clubStadiumImage.image,
+                  image: _image.image,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -87,9 +117,10 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
                   const Expanded(
                     child: SingleChildScrollView(
                       child: Text(
-                        "Our youth academies are where future football stars develop their skills under the guidance of experienced coaches. "
-                        "We provide an inspiring environment for learning and nurturing a passion for soccer, "
-                        "shaping not just athletic abilities but also teamwork and determination.",
+                        "Our medical center is an essential part of our commitment to our players' health and fitness. "
+                        "With a team of experienced doctors and therapists, we offer comprehensive medical care, "
+                        "ensuring optimal conditions for rehabilitation and swift recovery from injuries. "
+                        "It’s a place where we prioritize every aspect of our athletes' health, providing safety and support throughout their careers.",
                         style: TextStyle(
                           fontSize: 16.0,
                           color: AppColors.textEnabledColor,
@@ -115,7 +146,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Youth Academy',
+                'Youth',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -136,8 +167,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: userMoney >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blueColor,
               ),
@@ -154,7 +184,7 @@ class _ClubYouthPageState extends State<ClubYouthPage> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: userMoney >= upgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,

@@ -1,46 +1,77 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/components/custom_appbar.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/training_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
 
-class ClubTrainingPage extends StatefulWidget {
-  final VoidCallback onCurrencyChange;
-
-  const ClubTrainingPage({super.key, required this.onCurrencyChange});
+class StadiumView extends StatefulWidget {
+  const StadiumView({
+    super.key,
+  });
 
   @override
-  State<ClubTrainingPage> createState() => _ClubTrainingPageState();
+  State<StadiumView> createState() => _StadiumViewState();
 }
 
-class _ClubTrainingPageState extends State<ClubTrainingPage> {
+class _StadiumViewState extends State<StadiumView> {
   late Image _clubStadiumImage;
   int level = 1;
   int upgradeCost = 100000;
+  double userMoney = 0;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_training.png');
-    level = TrainingManager.trainingLevel;
-    upgradeCost = TrainingManager.trainingUpgradeCost;
+    _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
+    _loadUserData();
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        TrainingManager.trainingLevel = level;
-        TrainingManager.trainingUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = TrainingManager.trainingUpgradeCost;
-      });
+  Future<void> _loadUserData() async {
+    try {
+      Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        level = await FirebaseFunctions.getStadiumLevel(userId!);
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
+  }
 
-      widget.onCurrencyChange();
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['stadiumLevel'] ?? 1;
 
-      TrainingManager().saveTrainingLevel();
-      TrainingManager().saveTrainingUpgradeCost();
+        if (userMoney >= upgradeCost) {
+          setState(() {
+            level = currentLevel + 1;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+          });
+
+          await FirebaseFunctions.updateStadiumLevel(userId!, level);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - upgradeCost});
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade the stadium.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error upgrading stadium: $e');
+      }
     }
   }
 
@@ -50,7 +81,6 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
       body: Column(
         children: [
           AspectRatio(
@@ -73,7 +103,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTrainingInfo(),
+                  _buildStadiumInfo(),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
@@ -87,9 +117,9 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
                   const Expanded(
                     child: SingleChildScrollView(
                       child: Text(
-                        'Our state-of-the-art training facilities are the heart of our club infrastructure. Equipped with the latest technologies, '
-                        'they cater to the needs of both professional athletes and young talents. Here, under the supervision of our experts, '
-                        'players hone their skills, preparing for the most significant challenges on the field.',
+                        'The club stadium is the heart of our community, where fans gather '
+                        'to cheer for their favorite teams. With a capacity of 50,000 seats, '
+                        'it has hosted numerous memorable matches and events.',
                         style: TextStyle(
                           fontSize: 16.0,
                           color: AppColors.textEnabledColor,
@@ -106,7 +136,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
     );
   }
 
-  Widget _buildTrainingInfo() {
+  Widget _buildStadiumInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -115,7 +145,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Training Facilities',
+                'Stadium',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -136,8 +166,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: userMoney >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blueColor,
               ),
@@ -154,7 +183,7 @@ class _ClubTrainingPageState extends State<ClubTrainingPage> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: userMoney >= upgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,

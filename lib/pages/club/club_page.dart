@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
-import 'package:pocket_eleven/components/list_item.dart';
+import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
-import 'package:pocket_eleven/pages/club/club_stadium_page.dart';
-import 'package:pocket_eleven/pages/club/club_training_page.dart';
-import 'package:pocket_eleven/pages/club/club_medical_page.dart';
-import 'package:pocket_eleven/pages/club/club_youth_page.dart';
+import 'package:pocket_eleven/pages/club/class/medical_view.dart';
+import 'package:pocket_eleven/pages/club/class/stadium_view.dart';
+import 'package:pocket_eleven/pages/club/class/training_view.dart';
+import 'package:pocket_eleven/pages/club/class/youth_view.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -18,33 +15,12 @@ class ClubPage extends StatefulWidget {
 }
 
 class _ClubPageState extends State<ClubPage> {
-  final Image _clubStadiumImage =
-      Image.asset('assets/background/club_stadion.png');
-  final Image _clubTrainingImage =
-      Image.asset('assets/background/club_training.png');
-  final Image _clubMedicalImage =
-      Image.asset('assets/background/club_medical.png');
-  final Image _clubYouthImage = Image.asset('assets/background/club_youth.png');
-  late String clubName = '';
+  int _selectedIndex = 0;
 
-  Future<void> _loadUserData() async {
-    try {
-      final User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final String userId = user.uid;
-        clubName = await FirebaseFunctions.getClubName(userId);
-        await UserManager().loadAllUserData();
-        setState(() {});
-      }
-    } catch (error) {
-      debugPrint('Error loading user data: $error');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
+  void _onOptionSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
@@ -61,63 +37,62 @@ class _ClubPageState extends State<ClubPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: screenHeight * 0.02),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    clubName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      color: AppColors.textEnabledColor,
-                    ),
-                  ),
-                  Image.asset(
-                    'assets/crests/crest_1.png',
-                    height: screenHeight * 0.05,
-                    width: screenHeight * 0.05,
-                    fit: BoxFit.contain,
-                  ),
-                ],
+                horizontal: screenWidth * 0.04,
+                vertical: screenHeight * 0.02,
               ),
-            ),
-            Container(
-              height: screenHeight * 0.4,
-              color: AppColors.primaryColor,
-              child: ListView(
+              child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                children: [
-                  ListItem(
-                    screenWidth: screenWidth,
-                    image: _clubStadiumImage,
-                    text: 'Stadium',
-                    page: const ClubStadiumPage(),
-                  ),
-                  ListItem(
-                    screenWidth: screenWidth,
-                    image: _clubTrainingImage,
-                    text: 'Training',
-                    page: ClubTrainingPage(onCurrencyChange: _loadUserData),
-                  ),
-                  ListItem(
-                    screenWidth: screenWidth,
-                    image: _clubMedicalImage,
-                    text: 'Medical',
-                    page: ClubMedicalPage(onCurrencyChange: _loadUserData),
-                  ),
-                  ListItem(
-                    screenWidth: screenWidth,
-                    image: _clubYouthImage,
-                    text: 'Youth',
-                    page: ClubYouthPage(onCurrencyChange: _loadUserData),
-                  ),
-                ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OptionButton(
+                      index: 0,
+                      text: 'Stadium',
+                      onTap: () => _onOptionSelected(0),
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      selectedIndex: _selectedIndex,
+                    ),
+                    SizedBox(width: screenWidth * 0.04),
+                    OptionButton(
+                      index: 1,
+                      text: 'Training',
+                      onTap: () => _onOptionSelected(1),
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      selectedIndex: _selectedIndex,
+                    ),
+                    SizedBox(width: screenWidth * 0.04),
+                    OptionButton(
+                      index: 2,
+                      text: 'Medical',
+                      onTap: () => _onOptionSelected(2),
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      selectedIndex: _selectedIndex,
+                    ),
+                    SizedBox(width: screenWidth * 0.04),
+                    OptionButton(
+                      index: 3,
+                      text: 'Youth',
+                      onTap: () => _onOptionSelected(3),
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      selectedIndex: _selectedIndex,
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(
-              child: Container(
-                decoration: const BoxDecoration(color: AppColors.primaryColor),
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: const [
+                  StadiumView(),
+                  TrainingView(),
+                  MedicalView(),
+                  YouthView(),
+                ],
               ),
             ),
           ],

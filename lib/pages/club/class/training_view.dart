@@ -1,46 +1,77 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/components/custom_appbar.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/medical_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
 
-class ClubMedicalPage extends StatefulWidget {
-  final VoidCallback onCurrencyChange;
-
-  const ClubMedicalPage({super.key, required this.onCurrencyChange});
+class TrainingView extends StatefulWidget {
+  const TrainingView({
+    super.key,
+  });
 
   @override
-  State<ClubMedicalPage> createState() => _ClubMedicalPageState();
+  State<TrainingView> createState() => _TrainingViewState();
 }
 
-class _ClubMedicalPageState extends State<ClubMedicalPage> {
-  late Image _clubStadiumImage;
+class _TrainingViewState extends State<TrainingView> {
+  late Image _image;
   int level = 1;
   int upgradeCost = 100000;
+  double userMoney = 0;
+  String? userId;
 
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_medical.png');
-    level = MedicalManager.medicalLevel;
-    upgradeCost = MedicalManager.medicalUpgradeCost;
+    _image = Image.asset('assets/background/club_training.png');
+    _loadUserData();
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        MedicalManager.medicalLevel = level;
-        MedicalManager.medicalUpgradeCost =
-            ((upgradeCost * 1.8) / 10000).round() * 10000;
-        upgradeCost = MedicalManager.medicalUpgradeCost;
-      });
+  Future<void> _loadUserData() async {
+    try {
+      Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        level = await FirebaseFunctions.getTrainingLevel(userId!);
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading user data: $e');
+    }
+  }
 
-      widget.onCurrencyChange();
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['trainingLevel'] ?? 1;
 
-      MedicalManager().saveMedicalLevel();
-      MedicalManager().saveMedicalUpgradeCost();
+        if (userMoney >= upgradeCost) {
+          setState(() {
+            level = currentLevel + 1;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+          });
+
+          await FirebaseFunctions.updateTrainingLevel(userId!, level);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - upgradeCost});
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade the training.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error upgrading training: $e');
+      }
     }
   }
 
@@ -48,10 +79,8 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double appBarHeight = screenHeight * 0.07;
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: appBarHeight),
       body: Column(
         children: [
           AspectRatio(
@@ -59,7 +88,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: _clubStadiumImage.image,
+                  image: _image.image,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -74,7 +103,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMedicalInfo(),
+                  _buildTrainingInfo(),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
@@ -108,7 +137,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
     );
   }
 
-  Widget _buildMedicalInfo() {
+  Widget _buildTrainingInfo() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -117,7 +146,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Medical Center',
+                'Training',
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
@@ -138,8 +167,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
         Column(
           children: [
             ElevatedButton(
-              onPressed:
-                  UserManager.money >= upgradeCost ? increaseLevel : null,
+              onPressed: userMoney >= upgradeCost ? increaseLevel : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.blueColor,
               ),
@@ -156,7 +184,7 @@ class _ClubMedicalPageState extends State<ClubMedicalPage> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: userMoney >= upgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,

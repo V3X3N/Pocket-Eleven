@@ -330,18 +330,120 @@ class FirebaseFunctions {
     }
   }
 
-  /// Retrieves the current stadium upgrade cost based on the level.
+  /// Retrieves the medical level associated with the given user ID.
   ///
   /// Parameters:
-  ///   level (int): The current level of the stadium.
+  ///   userId (String): The ID of the user to retrieve the medical level for.
   ///
   /// Returns:
-  ///   int: The upgrade cost as an integer.
-  static int calculateStadiumUpgradeCost(int level) {
-    return ((100000 * level) * 2) * 3;
+  ///   Future<int>: A future that resolves to the medical level as an integer, or 1 if no medical level is found.
+  static Future<int> getMedicalLevel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      return userDoc.get('stadiumLevel') ?? 1;
+    } catch (error) {
+      debugPrint('Error loading stadium level: $error');
+      return 1;
+    }
   }
 
+  /// Updates the medical level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to update the medical level for.
+  ///   level (int): The new medical level.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
+  static Future<void> updateMedicalLevel(String userId, int level) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      await userDoc.reference.update({'stadiumLevel': level});
+    } catch (error) {
+      debugPrint('Error updating stadium level: $error');
+    }
+  }
+
+  /// Retrieves the training level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the training level for.
+  ///
+  /// Returns:
+  ///   Future<int>: A future that resolves to the training level as an training, or 1 if no training level is found.
+  static Future<int> getTrainingLevel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      return userDoc.get('stadiumLevel') ?? 1;
+    } catch (error) {
+      debugPrint('Error loading stadium level: $error');
+      return 1;
+    }
+  }
+
+  /// Updates the training level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to update the training level for.
+  ///   level (int): The new training level.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
+  static Future<void> updateTrainingLevel(String userId, int level) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      await userDoc.reference.update({'stadiumLevel': level});
+    } catch (error) {
+      debugPrint('Error updating stadium level: $error');
+    }
+  }
+
+  /// Retrieves the youth level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the youth level for.
+  ///
+  /// Returns:
+  ///   Future<int>: A future that resolves to the youth level as an integer, or 1 if no youth level is found.
+  static Future<int> getYouthLevel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      return userDoc.get('stadiumLevel') ?? 1;
+    } catch (error) {
+      debugPrint('Error loading stadium level: $error');
+      return 1;
+    }
+  }
+
+  /// Updates the youth level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to update the youth level for.
+  ///   level (int): The new youth level.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
+  static Future<void> updateYouthLevel(String userId, int level) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      await userDoc.reference.update({'stadiumLevel': level});
+    } catch (error) {
+      debugPrint('Error updating stadium level: $error');
+    }
+  }
+
+  /// Retrieves the user document associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the document for.
+  ///
+  /// Returns:
+  ///   Future<DocumentSnapshot>: A future that resolves to the user document snapshot.
   static Future<DocumentSnapshot> getUserDocument(String userId) async {
     return FirebaseFirestore.instance.collection('users').doc(userId).get();
+  }
+
+  static int calculateUpgradeCost(int level) {
+    return ((100000 * level) * 2) * 3;
   }
 }
