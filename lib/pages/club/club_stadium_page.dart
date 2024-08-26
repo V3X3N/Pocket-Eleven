@@ -6,9 +6,7 @@ import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class ClubStadiumPage extends StatefulWidget {
-  final VoidCallback onCurrencyChange;
-
-  const ClubStadiumPage({super.key, required this.onCurrencyChange});
+  const ClubStadiumPage({super.key});
 
   @override
   State<ClubStadiumPage> createState() => _ClubStadiumPageState();
@@ -52,31 +50,22 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         DocumentSnapshot userDoc =
             await FirebaseFunctions.getUserDocument(userId!);
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        double currentUserMoney = (userData['money'] ?? 0).toDouble();
+        double userMoney = (userData['money'] ?? 0).toDouble();
         int currentLevel = userData['stadiumLevel'] ?? 1;
 
-        if (currentUserMoney >= stadiumUpgradeCost) {
-          // Increase the level
-          int newLevel = currentLevel + 1;
-          double newUserMoney = currentUserMoney - stadiumUpgradeCost;
-          int newStadiumUpgradeCost =
-              FirebaseFunctions.calculateStadiumUpgradeCost(newLevel);
-
-          // Update Firestore
-          await FirebaseFunctions.updateStadiumLevel(userId!, newLevel);
-          await FirebaseFunctions.updateUserData({'money': newUserMoney});
-
-          // Update state with new values
+        if (userMoney >= stadiumUpgradeCost) {
           setState(() {
-            level = newLevel;
-            userMoney = newUserMoney;
-            stadiumUpgradeCost = newStadiumUpgradeCost;
+            level = currentLevel + 1;
+            stadiumUpgradeCost =
+                FirebaseFunctions.calculateStadiumUpgradeCost(level);
           });
 
-          widget.onCurrencyChange();
+          // Update Firestore
+          await FirebaseFunctions.updateStadiumLevel(userId!, level);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - stadiumUpgradeCost});
 
-          // Automatically check if the user can upgrade again and update the button state
-          _checkUpgradeEligibility(newUserMoney, newStadiumUpgradeCost);
+          // Nie ma już wywołania widget.onCurrencyChange()
         } else {
           // Show an error or feedback to the user if they don't have enough money
           ScaffoldMessenger.of(context).showSnackBar(
@@ -90,15 +79,6 @@ class _ClubStadiumPageState extends State<ClubStadiumPage> {
         debugPrint('Error upgrading stadium: $e');
       }
     }
-  }
-
-  void _checkUpgradeEligibility(
-      double currentUserMoney, int currentStadiumUpgradeCost) {
-    setState(() {
-      // Check if the user has enough money for another upgrade
-      userMoney = currentUserMoney;
-      stadiumUpgradeCost = currentStadiumUpgradeCost;
-    });
   }
 
   @override

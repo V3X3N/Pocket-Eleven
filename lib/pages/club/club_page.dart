@@ -92,7 +92,7 @@ class _ClubPageState extends State<ClubPage> {
                     screenWidth: screenWidth,
                     image: _clubStadiumImage,
                     text: 'Stadium',
-                    page: ClubStadiumPage(onCurrencyChange: _loadUserData),
+                    page: const ClubStadiumPage(),
                   ),
                   ListItem(
                     screenWidth: screenWidth,
