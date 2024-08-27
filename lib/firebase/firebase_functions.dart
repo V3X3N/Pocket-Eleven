@@ -446,4 +446,17 @@ class FirebaseFunctions {
   static int calculateUpgradeCost(int level) {
     return ((100000 * level) * 2) * 3;
   }
+
+  static Stream<Map<String, dynamic>> getUserDataStream() {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      return FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .snapshots()
+          .map((snapshot) => snapshot.data() ?? {});
+    } else {
+      return const Stream.empty();
+    }
+  }
 }
