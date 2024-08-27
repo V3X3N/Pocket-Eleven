@@ -340,9 +340,9 @@ class FirebaseFunctions {
   static Future<int> getMedicalLevel(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      return userDoc.get('stadiumLevel') ?? 1;
+      return userDoc.get('medicalLevel') ?? 1;
     } catch (error) {
-      debugPrint('Error loading stadium level: $error');
+      debugPrint('Error loading medical level: $error');
       return 1;
     }
   }
@@ -358,9 +358,9 @@ class FirebaseFunctions {
   static Future<void> updateMedicalLevel(String userId, int level) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      await userDoc.reference.update({'stadiumLevel': level});
+      await userDoc.reference.update({'medicalLevel': level});
     } catch (error) {
-      debugPrint('Error updating stadium level: $error');
+      debugPrint('Error updating medical level: $error');
     }
   }
 
@@ -374,9 +374,9 @@ class FirebaseFunctions {
   static Future<int> getTrainingLevel(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      return userDoc.get('stadiumLevel') ?? 1;
+      return userDoc.get('trainingLevel') ?? 1;
     } catch (error) {
-      debugPrint('Error loading stadium level: $error');
+      debugPrint('Error loading training level: $error');
       return 1;
     }
   }
@@ -392,9 +392,9 @@ class FirebaseFunctions {
   static Future<void> updateTrainingLevel(String userId, int level) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      await userDoc.reference.update({'stadiumLevel': level});
+      await userDoc.reference.update({'trainingLevel': level});
     } catch (error) {
-      debugPrint('Error updating stadium level: $error');
+      debugPrint('Error updating training level: $error');
     }
   }
 
@@ -408,9 +408,9 @@ class FirebaseFunctions {
   static Future<int> getYouthLevel(String userId) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      return userDoc.get('stadiumLevel') ?? 1;
+      return userDoc.get('youthLevel') ?? 1;
     } catch (error) {
-      debugPrint('Error loading stadium level: $error');
+      debugPrint('Error loading youth level: $error');
       return 1;
     }
   }
@@ -426,9 +426,9 @@ class FirebaseFunctions {
   static Future<void> updateYouthLevel(String userId, int level) async {
     try {
       DocumentSnapshot userDoc = await _getUserDocument(userId);
-      await userDoc.reference.update({'stadiumLevel': level});
+      await userDoc.reference.update({'youthLevel': level});
     } catch (error) {
-      debugPrint('Error updating stadium level: $error');
+      debugPrint('Error updating youth level: $error');
     }
   }
 

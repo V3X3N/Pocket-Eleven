@@ -37,12 +37,12 @@ class _ClubPageState extends State<ClubPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
                 vertical: screenHeight * 0.02,
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     OptionButton(
@@ -87,7 +87,7 @@ class _ClubPageState extends State<ClubPage> {
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: const [
+                children: [
                   StadiumView(),
                   TrainingView(),
                   MedicalView(),
