@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 
 class StadiumView extends StatefulWidget {
   const StadiumView({
@@ -29,9 +30,9 @@ class _StadiumViewState extends State<StadiumView> {
 
   Future<void> _loadUserData() async {
     try {
-      Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
+        Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
         level = await FirebaseFunctions.getStadiumLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
@@ -51,15 +52,26 @@ class _StadiumViewState extends State<StadiumView> {
         double userMoney = (userData['money'] ?? 0).toDouble();
         int currentLevel = userData['stadiumLevel'] ?? 1;
 
-        if (userMoney >= upgradeCost) {
-          setState(() {
-            level = currentLevel + 1;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
-          });
+        // Oblicz koszt ulepszenia przed zwiększeniem poziomu
+        int currentUpgradeCost =
+            FirebaseFunctions.calculateUpgradeCost(currentLevel);
 
-          await FirebaseFunctions.updateStadiumLevel(userId!, level);
+        if (userMoney >= currentUpgradeCost) {
+          // Aktualizuj poziom stadionu
+          int newLevel = currentLevel + 1;
+
+          // Zaktualizuj dane stadionu w bazie danych
+          await FirebaseFunctions.updateStadiumLevel(userId!, newLevel);
+
+          // Zaktualizuj dane użytkownika
           await FirebaseFunctions.updateUserData(
-              {'money': userMoney - upgradeCost});
+              {'money': userMoney - currentUpgradeCost});
+
+          // Zaktualizuj lokalny stan
+          setState(() {
+            level = newLevel;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -103,7 +115,13 @@ class _StadiumViewState extends State<StadiumView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStadiumInfo(),
+                  BuildInfo(
+                    headerText: 'Stadium',
+                    level: level,
+                    upgradeCost: upgradeCost,
+                    isUpgradeEnabled: userMoney >= upgradeCost,
+                    onUpgradePressed: increaseLevel,
+                  ),
                   SizedBox(height: screenHeight * 0.04),
                   const Text(
                     'Description',
@@ -133,66 +151,6 @@ class _StadiumViewState extends State<StadiumView> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStadiumInfo() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Stadium',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-              Text(
-                'Level $level',
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Column(
-          children: [
-            ElevatedButton(
-              onPressed: userMoney >= upgradeCost ? increaseLevel : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.blueColor,
-              ),
-              child: const Text(
-                'Upgrade',
-                style: TextStyle(
-                  color: AppColors.textEnabledColor,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              'Cost: $upgradeCost',
-              style: TextStyle(
-                color: userMoney >= upgradeCost
-                    ? AppColors.green
-                    : AppColors.textEnabledColor,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
