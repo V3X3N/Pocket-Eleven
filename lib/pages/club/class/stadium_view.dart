@@ -52,22 +52,17 @@ class _StadiumViewState extends State<StadiumView> {
         double userMoney = (userData['money'] ?? 0).toDouble();
         int currentLevel = userData['stadiumLevel'] ?? 1;
 
-        // Oblicz koszt ulepszenia przed zwiększeniem poziomu
         int currentUpgradeCost =
             FirebaseFunctions.calculateUpgradeCost(currentLevel);
 
         if (userMoney >= currentUpgradeCost) {
-          // Aktualizuj poziom stadionu
           int newLevel = currentLevel + 1;
 
-          // Zaktualizuj dane stadionu w bazie danych
           await FirebaseFunctions.updateStadiumLevel(userId!, newLevel);
 
-          // Zaktualizuj dane użytkownika
           await FirebaseFunctions.updateUserData(
               {'money': userMoney - currentUpgradeCost});
 
-          // Zaktualizuj lokalny stan
           setState(() {
             level = newLevel;
             upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
