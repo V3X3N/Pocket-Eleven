@@ -139,6 +139,7 @@ class FirebaseFunctions {
           'youthLevel': 1,
           'stadiumPoints': 50,
           'stadiumLevel': 1,
+          'scoutingLevel': 1,
         });
       } else {
         debugPrint('User not found');
@@ -429,6 +430,40 @@ class FirebaseFunctions {
       await userDoc.reference.update({'youthLevel': level});
     } catch (error) {
       debugPrint('Error updating youth level: $error');
+    }
+  }
+
+  /// Retrieves the scouting level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to retrieve the scouting level for.
+  ///
+  /// Returns:
+  ///   Future<int>: A future that resolves to the scouting level as an integer, or 1 if no scouting level is found.
+  static Future<int> getScoutingLevel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      return userDoc.get('scoutingLevel') ?? 1;
+    } catch (error) {
+      debugPrint('Error loading scouting level: $error');
+      return 1;
+    }
+  }
+
+  /// Updates the scouting level associated with the given user ID.
+  ///
+  /// Parameters:
+  ///   userId (String): The ID of the user to update the scouting level for.
+  ///   level (int): The new scouting level.
+  ///
+  /// Returns:
+  ///   Future<void>: A future that resolves when the update operation is complete.
+  static Future<void> updateScoutingLevel(String userId, int level) async {
+    try {
+      DocumentSnapshot userDoc = await _getUserDocument(userId);
+      await userDoc.reference.update({'scoutingLevel': level});
+    } catch (error) {
+      debugPrint('Error updating scouting level: $error');
     }
   }
 

@@ -3,15 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/medical_manager.dart';
-import 'package:pocket_eleven/managers/scouting_manager.dart';
-import 'package:pocket_eleven/managers/training_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
-import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
 class ScoutingView extends StatefulWidget {
   const ScoutingView({super.key, required this.onCurrencyChange});
@@ -24,6 +22,8 @@ class ScoutingView extends StatefulWidget {
 class _ScoutingViewState extends State<ScoutingView> {
   int level = 1;
   int upgradeCost = 200000;
+  double userMoney = 0;
+  String? userId;
   String selectedPosition = 'LW';
   String selectedNationality = 'AUT';
   bool canScout = true;
@@ -58,16 +58,14 @@ class _ScoutingViewState extends State<ScoutingView> {
 
   Future<void> _loadUserData() async {
     try {
-      await UserManager().loadMoney();
-      await TrainingManager().loadTrainingPoints();
-      await MedicalManager().loadMedicalPoints();
-      await YouthManager().loadYouthPoints();
-      await ScoutingManager().loadScoutingLevel();
-      await ScoutingManager().loadScoutingUpgradeCost();
-      setState(() {
-        level = ScoutingManager.scoutingLevel;
-        upgradeCost = ScoutingManager.scoutingUpgradeCost;
-      });
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+        level = await FirebaseFunctions.getScoutingLevel(userId!);
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
     } catch (error) {
       debugPrint('Error loading user data: $error');
     }
@@ -98,21 +96,43 @@ class _ScoutingViewState extends State<ScoutingView> {
     prefs.setString('scoutedPlayers', jsonEncode(scoutedPlayers));
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        ScoutingManager.scoutingLevel = level;
-        ScoutingManager.scoutingUpgradeCost =
-            ((upgradeCost * 2.3) / 10000).round() * 10000;
-        upgradeCost = ScoutingManager.scoutingUpgradeCost;
-      });
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['scoutingLevel'] ?? 1;
 
-      widget.onCurrencyChange();
+        int currentUpgradeCost =
+            FirebaseFunctions.calculateUpgradeCost(currentLevel);
 
-      ScoutingManager().saveScoutingLevel();
-      ScoutingManager().saveScoutingUpgradeCost();
+        if (userMoney >= currentUpgradeCost) {
+          int newLevel = currentLevel + 1;
+
+          await FirebaseFunctions.updateScoutingLevel(userId!, newLevel);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - currentUpgradeCost});
+
+          setState(() {
+            level = newLevel;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          });
+
+          widget.onCurrencyChange();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade scouting level.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } catch (error) {
+        debugPrint('Error upgrading scouting level: $error');
+      }
     }
   }
 
@@ -240,7 +260,7 @@ class _ScoutingViewState extends State<ScoutingView> {
         Column(
           children: [
             GestureDetector(
-              onTap: UserManager.money >= upgradeCost ? increaseLevel : null,
+              onTap: userMoney >= upgradeCost ? increaseLevel : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(
@@ -249,11 +269,11 @@ class _ScoutingViewState extends State<ScoutingView> {
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(width: 1, color: AppColors.borderColor),
-                  color: UserManager.money >= upgradeCost
+                  color: userMoney >= upgradeCost
                       ? AppColors.blueColor
                       : AppColors.buttonColor,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: UserManager.money >= upgradeCost
+                  boxShadow: userMoney >= upgradeCost
                       ? [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.3),
@@ -279,7 +299,7 @@ class _ScoutingViewState extends State<ScoutingView> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: userMoney >= upgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,
