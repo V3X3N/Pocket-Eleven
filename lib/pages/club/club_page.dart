@@ -87,7 +87,7 @@ class _ClubPageState extends State<ClubPage> {
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: [
+                children: const [
                   StadiumView(),
                   TrainingView(),
                   MedicalView(),

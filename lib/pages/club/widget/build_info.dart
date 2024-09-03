@@ -9,13 +9,13 @@ class BuildInfo extends StatelessWidget {
   final VoidCallback? onUpgradePressed;
 
   const BuildInfo({
-    Key? key,
+    super.key,
     required this.headerText,
     required this.level,
     required this.upgradeCost,
     required this.isUpgradeEnabled,
     this.onUpgradePressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

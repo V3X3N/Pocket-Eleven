@@ -38,6 +38,7 @@ dependencies:
   unicons: ^2.1.2
   flutter_local_notifications: ^17.2.1+2
   flutter_native_splash: ^2.4.1
+  loading_animation_widget: ^1.2.1
 
 flutter_launcher_icons:
   android: "launcher_icon"
