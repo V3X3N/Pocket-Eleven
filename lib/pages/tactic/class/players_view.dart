@@ -83,6 +83,7 @@ class _PlayersViewState extends State<PlayersView> {
                   itemBuilder: (context, index) {
                     final player = players[index];
                     return PlayerCube(
+                      name: player.name,
                       onTap: () {
                         showDialog(
                           context: context,
