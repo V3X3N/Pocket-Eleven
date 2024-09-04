@@ -28,6 +28,7 @@ class _ScoutingViewState extends State<ScoutingView> {
   String selectedNationality = 'AUT';
   bool canScout = true;
   List<Player> scoutedPlayers = [];
+  Player? _selectedPlayer;
 
   double get scoutingTimeReductionPercentage {
     if (level > 1) {
@@ -147,13 +148,6 @@ class _ScoutingViewState extends State<ScoutingView> {
   Future<void> _saveSelectedNationality(String nationality) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedNationality', nationality);
-  }
-
-  String formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   Widget _buildScoutInfo(double screenWidth, double screenHeight) {
@@ -332,8 +326,14 @@ class _ScoutingViewState extends State<ScoutingView> {
                     Column(
                       children: scoutedPlayers
                           .map((player) => TransferPlayerConfirmWidget(
-                              // TODO: Implement player data to firestore
-                              player: player))
+                                player: player,
+                                isSelected: _selectedPlayer == player,
+                                onPlayerSelected: (selectedPlayer) {
+                                  setState(() {
+                                    _selectedPlayer = selectedPlayer;
+                                  });
+                                },
+                              ))
                           .toList(),
                     ),
                   SizedBox(height: screenHeight * 0.02),

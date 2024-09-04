@@ -12,6 +12,7 @@ class TransfersView extends StatefulWidget {
 
 class _TransfersViewState extends State<TransfersView> {
   List<Player> _players = [];
+  Player? _selectedPlayer;
 
   @override
   void initState() {
@@ -27,6 +28,12 @@ class _TransfersViewState extends State<TransfersView> {
     }
     setState(() {
       _players = players;
+    });
+  }
+
+  void _onPlayerSelected(Player player) {
+    setState(() {
+      _selectedPlayer = player;
     });
   }
 
@@ -46,6 +53,8 @@ class _TransfersViewState extends State<TransfersView> {
         children: _players.map((player) {
           return TransferPlayerConfirmWidget(
             player: player,
+            isSelected: _selectedPlayer == player,
+            onPlayerSelected: _onPlayerSelected,
           );
         }).toList(),
       ),

@@ -9,10 +9,14 @@ import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
 class TransferPlayerConfirmWidget extends StatelessWidget {
   final Player player;
+  final bool isSelected;
+  final void Function(Player) onPlayerSelected;
 
   const TransferPlayerConfirmWidget({
     super.key,
     required this.player,
+    required this.isSelected,
+    required this.onPlayerSelected,
   });
 
   Future<void> _confirmPlayerSelection(BuildContext context) async {
@@ -45,7 +49,9 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
         return CustomConfirmDialog(
           title: 'Confirm Selection',
           message: 'Are you sure you want to select ${player.name}?',
-          onConfirm: () {},
+          onConfirm: () {
+            onPlayerSelected(player);
+          },
           onCancel: () {},
         );
       },
@@ -60,18 +66,20 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return PlayerDetailsDialog(player: player);
-          },
-        );
+        if (!isSelected) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return PlayerDetailsDialog(player: player);
+            },
+          );
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
-          color: AppColors.blueColor,
+          color: isSelected ? Colors.grey[300] : AppColors.blueColor,
           border: Border.all(color: AppColors.borderColor, width: 1),
           borderRadius: BorderRadius.circular(10.0),
         ),
@@ -116,11 +124,12 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                IconButton(
-                  icon:
-                      const Icon(Icons.check_box_rounded, color: Colors.green),
-                  onPressed: () => _confirmPlayerSelection(context),
-                ),
+                if (!isSelected)
+                  IconButton(
+                    icon: const Icon(Icons.check_box_rounded,
+                        color: Colors.green),
+                    onPressed: () => _confirmPlayerSelection(context),
+                  ),
               ],
             ),
           ],
