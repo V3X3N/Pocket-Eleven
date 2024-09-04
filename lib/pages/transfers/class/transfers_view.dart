@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
 
 class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
@@ -45,7 +45,7 @@ class _TransfersViewState extends State<TransfersView> {
         padding: EdgeInsets.all(screenWidth * 0.04),
         itemCount: _players.length,
         itemBuilder: (context, index) {
-          return TransfersPlayerWidget(
+          return TransferPlayerConfirmWidget(
               // TODO: Implement transfers data to firestore
               player: _players[index]);
         },

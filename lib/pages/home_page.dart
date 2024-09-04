@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/medical_manager.dart';
-import 'package:pocket_eleven/managers/scouting_manager.dart';
-import 'package:pocket_eleven/managers/training_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
-import 'package:pocket_eleven/managers/youth_manager.dart';
+
 import 'package:pocket_eleven/pages/profile/profile_page.dart';
 import 'tactic/tactic_page.dart';
 import 'play/play_page.dart';
@@ -54,12 +50,6 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadUserData() async {
     try {
-      await UserManager().loadMoney();
-      await TrainingManager().loadTrainingPoints();
-      await MedicalManager().loadMedicalPoints();
-      await YouthManager().loadYouthPoints();
-      await ScoutingManager().loadScoutingLevel();
-      await ScoutingManager().loadScoutingUpgradeCost();
       setState(() {});
     } catch (error) {
       debugPrint('Error loading user data: $error');

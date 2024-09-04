@@ -3,15 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/managers/medical_manager.dart';
-import 'package:pocket_eleven/managers/scouting_manager.dart';
-import 'package:pocket_eleven/managers/training_manager.dart';
-import 'package:pocket_eleven/managers/user_manager.dart';
-import 'package:pocket_eleven/managers/youth_manager.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 
 class ScoutingView extends StatefulWidget {
   const ScoutingView({super.key, required this.onCurrencyChange});
@@ -24,12 +22,11 @@ class ScoutingView extends StatefulWidget {
 class _ScoutingViewState extends State<ScoutingView> {
   int level = 1;
   int upgradeCost = 200000;
+  double userMoney = 0;
+  String? userId;
   String selectedPosition = 'LW';
   String selectedNationality = 'AUT';
   bool canScout = true;
-  Timer? _timer;
-  Duration _remainingTime = const Duration(minutes: 1);
-  final Duration _scoutCooldown = const Duration(minutes: 1);
   List<Player> scoutedPlayers = [];
 
   double get scoutingTimeReductionPercentage {
@@ -39,35 +36,24 @@ class _ScoutingViewState extends State<ScoutingView> {
     return 0;
   }
 
-  Duration get adjustedScoutCooldown {
-    final reductionPercentage = scoutingTimeReductionPercentage;
-    final reductionFactor = (100 - reductionPercentage) / 100;
-    return Duration(
-      milliseconds: (_scoutCooldown.inMilliseconds * reductionFactor).round(),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadSelectedPositionAndNationality();
     _loadScoutedPlayers();
-    checkScoutAvailability();
   }
 
   Future<void> _loadUserData() async {
     try {
-      await UserManager().loadMoney();
-      await TrainingManager().loadTrainingPoints();
-      await MedicalManager().loadMedicalPoints();
-      await YouthManager().loadYouthPoints();
-      await ScoutingManager().loadScoutingLevel();
-      await ScoutingManager().loadScoutingUpgradeCost();
-      setState(() {
-        level = ScoutingManager.scoutingLevel;
-        upgradeCost = ScoutingManager.scoutingUpgradeCost;
-      });
+      userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
+        level = await FirebaseFunctions.getScoutingLevel(userId!);
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        userMoney = (userData['money'] ?? 0).toDouble();
+        setState(() {});
+      }
     } catch (error) {
       debugPrint('Error loading user data: $error');
     }
@@ -98,68 +84,44 @@ class _ScoutingViewState extends State<ScoutingView> {
     prefs.setString('scoutedPlayers', jsonEncode(scoutedPlayers));
   }
 
-  void increaseLevel() {
-    if (UserManager.money >= upgradeCost) {
-      setState(() {
-        level++;
-        UserManager.money -= upgradeCost;
-        ScoutingManager.scoutingLevel = level;
-        ScoutingManager.scoutingUpgradeCost =
-            ((upgradeCost * 2.3) / 10000).round() * 10000;
-        upgradeCost = ScoutingManager.scoutingUpgradeCost;
-      });
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['scoutingLevel'] ?? 1;
 
-      widget.onCurrencyChange();
+        int currentUpgradeCost =
+            FirebaseFunctions.calculateUpgradeCost(currentLevel);
 
-      ScoutingManager().saveScoutingLevel();
-      ScoutingManager().saveScoutingUpgradeCost();
-    }
-  }
+        if (userMoney >= currentUpgradeCost) {
+          int newLevel = currentLevel + 1;
 
-  Future<void> checkScoutAvailability() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastScoutTime = prefs.getInt('lastScoutTime') ?? 0;
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    final diff = currentTime - lastScoutTime;
+          await FirebaseFunctions.updateScoutingLevel(userId!, newLevel);
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - currentUpgradeCost});
 
-    if (diff < adjustedScoutCooldown.inMilliseconds) {
-      setState(() {
-        canScout = false;
-        _remainingTime =
-            Duration(milliseconds: adjustedScoutCooldown.inMilliseconds - diff);
-      });
-      startScoutTimer();
-    } else {
-      setState(() {
-        canScout = true;
-        _remainingTime = Duration.zero;
-      });
-    }
-  }
+          setState(() {
+            level = newLevel;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          });
 
-  void startScoutTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_remainingTime.inSeconds > 0) {
-          _remainingTime = _remainingTime - const Duration(seconds: 1);
+          widget.onCurrencyChange();
         } else {
-          _timer?.cancel();
-          canScout = true;
-          generatePlayersAfterCooldown();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade scouting level.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
         }
-      });
-    });
-  }
-
-  Future<void> scheduleScoutAvailability() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    await prefs.setInt('lastScoutTime', currentTime);
-    setState(() {
-      canScout = false;
-      _remainingTime = adjustedScoutCooldown;
-    });
-    startScoutTimer();
+      } catch (error) {
+        debugPrint('Error upgrading scouting level: $error');
+      }
+    }
   }
 
   Future<void> generatePlayersAfterCooldown() async {
@@ -185,12 +147,6 @@ class _ScoutingViewState extends State<ScoutingView> {
   Future<void> _saveSelectedNationality(String nationality) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedNationality', nationality);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   String formatDuration(Duration duration) {
@@ -240,7 +196,7 @@ class _ScoutingViewState extends State<ScoutingView> {
         Column(
           children: [
             GestureDetector(
-              onTap: UserManager.money >= upgradeCost ? increaseLevel : null,
+              onTap: userMoney >= upgradeCost ? increaseLevel : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 padding: EdgeInsets.symmetric(
@@ -249,11 +205,11 @@ class _ScoutingViewState extends State<ScoutingView> {
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(width: 1, color: AppColors.borderColor),
-                  color: UserManager.money >= upgradeCost
+                  color: userMoney >= upgradeCost
                       ? AppColors.blueColor
                       : AppColors.buttonColor,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: UserManager.money >= upgradeCost
+                  boxShadow: userMoney >= upgradeCost
                       ? [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.3),
@@ -279,7 +235,7 @@ class _ScoutingViewState extends State<ScoutingView> {
             Text(
               'Cost: $upgradeCost',
               style: TextStyle(
-                color: UserManager.money >= upgradeCost
+                color: userMoney >= upgradeCost
                     ? AppColors.green
                     : AppColors.textEnabledColor,
                 fontSize: 16.0,
@@ -375,43 +331,14 @@ class _ScoutingViewState extends State<ScoutingView> {
                   if (scoutedPlayers.isNotEmpty)
                     Column(
                       children: scoutedPlayers
-                          .map((player) => TransfersPlayerWidget(
+                          .map((player) => TransferPlayerConfirmWidget(
                               // TODO: Implement player data to firestore
                               player: player))
                           .toList(),
                     ),
-                  if (!canScout)
-                    Column(
-                      children: [
-                        SizedBox(height: screenHeight * 0.02),
-                        LinearProgressIndicator(
-                          value: 1 -
-                              _remainingTime.inSeconds /
-                                  adjustedScoutCooldown.inSeconds,
-                          color: AppColors.blueColor,
-                          backgroundColor: AppColors.hoverColor,
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                        Text(
-                          'Next scout available in: ${formatDuration(_remainingTime)}',
-                          style: const TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textEnabledColor,
-                          ),
-                        ),
-                      ],
-                    ),
                   SizedBox(height: screenHeight * 0.02),
                   GestureDetector(
-                    onTap: canScout
-                        ? () async {
-                            setState(() {
-                              canScout = false;
-                            });
-                            await scheduleScoutAvailability();
-                          }
-                        : null,
+                    onTap: generatePlayersAfterCooldown,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       padding: EdgeInsets.symmetric(

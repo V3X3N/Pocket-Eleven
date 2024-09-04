@@ -13,9 +13,8 @@ class AuthServices {
     return user?.uid;
   }
 
-  static Future<void> signupUser(
+  static signupUser(
       String email, String password, String name, BuildContext context) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -23,49 +22,19 @@ class AuthServices {
       await FirebaseAuth.instance.currentUser!.updateDisplayName(name);
       await FirebaseAuth.instance.currentUser!.verifyBeforeUpdateEmail(email);
       await FirebaseFunctions.saveUser(name, email, userCredential.user!.uid);
-      if (context.mounted) {
-        scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Registration Successful')));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration Successful')));
     } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        if (e.code == 'weak-password') {
-          scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Password Provided is too weak')));
-        } else if (e.code == 'email-already-in-use') {
-          scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Email Provided already Exists')));
-        }
+      if (e.code == 'weak-password') {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password Provided is too weak')));
+      } else if (e.code == 'email-already-in-use') {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email Provided already Exists')));
       }
     } catch (e) {
-      if (context.mounted) {
-        scaffoldMessenger
-            .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-      }
-    }
-  }
-
-  static Future<void> signinUser(
-      String email, String password, BuildContext context) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    try {
-      await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-
-      if (context.mounted) {
-        scaffoldMessenger
-            .showSnackBar(const SnackBar(content: Text('You are Logged in')));
-      }
-    } on FirebaseAuthException catch (e) {
-      if (context.mounted) {
-        if (e.code == 'user-not-found') {
-          scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('No user Found with this Email')));
-        } else if (e.code == 'wrong-password') {
-          scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Password did not match')));
-        }
-      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -85,8 +54,26 @@ class AuthServices {
       }
       return false;
     } catch (error) {
-      debugPrint('Error checking if user has club: $error');
+      print('Error checking if user has club: $error');
       return false;
+    }
+  }
+
+  static signinUser(String email, String password, BuildContext context) async {
+    try {
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('You are Logged in')));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No user Found with this Email')));
+      } else if (e.code == 'wrong-password') {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password did not match')));
+      }
     }
   }
 
