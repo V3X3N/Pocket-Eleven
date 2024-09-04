@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
@@ -61,28 +59,68 @@ class _ScoutingViewState extends State<ScoutingView> {
   }
 
   Future<void> _loadSelectedPositionAndNationality() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedPosition = prefs.getString('selectedPosition') ?? 'LW';
-      selectedNationality = prefs.getString('selectedNationality') ?? 'AUT';
-    });
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId!)
+            .get();
+        Map<String, dynamic> userData =
+            userDoc.data() as Map<String, dynamic>? ?? {};
+
+        setState(() {
+          selectedPosition = userData['selectedPosition'] ?? 'LW';
+          selectedNationality = userData['selectedNationality'] ?? 'AUT';
+        });
+      } catch (error) {
+        debugPrint('Error loading selected position and nationality: $error');
+      }
+    }
   }
 
   Future<void> _loadScoutedPlayers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final playersJson = prefs.getString('scoutedPlayers');
-    if (playersJson != null) {
-      setState(() {
-        scoutedPlayers = (jsonDecode(playersJson) as List)
-            .map((data) => Player.fromJson(data))
-            .toList();
-      });
+    if (userId != null) {
+      try {
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection('scouting')
+            .doc(userId!)
+            .collection('players')
+            .get();
+        setState(() {
+          scoutedPlayers = snapshot.docs
+              .map((doc) => Player.fromJson(doc.data() as Map<String, dynamic>))
+              .toList();
+        });
+      } catch (error) {
+        debugPrint('Error loading scouted players: $error');
+      }
     }
   }
 
   Future<void> _saveScoutedPlayers() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('scoutedPlayers', jsonEncode(scoutedPlayers));
+    if (userId != null) {
+      try {
+        CollectionReference playersCollection = FirebaseFirestore.instance
+            .collection('scouting')
+            .doc(userId!)
+            .collection('players');
+
+        // Usuwamy poprzednio zapisanych zawodników
+        final batch = FirebaseFirestore.instance.batch();
+        var snapshots = await playersCollection.get();
+        for (var doc in snapshots.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+
+        // Zapisujemy nowych zawodników
+        for (Player player in scoutedPlayers) {
+          await playersCollection.add(player.toJson());
+        }
+      } catch (error) {
+        debugPrint('Error saving scouted players: $error');
+      }
+    }
   }
 
   Future<void> increaseLevel() async {
@@ -141,13 +179,21 @@ class _ScoutingViewState extends State<ScoutingView> {
   }
 
   Future<void> _saveSelectedPosition(String position) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedPosition', position);
+    if (userId != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId!)
+          .update({'selectedPosition': position});
+    }
   }
 
   Future<void> _saveSelectedNationality(String nationality) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedNationality', nationality);
+    if (userId != null) {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId!)
+          .update({'selectedNationality': nationality});
+    }
   }
 
   Widget _buildScoutInfo(double screenWidth, double screenHeight) {
