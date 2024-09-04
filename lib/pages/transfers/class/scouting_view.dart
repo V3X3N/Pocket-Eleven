@@ -5,7 +5,7 @@ import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/position_selector.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_widget.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -395,7 +395,7 @@ class _ScoutingViewState extends State<ScoutingView> {
                   if (scoutedPlayers.isNotEmpty)
                     Column(
                       children: scoutedPlayers
-                          .map((player) => TransfersPlayerWidget(
+                          .map((player) => TransferPlayerConfirmWidget(
                               // TODO: Implement player data to firestore
                               player: player))
                           .toList(),

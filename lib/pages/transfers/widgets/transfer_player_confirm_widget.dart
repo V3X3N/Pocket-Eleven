@@ -7,10 +7,10 @@ import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
-class TransfersPlayerWidget extends StatelessWidget {
+class TransferPlayerConfirmWidget extends StatelessWidget {
   final Player player;
 
-  const TransfersPlayerWidget({
+  const TransferPlayerConfirmWidget({
     super.key,
     required this.player,
   });
@@ -93,9 +93,7 @@ class TransfersPlayerWidget extends StatelessWidget {
         return CustomConfirmDialog(
           title: 'Confirm Selection',
           message: 'Are you sure you want to select ${player.name}?',
-          onConfirm: () async {
-            await _savePlayerToFirestore(context);
-          },
+          onConfirm: () async {},
           onCancel: () {
             // TODO: Handle the cancel action if needed
           },
