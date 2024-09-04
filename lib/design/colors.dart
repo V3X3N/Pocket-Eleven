@@ -9,4 +9,8 @@ class AppColors {
   static const Color textEnabledColor = Color(0xFFF8F5FA);
   static const Color coffeeText = Color(0xFFE1DCCE);
   static const Color borderColor = Color(0xFF717483);
+  static const Color bronzePlayer = Color(0xFFB17251);
+  static const Color silverPlayer = Color(0xFFE1DFE3);
+  static const Color goldPlayer = Color(0xFFEED088);
+  static const Color purplePlayer = Color(0xFFA780BE);
 }
