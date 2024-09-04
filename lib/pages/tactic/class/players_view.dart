@@ -4,6 +4,7 @@ import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 
 class PlayersView extends StatefulWidget {
   const PlayersView({super.key});
@@ -81,7 +82,7 @@ class _PlayersViewState extends State<PlayersView> {
                   itemCount: players.length,
                   itemBuilder: (context, index) {
                     final player = players[index];
-                    return GestureDetector(
+                    return PlayerCube(
                       onTap: () {
                         showDialog(
                           context: context,
@@ -90,9 +91,6 @@ class _PlayersViewState extends State<PlayersView> {
                           },
                         );
                       },
-                      child: Container(
-                        color: Colors.green,
-                      ),
                     );
                   },
                 ),
