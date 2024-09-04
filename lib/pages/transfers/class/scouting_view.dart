@@ -27,9 +27,6 @@ class _ScoutingViewState extends State<ScoutingView> {
   String selectedPosition = 'LW';
   String selectedNationality = 'AUT';
   bool canScout = true;
-  Timer? _timer;
-  Duration _remainingTime = const Duration(minutes: 1);
-  final Duration _scoutCooldown = const Duration(minutes: 1);
   List<Player> scoutedPlayers = [];
 
   double get scoutingTimeReductionPercentage {
@@ -39,21 +36,12 @@ class _ScoutingViewState extends State<ScoutingView> {
     return 0;
   }
 
-  Duration get adjustedScoutCooldown {
-    final reductionPercentage = scoutingTimeReductionPercentage;
-    final reductionFactor = (100 - reductionPercentage) / 100;
-    return Duration(
-      milliseconds: (_scoutCooldown.inMilliseconds * reductionFactor).round(),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _loadSelectedPositionAndNationality();
     _loadScoutedPlayers();
-    checkScoutAvailability();
   }
 
   Future<void> _loadUserData() async {
@@ -136,52 +124,6 @@ class _ScoutingViewState extends State<ScoutingView> {
     }
   }
 
-  Future<void> checkScoutAvailability() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastScoutTime = prefs.getInt('lastScoutTime') ?? 0;
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    final diff = currentTime - lastScoutTime;
-
-    if (diff < adjustedScoutCooldown.inMilliseconds) {
-      setState(() {
-        canScout = false;
-        _remainingTime =
-            Duration(milliseconds: adjustedScoutCooldown.inMilliseconds - diff);
-      });
-      startScoutTimer();
-    } else {
-      setState(() {
-        canScout = true;
-        _remainingTime = Duration.zero;
-      });
-    }
-  }
-
-  void startScoutTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_remainingTime.inSeconds > 0) {
-          _remainingTime = _remainingTime - const Duration(seconds: 1);
-        } else {
-          _timer?.cancel();
-          canScout = true;
-          generatePlayersAfterCooldown();
-        }
-      });
-    });
-  }
-
-  Future<void> scheduleScoutAvailability() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-    await prefs.setInt('lastScoutTime', currentTime);
-    setState(() {
-      canScout = false;
-      _remainingTime = adjustedScoutCooldown;
-    });
-    startScoutTimer();
-  }
-
   Future<void> generatePlayersAfterCooldown() async {
     List<Player> newPlayers = [];
     for (int i = 0; i < 3; i++) {
@@ -205,12 +147,6 @@ class _ScoutingViewState extends State<ScoutingView> {
   Future<void> _saveSelectedNationality(String nationality) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedNationality', nationality);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   String formatDuration(Duration duration) {
@@ -400,38 +336,9 @@ class _ScoutingViewState extends State<ScoutingView> {
                               player: player))
                           .toList(),
                     ),
-                  if (!canScout)
-                    Column(
-                      children: [
-                        SizedBox(height: screenHeight * 0.02),
-                        LinearProgressIndicator(
-                          value: 1 -
-                              _remainingTime.inSeconds /
-                                  adjustedScoutCooldown.inSeconds,
-                          color: AppColors.blueColor,
-                          backgroundColor: AppColors.hoverColor,
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                        Text(
-                          'Next scout available in: ${formatDuration(_remainingTime)}',
-                          style: const TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textEnabledColor,
-                          ),
-                        ),
-                      ],
-                    ),
                   SizedBox(height: screenHeight * 0.02),
                   GestureDetector(
-                    onTap: canScout
-                        ? () async {
-                            setState(() {
-                              canScout = false;
-                            });
-                            await scheduleScoutAvailability();
-                          }
-                        : null,
+                    onTap: generatePlayersAfterCooldown,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       padding: EdgeInsets.symmetric(
