@@ -494,4 +494,85 @@ class FirebaseFunctions {
       return const Stream.empty();
     }
   }
+
+  /// Saves a player to the Firestore database.
+  ///
+  /// This function takes a BuildContext and a dynamic player object as parameters.
+  /// It checks if the user is logged in, and if so, adds the player to the 'players' collection in Firestore.
+  /// The player object is expected to have the following properties:
+  ///   - name
+  ///   - position
+  ///   - ovr
+  ///   - age
+  ///   - nationality
+  ///   - imagePath
+  ///   - flagPath
+  ///   - value
+  ///   - salary
+  ///   - param1
+  ///   - param2
+  ///   - param3
+  ///   - param4
+  ///   - param1Name
+  ///   - param2Name
+  ///   - param3Name
+  ///   - param4Name
+  ///   - matchesPlayed
+  ///   - goals
+  ///   - assists
+  ///   - yellowCards
+  ///   - redCards
+  ///
+  /// If the player is added successfully, it displays a snack bar with a success message.
+  /// If the user is not logged in, it displays a snack bar with an error message.
+  ///
+  /// Returns a Future<void> that completes when the operation is finished.
+  static Future<void> savePlayerToFirestore(
+      BuildContext context, dynamic player) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      return;
+    }
+
+    final String userId = user.uid;
+    final DocumentReference clubRef =
+        await FirebaseFunctions.getClubReference(userId);
+
+    final playersCollection = FirebaseFirestore.instance.collection('players');
+
+    await playersCollection.add({
+      'name': player.name,
+      'position': player.position,
+      'ovr': player.ovr,
+      'age': player.age,
+      'nationality': player.nationality,
+      'imagePath': player.imagePath,
+      'flagPath': player.flagPath,
+      'value': player.value,
+      'salary': player.salary,
+      'param1': player.param1,
+      'param2': player.param2,
+      'param3': player.param3,
+      'param4': player.param4,
+      'param1Name': player.param1Name,
+      'param2Name': player.param2Name,
+      'param3Name': player.param3Name,
+      'param4Name': player.param4Name,
+      'matchesPlayed': player.matchesPlayed,
+      'goals': player.goals,
+      'assists': player.assists,
+      'yellowCards': player.yellowCards,
+      'redCards': player.redCards,
+      'club': clubRef,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Player added to your club successfully'),
+          duration: Duration(seconds: 1)),
+    );
+  }
 }
