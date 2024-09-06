@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
@@ -228,9 +229,9 @@ class _LoginPageState extends State<LoginPage> {
                                 }
                               },
                         child: _isLoading
-                            ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.textEnabledColor),
+                            ? LoadingAnimationWidget.waveDots(
+                                color: AppColors.textEnabledColor,
+                                size: 50,
                               )
                             : Text(
                                 login ? 'Login' : 'Signup',

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -103,9 +104,9 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
                       color: Colors.blueAccent,
                       onPressed: _isLoading ? null : _createClub,
                       child: _isLoading
-                          ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.textEnabledColor),
+                          ? LoadingAnimationWidget.waveDots(
+                              color: AppColors.textEnabledColor,
+                              size: 50,
                             )
                           : const Text(
                               "Confirm",

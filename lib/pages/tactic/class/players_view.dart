@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
@@ -61,7 +62,10 @@ class _PlayersViewState extends State<PlayersView> {
       width: screenWidth,
       height: screenHeight,
       child: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? LoadingAnimationWidget.waveDots(
+              color: AppColors.textEnabledColor,
+              size: 50,
+            )
           : players.isEmpty
               ? const Center(
                   child: Text(

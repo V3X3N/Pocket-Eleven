@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
@@ -51,8 +52,9 @@ class ProfilePageState extends State<ProfilePage> {
       inAsyncCall: _loading,
       opacity: 0.5,
       color: Colors.black,
-      progressIndicator: const CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+      progressIndicator: LoadingAnimationWidget.waveDots(
+        color: AppColors.textEnabledColor,
+        size: 50,
       ),
       child: Scaffold(
         backgroundColor: AppColors.primaryColor,

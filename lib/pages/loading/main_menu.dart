@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/pages/loading/login_page.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -36,8 +37,9 @@ class _MainMenuState extends State<MainMenu> {
       body: Stack(
         children: [
           _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(),
+              ? LoadingAnimationWidget.waveDots(
+                  color: AppColors.textEnabledColor,
+                  size: 50,
                 )
               : Container(
                   decoration: BoxDecoration(
