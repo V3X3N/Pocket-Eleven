@@ -37,10 +37,6 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
           }
 
           final userData = snapshot.data ?? {};
-          final stadiumPoints = userData['stadiumPoints'] ?? 0;
-          final trainingPoints = userData['trainingPoints'] ?? 0;
-          final medicalPoints = userData['medicalPoints'] ?? 0;
-          final youthPoints = userData['youthPoints'] ?? 0;
           final money = (userData['money'] ?? 0).toDouble();
 
           return Row(
@@ -50,13 +46,6 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildInfoRow(
-                        UniconsLine.no_entry, stadiumPoints.toString()),
-                    _buildInfoRow(
-                        UniconsLine.dumbbell, trainingPoints.toString()),
-                    _buildInfoRow(UniconsLine.medkit, medicalPoints.toString()),
-                    _buildInfoRow(
-                        UniconsLine.sixteen_plus, youthPoints.toString()),
                     _buildInfoRow(
                         UniconsLine.usd_circle, money.toStringAsFixed(0)),
                   ],

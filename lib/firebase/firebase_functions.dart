@@ -131,13 +131,9 @@ class FirebaseFunctions {
         await userDoc.reference.update({
           'club': clubRef,
           'money': 3000000,
-          'trainingPoints': 50,
           'trainingLevel': 1,
-          'medicalPoints': 50,
           'medicalLevel': 1,
-          'youthPoints': 50,
           'youthLevel': 1,
-          'stadiumPoints': 50,
           'stadiumLevel': 1,
           'scoutingLevel': 1,
         });
