@@ -4,10 +4,10 @@ import 'package:random_name_generator/random_name_generator.dart';
 class Player {
   String id;
 
-  final String name;
-  final String position;
-  final String nationality;
-  final String flagPath;
+  String name;
+  String position;
+  String nationality;
+  String flagPath;
 
   int ovr;
   int age;
@@ -32,23 +32,23 @@ class Player {
 
   Player({
     this.id = '',
-    required this.name,
-    required this.position,
-    required this.ovr,
-    required this.age,
-    required this.nationality,
-    required this.imagePath,
-    required this.flagPath,
-    required this.value,
-    required this.salary,
-    required this.param1,
-    required this.param2,
-    required this.param3,
-    required this.param4,
-    required this.param1Name,
-    required this.param2Name,
-    required this.param3Name,
-    required this.param4Name,
+    this.name = '',
+    this.position = '',
+    this.ovr = 0,
+    this.age = 0,
+    this.nationality = '',
+    this.imagePath = '',
+    this.flagPath = '',
+    this.value = 0,
+    this.salary = 0,
+    this.param1 = 0,
+    this.param2 = 0,
+    this.param3 = 0,
+    this.param4 = 0,
+    this.param1Name = '',
+    this.param2Name = '',
+    this.param3Name = '',
+    this.param4Name = '',
     this.matchesPlayed = 0,
     this.goals = 0,
     this.assists = 0,
