@@ -539,7 +539,13 @@ class FirebaseFunctions {
 
     final playersCollection = FirebaseFirestore.instance.collection('players');
 
-    await playersCollection.add({
+    // Tworzymy nowy dokument w kolekcji i uzyskujemy jego ID
+    final newPlayerRef =
+        playersCollection.doc(); // Tworzymy referencję z automatycznym ID
+    final playerId = newPlayerRef.id; // Uzyskujemy ID dokumentu
+
+    await newPlayerRef.set({
+      'id': playerId, // Dodajemy ID jako pole
       'name': player.name,
       'position': player.position,
       'ovr': player.ovr,

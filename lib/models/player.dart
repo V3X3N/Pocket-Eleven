@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:random_name_generator/random_name_generator.dart';
 
 class Player {
+  String id;
+
   final String name;
   final String position;
   final String nationality;
@@ -29,6 +31,7 @@ class Player {
   String param4Name;
 
   Player({
+    this.id = '',
     required this.name,
     required this.position,
     required this.ovr,
@@ -57,6 +60,7 @@ class Player {
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
+      id: json['id'] ?? '',
       name: json['name'],
       position: json['position'],
       ovr: json['ovr'],
@@ -84,6 +88,7 @@ class Player {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'position': position,
       'ovr': ovr,
@@ -154,6 +159,7 @@ class Player {
     int salary = ((age * ovr) / 10).round() * 10;
 
     return Player(
+      id: '',
       name: name,
       position: position,
       ovr: ovr,
