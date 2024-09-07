@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 
 class FormationView extends StatefulWidget {
   final String selectedFormation;
@@ -18,6 +21,9 @@ class FormationView extends StatefulWidget {
 
 class _FormationViewState extends State<FormationView> {
   late String _currentFormation;
+  List<Player> players = [];
+  bool isLoading = true;
+
   Map<String, Player?> fieldPositions = {
     'ST1': null,
     'ST2': null,
@@ -97,7 +103,7 @@ class _FormationViewState extends State<FormationView> {
     'CB2': 'CB',
     'CB3': 'CB',
     'RB': 'RB',
-    'GK': 'GK',
+    'GK': 'GK'
   };
 
   final Map<String, Map<String, String>> positionMapping = {
@@ -134,6 +140,30 @@ class _FormationViewState extends State<FormationView> {
   void initState() {
     super.initState();
     _currentFormation = widget.selectedFormation;
+    _loadPlayers(); // Pobranie zawodników
+  }
+
+  Future<void> _loadPlayers() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String clubId = await FirebaseFunctions.getClubId(user.uid);
+      if (clubId.isNotEmpty) {
+        final List<Player> loadedPlayers =
+            await FirebaseFunctions.getPlayersForClub(clubId);
+        setState(() {
+          players = loadedPlayers;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -204,7 +234,6 @@ class _FormationViewState extends State<FormationView> {
     }
   }
 
-  // TODO: Fix position placement
   List<Widget> _buildFieldPositions442(
       double screenWidth, double screenHeight) {
     Map<String, Offset> positions = {
@@ -248,14 +277,14 @@ class _FormationViewState extends State<FormationView> {
     Map<String, Offset> positions = {
       'ST1': Offset(screenWidth * 0.38, screenHeight * 0.05),
       'ST2': Offset(screenWidth * 0.62, screenHeight * 0.05),
-      'CAM': Offset(screenWidth * 0.5, screenHeight * 0.2),
-      'LM': Offset(screenWidth * 0.15, screenHeight * 0.23),
-      'CDM1': Offset(screenWidth * 0.33, screenHeight * 0.25),
-      'CDM2': Offset(screenWidth * 0.67, screenHeight * 0.25),
-      'RM': Offset(screenWidth * 0.85, screenHeight * 0.23),
+      'CAM': Offset(screenWidth * 0.5, screenHeight * 0.15),
+      'LM': Offset(screenWidth * 0.15, screenHeight * 0.2),
+      'CDM1': Offset(screenWidth * 0.38, screenHeight * 0.25),
+      'CDM2': Offset(screenWidth * 0.62, screenHeight * 0.25),
+      'RM': Offset(screenWidth * 0.85, screenHeight * 0.2),
+      'CB1': Offset(screenWidth * 0.2, screenHeight * 0.4),
       'CB2': Offset(screenWidth * 0.5, screenHeight * 0.4),
-      'CB1': Offset(screenWidth * 0.25, screenHeight * 0.4),
-      'CB3': Offset(screenWidth * 0.75, screenHeight * 0.4),
+      'CB3': Offset(screenWidth * 0.8, screenHeight * 0.4),
       'GK': Offset(screenWidth * 0.5, screenHeight * 0.5),
     };
 
@@ -264,25 +293,31 @@ class _FormationViewState extends State<FormationView> {
 
   List<Widget> _buildFieldWidgets(Map<String, Offset> positions) {
     List<Widget> widgets = [];
-    const double widgetSize = 60;
+    const double widgetSize = 60; // Maksymalny rozmiar kontenera pozycji
     positions.forEach((position, offset) {
+      final player = fieldPositions[position];
       widgets.add(Positioned(
         left: offset.dx - (widgetSize / 2),
         top: offset.dy - (widgetSize / 2),
-        child: DragTarget<Player>(
-          builder: (context, candidateData, rejectedData) {
-            return Container(
-              width: widgetSize,
-              height: widgetSize,
-              decoration: BoxDecoration(
-                color: AppColors.hoverColor,
-                border: Border.all(
-                  color: AppColors.borderColor,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-            );
-          },
+        child: GestureDetector(
+          onTap: () => _selectPlayer(position),
+          child: Container(
+            width: widgetSize,
+            height: widgetSize,
+            child: player == null
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border: Border.all(color: AppColors.borderColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  )
+                : PlayerCube(
+                    name: player.name,
+                    imagePath: player.imagePath,
+                    onTap: () => _selectPlayer(position),
+                  ),
+          ),
         ),
       ));
     });
@@ -290,36 +325,55 @@ class _FormationViewState extends State<FormationView> {
     return widgets;
   }
 
-  String _previousFormation(String current) {
-    List<String> keys = formations.keys.toList();
-    int currentIndex = keys.indexOf(current);
-    return keys[(currentIndex - 1 + keys.length) % keys.length];
-  }
-
-  String _nextFormation(String current) {
-    List<String> keys = formations.keys.toList();
-    int currentIndex = keys.indexOf(current);
-    return keys[(currentIndex + 1) % keys.length];
-  }
-
-  void _changeFormation(String newFormation) {
-    Map<String, Player?> newFieldPositions = {};
-    Map<String, String> mapping = positionMapping[newFormation] ?? {};
-
-    fieldPositions.forEach((key, value) {
-      if (value != null) {
-        if (mapping.containsKey(key)) {
-          newFieldPositions[mapping[key]!] = value;
-        } else {
-          newFieldPositions[key] = value;
-        }
-      }
-    });
-
+  void _changeFormation(String formation) {
     setState(() {
-      _currentFormation = newFormation;
-      fieldPositions = newFieldPositions;
-      widget.onFormationChanged(newFormation);
+      _currentFormation = formation;
+      widget.onFormationChanged(formation);
     });
+  }
+
+  String _nextFormation(String currentFormation) {
+    final List<String> formationKeys = formations.keys.toList();
+    final int currentIndex = formationKeys.indexOf(currentFormation);
+    return formationKeys[(currentIndex + 1) % formationKeys.length];
+  }
+
+  String _previousFormation(String currentFormation) {
+    final List<String> formationKeys = formations.keys.toList();
+    final int currentIndex = formationKeys.indexOf(currentFormation);
+    return formationKeys[
+        (currentIndex - 1 + formationKeys.length) % formationKeys.length];
+  }
+
+  void _selectPlayer(String position) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Wybierz zawodnika'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: players.length,
+                    itemBuilder: (context, index) {
+                      final player = players[index];
+                      return ListTile(
+                        title: Text(player.name),
+                        onTap: () {
+                          setState(() {
+                            fieldPositions[position] = player;
+                          });
+                          Navigator.of(context).pop();
+                        },
+                      );
+                    },
+                  ),
+          ),
+        );
+      },
+    );
   }
 }

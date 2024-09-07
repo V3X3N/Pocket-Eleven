@@ -8,12 +8,13 @@ class PlayerCube extends StatelessWidget {
   final VoidCallback onTap;
 
   const PlayerCube({
-    super.key,
+    Key? key,
     required this.name,
     required this.imagePath,
     required this.onTap,
-  });
+  }) : super(key: key);
 
+  // Funkcja zwracająca kolor w zależności od ścieżki obrazka
   Color _getContainerColor() {
     switch (imagePath) {
       case 'assets/players/player_card_bronze.png':
@@ -25,7 +26,8 @@ class PlayerCube extends StatelessWidget {
       case 'assets/players/player_card_purple.png':
         return AppColors.playerPurple;
       default:
-        return Colors.green;
+        return Colors
+            .green; // Domyślny kolor, jeśli obrazek nie pasuje do żadnego
     }
   }
 
@@ -34,25 +36,37 @@ class PlayerCube extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        color: _getContainerColor(),
+        decoration: BoxDecoration(
+          color:
+              _getContainerColor(), // Użycie odpowiedniego koloru na podstawie obrazka
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey, width: 1),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              UniconsLine.user,
-              color: AppColors.textEnabledColor,
-              size: 40,
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              name,
-              style: const TextStyle(
+            // Ikona użytkownika zamiast obrazka, używana, jeśli obrazek nie jest dostępny
+            Expanded(
+              child: Icon(
+                UniconsLine.user, // Ikona użytkownika z Unicons
                 color: AppColors.textEnabledColor,
-                fontSize: 14,
+                size: 40,
               ),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+            ),
+            // Dopasowanie tekstu do rozmiaru kontenera
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    color: AppColors.textEnabledColor, // Kolor tekstu
+                    fontSize: 12, // Skalowanie tekstu
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ],
         ),
