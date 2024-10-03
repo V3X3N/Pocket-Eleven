@@ -86,10 +86,10 @@ class _ScoutingViewState extends State<ScoutingView> {
             .doc(userId!)
             .collection('players')
             .get();
+
         setState(() {
-          scoutedPlayers = snapshot.docs
-              .map((doc) => Player.fromJson(doc.data() as Map<String, dynamic>))
-              .toList();
+          scoutedPlayers =
+              snapshot.docs.map((doc) => Player.fromDocument(doc)).toList();
         });
       } catch (error) {
         debugPrint('Error loading scouted players: $error');
@@ -105,7 +105,6 @@ class _ScoutingViewState extends State<ScoutingView> {
             .doc(userId!)
             .collection('players');
 
-        // Usuwamy poprzednio zapisanych zawodników
         final batch = FirebaseFirestore.instance.batch();
         var snapshots = await playersCollection.get();
         for (var doc in snapshots.docs) {
@@ -113,9 +112,8 @@ class _ScoutingViewState extends State<ScoutingView> {
         }
         await batch.commit();
 
-        // Zapisujemy nowych zawodników
         for (Player player in scoutedPlayers) {
-          await playersCollection.add(player.toJson());
+          await playersCollection.add(player.toDocument());
         }
       } catch (error) {
         debugPrint('Error saving scouted players: $error');

@@ -1,9 +1,9 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:random_name_generator/random_name_generator.dart';
 
 class Player {
-  String id;
-
+  String playerID;
   String name;
   String position;
   String nationality;
@@ -31,7 +31,7 @@ class Player {
   String param4Name;
 
   Player({
-    this.id = '',
+    this.playerID = '',
     this.name = '',
     this.position = '',
     this.ovr = 0,
@@ -58,37 +58,40 @@ class Player {
     badge = _calculateBadge();
   }
 
-  factory Player.fromJson(Map<String, dynamic> json) {
+  // Factory method to create a Player object from Firestore document
+  factory Player.fromDocument(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
     return Player(
-      id: json['id'] ?? '',
-      name: json['name'],
-      position: json['position'],
-      ovr: json['ovr'],
-      age: json['age'],
-      nationality: json['nationality'],
-      imagePath: json['imagePath'],
-      flagPath: json['flagPath'],
-      value: json['value'],
-      salary: json['salary'],
-      param1: json['param1'],
-      param2: json['param2'],
-      param3: json['param3'],
-      param4: json['param4'],
-      param1Name: json['param1Name'],
-      param2Name: json['param2Name'],
-      param3Name: json['param3Name'],
-      param4Name: json['param4Name'],
-      matchesPlayed: json['matchesPlayed'] ?? 0,
-      goals: json['goals'] ?? 0,
-      assists: json['assists'] ?? 0,
-      yellowCards: json['yellowCards'] ?? 0,
-      redCards: json['redCards'] ?? 0,
+      playerID: doc.id,
+      name: data['name'] ?? '',
+      position: data['position'] ?? '',
+      ovr: data['ovr'] ?? 0,
+      age: data['age'] ?? 0,
+      nationality: data['nationality'] ?? '',
+      imagePath: data['imagePath'] ?? '',
+      flagPath: data['flagPath'] ?? '',
+      value: data['value'] ?? 0,
+      salary: data['salary'] ?? 0,
+      param1: data['param1'] ?? 0,
+      param2: data['param2'] ?? 0,
+      param3: data['param3'] ?? 0,
+      param4: data['param4'] ?? 0,
+      param1Name: data['param1Name'] ?? '',
+      param2Name: data['param2Name'] ?? '',
+      param3Name: data['param3Name'] ?? '',
+      param4Name: data['param4Name'] ?? '',
+      matchesPlayed: data['matchesPlayed'] ?? 0,
+      goals: data['goals'] ?? 0,
+      assists: data['assists'] ?? 0,
+      yellowCards: data['yellowCards'] ?? 0,
+      redCards: data['redCards'] ?? 0,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  // Method to convert a Player object into a Firestore document
+  Map<String, dynamic> toDocument() {
     return {
-      'id': id,
       'name': name,
       'position': position,
       'ovr': ovr,
@@ -159,7 +162,7 @@ class Player {
     int salary = ((age * ovr) / 10).round() * 10;
 
     return Player(
-      id: '',
+      playerID: '',
       name: name,
       position: position,
       ovr: ovr,
@@ -233,7 +236,6 @@ class Player {
   }
 
   static int _generateParameter(Random random) {
-    // Generate a value from 30 to 99 with a quadratic distribution
     int baseValue = random.nextInt(70) + 30; // Generate a value from 30 to 99
     return min((baseValue * sqrt(random.nextDouble())).round(), 99);
   }
@@ -274,7 +276,6 @@ class Player {
       'RM',
       'CAM',
       'LW',
-      'RW',
       'ST',
     ];
     return positions[random.nextInt(positions.length)];
