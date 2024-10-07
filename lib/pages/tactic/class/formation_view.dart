@@ -13,8 +13,72 @@ class FormationView extends StatefulWidget {
 }
 
 class _FormationViewState extends State<FormationView> {
-  List<Player?> selectedPlayers =
-      List.generate(30, (_) => null); // Lista z 30 elementami null
+  final Map<String, int> positionMap = {
+    'LW1': 1,
+    'ST1': 2,
+    'ST2': 3,
+    'ST3': 4,
+    'RW1': 5,
+    'LW2': 6,
+    'CAM1': 7,
+    'CAM2': 8,
+    'CAM3': 9,
+    'RW2': 10,
+    'LM1': 11,
+    'CM1': 12,
+    'CM2': 13,
+    'CM3': 14,
+    'RM1': 15,
+    'LM2': 16,
+    'CDM1': 17,
+    'CDM2': 18,
+    'CDM3': 19,
+    'RM2': 20,
+    'LB1': 21,
+    'CB1': 22,
+    'CB2': 23,
+    'CB3': 24,
+    'RB2': 25,
+    'GK1': 26,
+    'GK2': 27,
+    'GK3': 28,
+    'GK4': 29,
+    'GK5': 30,
+  };
+
+  Map<String, Player?> selectedPlayers = {
+    'LW1': null,
+    'ST1': null,
+    'ST2': null,
+    'ST3': null,
+    'RW1': null,
+    'LW2': null,
+    'CAM1': null,
+    'CAM2': null,
+    'CAM3': null,
+    'RW2': null,
+    'LM1': null,
+    'CM1': null,
+    'CM2': null,
+    'CM3': null,
+    'RM1': null,
+    'LM2': null,
+    'CDM1': null,
+    'CDM2': null,
+    'CDM3': null,
+    'RM2': null,
+    'LB1': null,
+    'CB1': null,
+    'CB2': null,
+    'CB3': null,
+    'RB2': null,
+    'GK1': null,
+    'GK2': null,
+    'GK3': null,
+    'GK4': null,
+    'GK5': null,
+  };
+
   bool isLoading = true;
 
   @override
@@ -49,13 +113,12 @@ class _FormationViewState extends State<FormationView> {
       if (formationSnapshot.docs.isNotEmpty) {
         DocumentSnapshot formationDoc = formationSnapshot.docs.first;
 
-        // Wczytanie referencji do zawodników
-        for (int i = 0; i < 30; i++) {
-          DocumentReference? playerRef = formationDoc['players'][i];
+        for (String position in positionMap.keys) {
+          DocumentReference? playerRef = formationDoc[position];
           if (playerRef != null) {
             DocumentSnapshot playerDoc = await playerRef.get();
             if (playerDoc.exists) {
-              selectedPlayers[i] = Player.fromDocument(playerDoc);
+              selectedPlayers[position] = Player.fromDocument(playerDoc);
             }
           }
         }
@@ -71,7 +134,7 @@ class _FormationViewState extends State<FormationView> {
     }
   }
 
-  Future<void> _selectPlayer(BuildContext context, int index) async {
+  Future<void> _selectPlayer(BuildContext context, String position) async {
     final Player? player = await showDialog<Player?>(
       context: context,
       builder: (BuildContext context) {
@@ -81,7 +144,7 @@ class _FormationViewState extends State<FormationView> {
 
     if (player != null) {
       setState(() {
-        selectedPlayers[index] = player;
+        selectedPlayers[position] = player;
       });
 
       await _saveFormationToFirestore(context);
@@ -105,7 +168,6 @@ class _FormationViewState extends State<FormationView> {
       final formationsCollection =
           FirebaseFirestore.instance.collection('formations');
 
-      // Sprawdzamy, czy istnieje dokument formacji
       QuerySnapshot formationSnapshot = await formationsCollection
           .where('club', isEqualTo: clubRef)
           .limit(1)
@@ -114,30 +176,28 @@ class _FormationViewState extends State<FormationView> {
       DocumentReference formationRef;
 
       if (formationSnapshot.docs.isNotEmpty) {
-        // Jeśli dokument istnieje, aktualizujemy go
         formationRef = formationSnapshot.docs.first.reference;
       } else {
-        // Jeśli nie istnieje, tworzymy nowy dokument
         formationRef = formationsCollection.doc();
         await formationRef.set({
           'club': clubRef,
         });
       }
 
-      // Zaktualizuj lub ustaw referencje do zawodników
       await formationRef.set(
-          {
-            'players': selectedPlayers.map((player) {
-              return player != null
-                  ? FirebaseFirestore.instance
-                      .collection('players')
-                      .doc(player.playerID)
-                  : null;
-            }).toList(),
-          },
-          SetOptions(
-              merge:
-                  true)); // Użycie merge, aby zaktualizować istniejący dokument
+        {
+          ...selectedPlayers.map((position, player) {
+            return MapEntry(
+                position,
+                player != null
+                    ? FirebaseFirestore.instance
+                        .collection('players')
+                        .doc(player.playerID)
+                    : null);
+          }),
+        },
+        SetOptions(merge: true),
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -160,15 +220,16 @@ class _FormationViewState extends State<FormationView> {
           ? const Center(child: CircularProgressIndicator())
           : GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5, // 5 kolumn
+                crossAxisCount: 5,
                 childAspectRatio: 1.0,
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
               ),
-              itemCount: 30, // 30 kwadratów
+              itemCount: positionMap.length,
               itemBuilder: (context, index) {
+                final position = positionMap.keys.elementAt(index);
                 return GestureDetector(
-                  onTap: () => _selectPlayer(context, index),
+                  onTap: () => _selectPlayer(context, position),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.hoverColor,
@@ -177,9 +238,9 @@ class _FormationViewState extends State<FormationView> {
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Center(
-                      child: selectedPlayers[index] == null
-                          ? const Text(
-                              'Select Player',
+                      child: selectedPlayers[position] == null
+                          ? Text(
+                              position,
                               style: TextStyle(
                                 color: AppColors.textEnabledColor,
                                 fontSize: 16,
@@ -188,10 +249,12 @@ class _FormationViewState extends State<FormationView> {
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(selectedPlayers[index]!.imagePath,
-                                    width: 50, height: 50),
+                                Image.asset(
+                                    selectedPlayers[position]!.imagePath,
+                                    width: 50,
+                                    height: 50),
                                 Text(
-                                  selectedPlayers[index]!.name,
+                                  selectedPlayers[position]!.name,
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
                                     fontSize: 14,
@@ -263,25 +326,41 @@ class _PlayerSelectionDialogState extends State<PlayerSelectionDialog> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
+                      childAspectRatio: 0.6,
                     ),
                     itemCount: players.length,
                     itemBuilder: (context, index) {
-                      final player = players[index];
                       return GestureDetector(
-                        onTap: () => Navigator.of(context).pop(player),
-                        child: Column(
-                          children: [
-                            Image.asset(player.imagePath,
-                                width: 50, height: 50),
-                            Text(player.name),
-                          ],
+                        onTap: () {
+                          Navigator.of(context).pop(players[index]);
+                        },
+                        child: Card(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                players[index].imagePath,
+                                height: 80,
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                players[index].name,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }
