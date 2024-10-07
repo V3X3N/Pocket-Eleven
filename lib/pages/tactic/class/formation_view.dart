@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:pocket_eleven/components/name_formatter.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pocket_eleven/pages/tactic/widget/player_selection_dialog.dart';
 
 class FormationView extends StatefulWidget {
   const FormationView({super.key});
@@ -136,51 +138,103 @@ class _FormationViewState extends State<FormationView> {
   }
 
   Future<void> _selectPlayer(BuildContext context, String position) async {
+    // Pobieramy zawodnika na danej pozycji
     final Player? currentPlayer = selectedPlayers[position];
-    List<Player> availablePlayers;
 
-    // Sprawdzamy, czy na danej pozycji jest już zawodnik
+    // Jeżeli zawodnik jest już na tej pozycji, wyświetlamy dialog
     if (currentPlayer != null) {
-      // Pobieramy wszystkich zawodników
-      availablePlayers = await FirebaseFunctions.getPlayersForClub(
+      // Pobieramy wszystkich zawodników, z wyjątkiem obecnie wybranego
+      List<Player> availablePlayers = await FirebaseFunctions.getPlayersForClub(
           await FirebaseFunctions.getClubId(
               FirebaseAuth.instance.currentUser!.uid));
-
-      // Filtrujemy zawodników, aby nie pokazywać aktualnie wybranego
       availablePlayers = availablePlayers
           .where((player) => player.playerID != currentPlayer.playerID)
           .toList();
-    } else {
-      // Jeśli nie ma zawodnika, wyświetlamy wszystkich
-      availablePlayers = await FirebaseFunctions.getPlayersForClub(
+
+      final Player? player = await showDialog<Player?>(
+        context: context,
+        builder: (BuildContext context) {
+          return PlayerSelectionDialog(players: availablePlayers);
+        },
+      );
+
+      if (player != null) {
+        // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
+        selectedPlayers.forEach((key, existingPlayer) {
+          if (existingPlayer != null &&
+              existingPlayer.playerID == player.playerID) {
+            // Usuwamy zawodnika z aktualnej pozycji
+            selectedPlayers[key] = null;
+          }
+        });
+
+        // Dodajemy nowego zawodnika na nową pozycję
+        setState(() {
+          selectedPlayers[position] = player;
+        });
+
+        // Zapisujemy zmiany do Firestore
+        await _saveFormationToFirestore(context);
+      }
+    }
+    // Jeżeli nie ma zawodnika na tej pozycji, sprawdzamy limit zawodników
+    else {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      final String userId = user.uid;
+      final DocumentReference clubRef =
+          await FirebaseFunctions.getClubReference(userId);
+      QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
+          .collection('formations')
+          .where('club', isEqualTo: clubRef)
+          .limit(1)
+          .get();
+
+      if (formationSnapshot.docs.isNotEmpty) {
+        final currentPlayers =
+            formationSnapshot.docs.first.data() as Map<String, dynamic>?;
+        final playerCount =
+            currentPlayers?.values.where((value) => value != null).length ?? 0;
+
+        if (playerCount >= 12) {
+          // Wyświetlamy komunikat o przekroczeniu limitu
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cannot select more than 11 players')),
+          );
+          return;
+        }
+      }
+
+      // Pobieramy dostępnych zawodników do wyboru
+      List<Player> availablePlayers = await FirebaseFunctions.getPlayersForClub(
           await FirebaseFunctions.getClubId(
               FirebaseAuth.instance.currentUser!.uid));
-    }
 
-    // Otwieramy dialog z odpowiednimi zawodnikami
-    final Player? player = await showDialog<Player?>(
-      context: context,
-      builder: (BuildContext context) {
-        return PlayerSelectionDialog(players: availablePlayers);
-      },
-    );
+      final Player? player = await showDialog<Player?>(
+        context: context,
+        builder: (BuildContext context) {
+          return PlayerSelectionDialog(players: availablePlayers);
+        },
+      );
 
-    if (player != null) {
-      // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
-      selectedPlayers.forEach((key, existingPlayer) {
-        if (existingPlayer != null &&
-            existingPlayer.playerID == player.playerID) {
-          // Usuwamy zawodnika z aktualnej pozycji
-          selectedPlayers[key] = null;
-        }
-      });
+      if (player != null) {
+        // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
+        selectedPlayers.forEach((key, existingPlayer) {
+          if (existingPlayer != null &&
+              existingPlayer.playerID == player.playerID) {
+            selectedPlayers[key] = null;
+          }
+        });
 
-      // Dodajemy nowego zawodnika na nową pozycję
-      setState(() {
-        selectedPlayers[position] = player;
-      });
+        // Dodajemy nowego zawodnika na wybraną pozycję
+        setState(() {
+          selectedPlayers[position] = player;
+        });
 
-      await _saveFormationToFirestore(context);
+        // Zapisujemy zmiany do Firestore
+        await _saveFormationToFirestore(context);
+      }
     }
   }
 
@@ -212,21 +266,20 @@ class _FormationViewState extends State<FormationView> {
         formationRef = formationSnapshot.docs.first.reference;
       } else {
         formationRef = formationsCollection.doc();
-        await formationRef.set({
-          'club': clubRef,
-        });
+        await formationRef.set({'club': clubRef});
       }
 
       await formationRef.set(
         {
           ...selectedPlayers.map((position, player) {
             return MapEntry(
-                position,
-                player != null
-                    ? FirebaseFirestore.instance
-                        .collection('players')
-                        .doc(player.playerID)
-                    : null);
+              position,
+              player != null
+                  ? FirebaseFirestore.instance
+                      .collection('players')
+                      .doc(player.playerID)
+                  : null,
+            );
           }),
         },
         SetOptions(merge: true),
@@ -300,7 +353,8 @@ class _FormationViewState extends State<FormationView> {
                                   height: 40,
                                 ),
                                 Text(
-                                  selectedPlayers[position]!.name,
+                                  formatPlayerName(
+                                      selectedPlayers[position]!.name),
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
@@ -314,69 +368,6 @@ class _FormationViewState extends State<FormationView> {
                 );
               },
             ),
-    );
-  }
-}
-
-// Zmiana w konstruktorze PlayerSelectionDialog, aby przyjmować listę graczy
-class PlayerSelectionDialog extends StatefulWidget {
-  final List<Player> players; // Lista graczy do wyboru
-
-  const PlayerSelectionDialog({Key? key, required this.players})
-      : super(key: key);
-
-  @override
-  _PlayerSelectionDialogState createState() => _PlayerSelectionDialogState();
-}
-
-class _PlayerSelectionDialogState extends State<PlayerSelectionDialog> {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Select a Player'),
-      content: widget.players.isEmpty
-          ? const Text('No players found')
-          : SizedBox(
-              width: double.maxFinite,
-              child: GridView.builder(
-                padding: const EdgeInsets.all(8.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 0.6,
-                ),
-                itemCount: widget.players.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop(widget.players[index]);
-                    },
-                    child: Card(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            widget.players[index].imagePath,
-                            height: 80,
-                          ),
-                          const SizedBox(height: 8.0),
-                          Text(
-                            widget.players[index].name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-      ],
     );
   }
 }

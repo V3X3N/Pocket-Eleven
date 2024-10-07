@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/name_formatter.dart';
 import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
@@ -59,7 +60,7 @@ class PlayerCube extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  name,
+                  formatPlayerName(name),
                   style: const TextStyle(
                     color: AppColors.textEnabledColor, // Kolor tekstu
                     fontSize: 12, // Skalowanie tekstu
