@@ -8,11 +8,11 @@ class PlayerCube extends StatelessWidget {
   final VoidCallback onTap;
 
   const PlayerCube({
-    Key? key,
+    super.key,
     required this.name,
     required this.imagePath,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   // Funkcja zwracająca kolor w zależności od ścieżki obrazka
   Color _getContainerColor() {
@@ -46,7 +46,7 @@ class PlayerCube extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Ikona użytkownika zamiast obrazka, używana, jeśli obrazek nie jest dostępny
-            Expanded(
+            const Expanded(
               child: Icon(
                 UniconsLine.user, // Ikona użytkownika z Unicons
                 color: AppColors.textEnabledColor,

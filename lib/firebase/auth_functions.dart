@@ -54,7 +54,7 @@ class AuthServices {
       }
       return false;
     } catch (error) {
-      print('Error checking if user has club: $error');
+      debugPrint('Error checking if user has club: $error');
       return false;
     }
   }
