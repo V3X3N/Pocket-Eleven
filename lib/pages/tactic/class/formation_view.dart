@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
-import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,6 +14,72 @@ class FormationView extends StatefulWidget {
 
 class _FormationViewState extends State<FormationView> {
   Player? selectedPlayer;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFormation();
+  }
+
+  Future<void> _loadFormation() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in')),
+      );
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    final String userId = user.uid;
+
+    try {
+      // Pobieranie referencji klubu
+      final DocumentReference clubRef =
+          await FirebaseFunctions.getClubReference(userId);
+
+      // Pobieranie formacji dla danego klubu
+      QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
+          .collection('formations')
+          .where('club', isEqualTo: clubRef)
+          .limit(1)
+          .get();
+
+      if (formationSnapshot.docs.isNotEmpty) {
+        DocumentSnapshot formationDoc = formationSnapshot.docs.first;
+
+        // Pobranie referencji do zawodnika
+        DocumentReference playerRef = formationDoc['cube'];
+
+        // Pobranie danych zawodnika
+        DocumentSnapshot playerDoc = await playerRef.get();
+        if (playerDoc.exists) {
+          setState(() {
+            selectedPlayer = Player.fromDocument(playerDoc);
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading formation: $e')),
+      );
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   Future<void> _selectPlayer(BuildContext context) async {
     final Player? player = await showDialog<Player?>(
@@ -36,14 +101,6 @@ class _FormationViewState extends State<FormationView> {
 
   Future<void> _saveFormationToFirestore(
       BuildContext context, Player player) async {
-    debugPrint(player.playerID);
-    if (player.playerID.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Player ID is missing')),
-      );
-      return;
-    }
-
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,14 +112,13 @@ class _FormationViewState extends State<FormationView> {
     final String userId = user.uid;
 
     try {
-      // Pobieranie referencji klubu z Firebase
+      // Pobieranie referencji klubu
       final DocumentReference clubRef =
           await FirebaseFunctions.getClubReference(userId);
 
       final formationsCollection =
           FirebaseFirestore.instance.collection('formations');
-      final formationRef =
-          formationsCollection.doc(); // Tworzenie nowego dokumentu
+      final formationRef = formationsCollection.doc();
 
       // Zapis do Firestore z referencjami do klubu i zawodnika
       await formationRef.set({
@@ -79,11 +135,8 @@ class _FormationViewState extends State<FormationView> {
         ),
       );
     } catch (e) {
-      // Informacja o błędzie zapisu do Firestore
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving formation: $e'),
-        ),
+        SnackBar(content: Text('Error saving formation: $e')),
       );
     }
   }
@@ -104,30 +157,32 @@ class _FormationViewState extends State<FormationView> {
         ),
         width: screenWidth * 0.2,
         height: screenHeight * 0.2,
-        child: Center(
-          child: selectedPlayer == null
-              ? const Text(
-                  'Click to select player',
-                  style: TextStyle(
-                    color: AppColors.textEnabledColor,
-                    fontSize: 16,
-                  ),
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(selectedPlayer!.imagePath,
-                        width: 50, height: 50),
-                    Text(
-                      selectedPlayer!.name,
-                      style: const TextStyle(
-                        color: AppColors.textEnabledColor,
-                        fontSize: 14,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Center(
+                child: selectedPlayer == null
+                    ? const Text(
+                        'Click to select player',
+                        style: TextStyle(
+                          color: AppColors.textEnabledColor,
+                          fontSize: 16,
+                        ),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(selectedPlayer!.imagePath,
+                              width: 50, height: 50),
+                          Text(
+                            selectedPlayer!.name,
+                            style: const TextStyle(
+                              color: AppColors.textEnabledColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-        ),
+              ),
       ),
     );
   }
@@ -194,12 +249,15 @@ class _PlayerSelectionDialogState extends State<PlayerSelectionDialog> {
                     itemCount: players.length,
                     itemBuilder: (context, index) {
                       final player = players[index];
-                      return PlayerCube(
-                        name: player.name,
-                        imagePath: player.imagePath,
-                        onTap: () {
-                          Navigator.of(context).pop(player);
-                        },
+                      return GestureDetector(
+                        onTap: () => Navigator.of(context).pop(player),
+                        child: Column(
+                          children: [
+                            Image.asset(player.imagePath,
+                                width: 50, height: 50),
+                            Text(player.name),
+                          ],
+                        ),
                       );
                     },
                   ),
