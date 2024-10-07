@@ -46,6 +46,8 @@ class PlayerSelectionDialog extends StatelessWidget {
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           childAspectRatio: 0.6,
+                          crossAxisSpacing: 8.0, // Odstępy poziome
+                          mainAxisSpacing: 8.0, // Odstępy pionowe
                         ),
                         itemCount: players.length,
                         itemBuilder: (context, index) {
@@ -53,8 +55,15 @@ class PlayerSelectionDialog extends StatelessWidget {
                             onTap: () {
                               Navigator.of(context).pop(players[index]);
                             },
-                            child: Card(
-                              color: AppColors.hoverColor,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.buttonColor,
+                                border: Border.all(
+                                  color: AppColors.borderColor,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -67,8 +76,9 @@ class PlayerSelectionDialog extends StatelessWidget {
                                     formatPlayerName(players[index].name),
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                        fontSize: 14,
-                                        color: AppColors.textEnabledColor),
+                                      fontSize: 11,
+                                      color: AppColors.textEnabledColor,
+                                    ),
                                   ),
                                 ],
                               ),

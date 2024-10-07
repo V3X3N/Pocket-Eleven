@@ -301,6 +301,7 @@ class _FormationViewState extends State<FormationView> {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       margin: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
@@ -330,7 +331,7 @@ class _FormationViewState extends State<FormationView> {
                   onTap: () => _selectPlayer(context, position),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.hoverColor,
+                      color: AppColors.buttonColor,
                       border:
                           Border.all(color: AppColors.borderColor, width: 1),
                       borderRadius: BorderRadius.circular(10.0),
@@ -341,7 +342,7 @@ class _FormationViewState extends State<FormationView> {
                               position,
                               style: const TextStyle(
                                 color: AppColors.textEnabledColor,
-                                fontSize: 14,
+                                fontSize: 11,
                               ),
                             )
                           : Column(
@@ -358,7 +359,7 @@ class _FormationViewState extends State<FormationView> {
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
-                                    fontSize: 14,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ],
