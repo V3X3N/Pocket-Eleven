@@ -136,14 +136,46 @@ class _FormationViewState extends State<FormationView> {
   }
 
   Future<void> _selectPlayer(BuildContext context, String position) async {
+    final Player? currentPlayer = selectedPlayers[position];
+    List<Player> availablePlayers;
+
+    // Sprawdzamy, czy na danej pozycji jest już zawodnik
+    if (currentPlayer != null) {
+      // Pobieramy wszystkich zawodników
+      availablePlayers = await FirebaseFunctions.getPlayersForClub(
+          await FirebaseFunctions.getClubId(
+              FirebaseAuth.instance.currentUser!.uid));
+
+      // Filtrujemy zawodników, aby nie pokazywać aktualnie wybranego
+      availablePlayers = availablePlayers
+          .where((player) => player.playerID != currentPlayer.playerID)
+          .toList();
+    } else {
+      // Jeśli nie ma zawodnika, wyświetlamy wszystkich
+      availablePlayers = await FirebaseFunctions.getPlayersForClub(
+          await FirebaseFunctions.getClubId(
+              FirebaseAuth.instance.currentUser!.uid));
+    }
+
+    // Otwieramy dialog z odpowiednimi zawodnikami
     final Player? player = await showDialog<Player?>(
       context: context,
       builder: (BuildContext context) {
-        return const PlayerSelectionDialog();
+        return PlayerSelectionDialog(players: availablePlayers);
       },
     );
 
     if (player != null) {
+      // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
+      selectedPlayers.forEach((key, existingPlayer) {
+        if (existingPlayer != null &&
+            existingPlayer.playerID == player.playerID) {
+          // Usuwamy zawodnika z aktualnej pozycji
+          selectedPlayers[key] = null;
+        }
+      });
+
+      // Dodajemy nowego zawodnika na nową pozycję
       setState(() {
         selectedPlayers[position] = player;
       });
@@ -286,95 +318,59 @@ class _FormationViewState extends State<FormationView> {
   }
 }
 
+// Zmiana w konstruktorze PlayerSelectionDialog, aby przyjmować listę graczy
 class PlayerSelectionDialog extends StatefulWidget {
-  const PlayerSelectionDialog({super.key});
+  final List<Player> players; // Lista graczy do wyboru
+
+  const PlayerSelectionDialog({Key? key, required this.players})
+      : super(key: key);
 
   @override
   _PlayerSelectionDialogState createState() => _PlayerSelectionDialogState();
 }
 
 class _PlayerSelectionDialogState extends State<PlayerSelectionDialog> {
-  List<Player> players = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPlayers();
-  }
-
-  Future<void> _loadPlayers() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final String clubId = await FirebaseFunctions.getClubId(user.uid);
-      if (clubId.isNotEmpty) {
-        final List<Player> loadedPlayers =
-            await FirebaseFunctions.getPlayersForClub(clubId);
-        setState(() {
-          players = loadedPlayers;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Select a Player'),
-      content: isLoading
-          ? Center(
-              child: LoadingAnimationWidget.waveDots(
-                color: AppColors.textEnabledColor,
-                size: 50,
-              ),
-            )
-          : players.isEmpty
-              ? const Text('No players found')
-              : SizedBox(
-                  width: double.maxFinite,
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 0.6,
-                    ),
-                    itemCount: players.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pop(players[index]);
-                        },
-                        child: Card(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                players[index].imagePath,
-                                height: 80,
-                              ),
-                              const SizedBox(height: 8.0),
-                              Text(
-                                players[index].name,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+      content: widget.players.isEmpty
+          ? const Text('No players found')
+          : SizedBox(
+              width: double.maxFinite,
+              child: GridView.builder(
+                padding: const EdgeInsets.all(8.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.6,
                 ),
+                itemCount: widget.players.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop(widget.players[index]);
+                    },
+                    child: Card(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            widget.players[index].imagePath,
+                            height: 80,
+                          ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            widget.players[index].name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
