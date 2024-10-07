@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -29,7 +30,12 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
         stream: FirebaseFunctions.getUserDataStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: LoadingAnimationWidget.waveDots(
+                color: AppColors.textEnabledColor,
+                size: 50,
+              ),
+            );
           }
 
           if (snapshot.hasError) {

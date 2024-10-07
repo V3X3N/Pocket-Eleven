@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
@@ -214,16 +215,28 @@ class _FormationViewState extends State<FormationView> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return Container(
+      margin: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor,
+        border: Border.all(color: AppColors.borderColor, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
       padding: const EdgeInsets.all(16.0),
       child: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: LoadingAnimationWidget.waveDots(
+                color: AppColors.textEnabledColor,
+                size: 50,
+              ),
+            )
           : GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 5,
-                childAspectRatio: 1.0,
-                crossAxisSpacing: 8.0,
-                mainAxisSpacing: 8.0,
+                childAspectRatio: 0.7,
+                crossAxisSpacing: 5.0,
+                mainAxisSpacing: 5.0,
               ),
               itemCount: positionMap.length,
               itemBuilder: (context, index) {
@@ -243,18 +256,20 @@ class _FormationViewState extends State<FormationView> {
                               position,
                               style: const TextStyle(
                                 color: AppColors.textEnabledColor,
-                                fontSize: 16,
+                                fontSize: 14,
                               ),
                             )
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Image.asset(
-                                    selectedPlayers[position]!.imagePath,
-                                    width: 50,
-                                    height: 50),
+                                  selectedPlayers[position]!.imagePath,
+                                  width: 40,
+                                  height: 40,
+                                ),
                                 Text(
                                   selectedPlayers[position]!.name,
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     color: AppColors.textEnabledColor,
                                     fontSize: 14,
@@ -316,7 +331,12 @@ class _PlayerSelectionDialogState extends State<PlayerSelectionDialog> {
     return AlertDialog(
       title: const Text('Select a Player'),
       content: isLoading
-          ? const CircularProgressIndicator()
+          ? Center(
+              child: LoadingAnimationWidget.waveDots(
+                color: AppColors.textEnabledColor,
+                size: 50,
+              ),
+            )
           : players.isEmpty
               ? const Text('No players found')
               : SizedBox(
