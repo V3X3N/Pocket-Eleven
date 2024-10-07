@@ -120,7 +120,7 @@ class _LoadingPageState extends State<LoadingPage> {
                       color: AppColors.textEnabledColor,
                     ),
                   ),
-                  if (_isLoading) SizedBox(height: 20),
+                  if (_isLoading) const SizedBox(height: 20),
                   LoadingAnimationWidget.waveDots(
                     color: AppColors.textEnabledColor,
                     size: 50,

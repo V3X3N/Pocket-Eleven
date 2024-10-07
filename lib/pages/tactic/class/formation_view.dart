@@ -241,7 +241,7 @@ class _FormationViewState extends State<FormationView> {
                       child: selectedPlayers[position] == null
                           ? Text(
                               position,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: AppColors.textEnabledColor,
                                 fontSize: 16,
                               ),
