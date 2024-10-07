@@ -63,7 +63,8 @@ class Player {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
     return Player(
-      playerID: doc.id,
+      playerID: doc
+          .id, // doc.id is the unique Firestore document ID, it should be assigned here
       name: data['name'] ?? '',
       position: data['position'] ?? '',
       ovr: data['ovr'] ?? 0,
@@ -92,6 +93,7 @@ class Player {
   // Method to convert a Player object into a Firestore document
   Map<String, dynamic> toDocument() {
     return {
+      'id': playerID,
       'name': name,
       'position': position,
       'ovr': ovr,

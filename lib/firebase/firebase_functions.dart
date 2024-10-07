@@ -224,11 +224,14 @@ class FirebaseFunctions {
     }
   }
 
-  /// Retrieves a list of players associated with a specific club.
+  /// Retrieves all players associated with a given club ID.
   ///
-  /// @param {String} clubId - The ID of the club.
-  /// @return {Future<List<Player>>} A Future that resolves to a list of Player objects.
-  /// @throws {Error} If there is an error fetching players.
+  /// Parameters:
+  ///   clubId (String): The ID of the club.
+  ///
+  /// Returns:
+  ///   Future<List<Player>>: A future that resolves to a list of Player objects associated with the given club ID.
+  /// @throws {Error} If there is an error loading the players.
   static Future<List<Player>> getPlayersForClub(String clubId) async {
     try {
       DocumentReference clubRef =
@@ -241,29 +244,32 @@ class FirebaseFunctions {
 
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
         return Player(
-          name: data['name'],
-          position: data['position'],
-          ovr: data['ovr'],
-          age: data['age'],
-          nationality: data['nationality'],
-          imagePath: data['imagePath'],
-          flagPath: data['flagPath'],
-          value: data['value'],
-          salary: data['salary'],
-          param1: data['param1'],
-          param2: data['param2'],
-          param3: data['param3'],
-          param4: data['param4'],
-          param1Name: data['param1Name'],
-          param2Name: data['param2Name'],
-          param3Name: data['param3Name'],
-          param4Name: data['param4Name'],
-          matchesPlayed: data['matchesPlayed'],
-          goals: data['goals'],
-          assists: data['assists'],
-          yellowCards: data['yellowCards'],
-          redCards: data['redCards'],
+          playerID:
+              doc.id, // Ustawiamy playerID na doc.id (Firestore document ID)
+          name: data['name'] ?? '',
+          position: data['position'] ?? '',
+          ovr: data['ovr'] ?? 0,
+          age: data['age'] ?? 0,
+          nationality: data['nationality'] ?? '',
+          imagePath: data['imagePath'] ?? '',
+          flagPath: data['flagPath'] ?? '',
+          value: data['value'] ?? 0,
+          salary: data['salary'] ?? 0,
+          param1: data['param1'] ?? 0,
+          param2: data['param2'] ?? 0,
+          param3: data['param3'] ?? 0,
+          param4: data['param4'] ?? 0,
+          param1Name: data['param1Name'] ?? '',
+          param2Name: data['param2Name'] ?? '',
+          param3Name: data['param3Name'] ?? '',
+          param4Name: data['param4Name'] ?? '',
+          matchesPlayed: data['matchesPlayed'] ?? 0,
+          goals: data['goals'] ?? 0,
+          assists: data['assists'] ?? 0,
+          yellowCards: data['yellowCards'] ?? 0,
+          redCards: data['redCards'] ?? 0,
         );
       }).toList();
     } catch (error) {
