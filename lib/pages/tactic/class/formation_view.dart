@@ -13,7 +13,8 @@ class FormationView extends StatefulWidget {
 }
 
 class _FormationViewState extends State<FormationView> {
-  Player? selectedPlayer;
+  List<Player?> selectedPlayers =
+      List.generate(30, (_) => null); // Lista z 30 elementami null
   bool isLoading = true;
 
   @override
@@ -37,11 +38,8 @@ class _FormationViewState extends State<FormationView> {
     final String userId = user.uid;
 
     try {
-      // Pobieranie referencji klubu
       final DocumentReference clubRef =
           await FirebaseFunctions.getClubReference(userId);
-
-      // Pobieranie formacji dla danego klubu
       QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
           .collection('formations')
           .where('club', isEqualTo: clubRef)
@@ -51,37 +49,29 @@ class _FormationViewState extends State<FormationView> {
       if (formationSnapshot.docs.isNotEmpty) {
         DocumentSnapshot formationDoc = formationSnapshot.docs.first;
 
-        // Pobranie referencji do zawodnika
-        DocumentReference playerRef = formationDoc['cube'];
-
-        // Pobranie danych zawodnika
-        DocumentSnapshot playerDoc = await playerRef.get();
-        if (playerDoc.exists) {
-          setState(() {
-            selectedPlayer = Player.fromDocument(playerDoc);
-            isLoading = false;
-          });
-        } else {
-          setState(() {
-            isLoading = false;
-          });
+        // Wczytanie referencji do zawodników
+        for (int i = 0; i < 30; i++) {
+          DocumentReference? playerRef = formationDoc['players'][i];
+          if (playerRef != null) {
+            DocumentSnapshot playerDoc = await playerRef.get();
+            if (playerDoc.exists) {
+              selectedPlayers[i] = Player.fromDocument(playerDoc);
+            }
+          }
         }
-      } else {
-        setState(() {
-          isLoading = false;
-        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading formation: $e')),
       );
+    } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
 
-  Future<void> _selectPlayer(BuildContext context) async {
+  Future<void> _selectPlayer(BuildContext context, int index) async {
     final Player? player = await showDialog<Player?>(
       context: context,
       builder: (BuildContext context) {
@@ -91,16 +81,14 @@ class _FormationViewState extends State<FormationView> {
 
     if (player != null) {
       setState(() {
-        selectedPlayer = player;
+        selectedPlayers[index] = player;
       });
 
-      // Zapis do Firebase
-      await _saveFormationToFirestore(context, player);
+      await _saveFormationToFirestore(context);
     }
   }
 
-  Future<void> _saveFormationToFirestore(
-      BuildContext context, Player player) async {
+  Future<void> _saveFormationToFirestore(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,21 +100,44 @@ class _FormationViewState extends State<FormationView> {
     final String userId = user.uid;
 
     try {
-      // Pobieranie referencji klubu
       final DocumentReference clubRef =
           await FirebaseFunctions.getClubReference(userId);
-
       final formationsCollection =
           FirebaseFirestore.instance.collection('formations');
-      final formationRef = formationsCollection.doc();
 
-      // Zapis do Firestore z referencjami do klubu i zawodnika
-      await formationRef.set({
-        'club': clubRef,
-        'cube': FirebaseFirestore.instance
-            .collection('players')
-            .doc(player.playerID),
-      });
+      // Sprawdzamy, czy istnieje dokument formacji
+      QuerySnapshot formationSnapshot = await formationsCollection
+          .where('club', isEqualTo: clubRef)
+          .limit(1)
+          .get();
+
+      DocumentReference formationRef;
+
+      if (formationSnapshot.docs.isNotEmpty) {
+        // Jeśli dokument istnieje, aktualizujemy go
+        formationRef = formationSnapshot.docs.first.reference;
+      } else {
+        // Jeśli nie istnieje, tworzymy nowy dokument
+        formationRef = formationsCollection.doc();
+        await formationRef.set({
+          'club': clubRef,
+        });
+      }
+
+      // Zaktualizuj lub ustaw referencje do zawodników
+      await formationRef.set(
+          {
+            'players': selectedPlayers.map((player) {
+              return player != null
+                  ? FirebaseFirestore.instance
+                      .collection('players')
+                      .doc(player.playerID)
+                  : null;
+            }).toList(),
+          },
+          SetOptions(
+              merge:
+                  true)); // Użycie merge, aby zaktualizować istniejący dokument
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -143,47 +154,56 @@ class _FormationViewState extends State<FormationView> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-
-    return GestureDetector(
-      onTap: () => _selectPlayer(context),
-      child: Container(
-        margin: EdgeInsets.all(screenWidth * 0.04),
-        decoration: BoxDecoration(
-          color: AppColors.hoverColor,
-          border: Border.all(color: AppColors.borderColor, width: 1),
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        width: screenWidth * 0.2,
-        height: screenHeight * 0.2,
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Center(
-                child: selectedPlayer == null
-                    ? const Text(
-                        'Click to select player',
-                        style: TextStyle(
-                          color: AppColors.textEnabledColor,
-                          fontSize: 16,
-                        ),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(selectedPlayer!.imagePath,
-                              width: 50, height: 50),
-                          Text(
-                            selectedPlayer!.name,
-                            style: const TextStyle(
-                              color: AppColors.textEnabledColor,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5, // 5 kolumn
+                childAspectRatio: 1.0,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
               ),
-      ),
+              itemCount: 30, // 30 kwadratów
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () => _selectPlayer(context, index),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Center(
+                      child: selectedPlayers[index] == null
+                          ? const Text(
+                              'Select Player',
+                              style: TextStyle(
+                                color: AppColors.textEnabledColor,
+                                fontSize: 16,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(selectedPlayers[index]!.imagePath,
+                                    width: 50, height: 50),
+                                Text(
+                                  selectedPlayers[index]!.name,
+                                  style: const TextStyle(
+                                    color: AppColors.textEnabledColor,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
