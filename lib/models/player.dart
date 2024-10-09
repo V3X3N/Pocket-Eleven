@@ -118,29 +118,46 @@ class Player {
     };
   }
 
-  // Update badge, OVR, value and salary based on player's parameters
+  // Aktualizacja zależnych atrybutów: OVR, badge, value, salary, imagePath
   void updateDerivedAttributes() {
-    // OVR is calculated as the average of the four parameters
+    // OVR jest wyliczane jako średnia z czterech parametrów
     ovr = ((param1 + param2 + param3 + param4) / 4).round();
 
-    // Update badge based on the new OVR
+    // Aktualizacja badge w oparciu o nowy OVR
     badge = _calculateBadge();
 
-    // Calculate value and salary based on OVR and age
+    // Aktualizacja ścieżki obrazka w zależności od badge
+    imagePath = _getImagePathForBadge(badge);
+
+    // Obliczanie wartości i pensji na podstawie OVR i wieku
     value = ((ovr * 450000 / age) / 10000).round() * 10000;
     salary = ((age * ovr) / 10).round() * 10;
   }
 
-  // Badge calculation logic
+  // Metoda do obliczania badge
   String _calculateBadge() {
     if (ovr >= 80) {
       return 'purple';
-    } else if (ovr >= 60 && ovr < 79) {
+    } else if (ovr >= 60 && ovr < 80) {
       return 'gold';
-    } else if (ovr >= 40 && ovr < 59) {
+    } else if (ovr >= 40 && ovr < 60) {
       return 'silver';
     } else {
       return 'bronze';
+    }
+  }
+
+  // Metoda do przypisania ścieżki obrazka na podstawie badge
+  String _getImagePathForBadge(String badge) {
+    switch (badge) {
+      case 'purple':
+        return 'assets/players/player_card_purple.png';
+      case 'gold':
+        return 'assets/players/player_card_gold.png';
+      case 'silver':
+        return 'assets/players/player_card_silver.png';
+      default:
+        return 'assets/players/player_card_bronze.png';
     }
   }
 

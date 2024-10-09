@@ -66,7 +66,7 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> trainPlayer(Player player, String paramName) async {
-    // Increase the selected parameter and update Firestore
+    // Zwiększenie wybranego parametru i aktualizacja w Firestore
     int newValue;
     switch (paramName) {
       case 'param1':
@@ -87,11 +87,14 @@ class _TrainingViewState extends State<TrainingView> {
         break;
     }
 
-    // Update the player in Firestore
+    // Przeliczenie zależnych wartości: OVR, badge, value, salary
+    player.updateDerivedAttributes();
+
+    // Aktualizacja zawodnika w Firestore
     await FirebaseFunctions.updatePlayerData(
         player.playerID, player.toDocument());
 
-    // Update UI
+    // Odświeżenie UI
     setState(() {});
   }
 
@@ -130,7 +133,7 @@ class _TrainingViewState extends State<TrainingView> {
                   ),
                   SizedBox(height: screenHeight * 0.04),
 
-                  // New Section: Training Players
+                  // Sekcja: Trening zawodników
                   isLoading
                       ? const Center(
                           child: CircularProgressIndicator(),
