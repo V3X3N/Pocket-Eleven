@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class OptionButton extends StatelessWidget {
-  final int index;
+  final int? index;
+  final int? selectedIndex;
+  final VoidCallback? onTap;
   final String text;
-  final VoidCallback onTap;
   final double screenWidth;
   final double screenHeight;
-  final int selectedIndex;
+  final double fontSizeMultiplier; // Opcjonalny mnożnik dla fontSize
 
   const OptionButton({
     super.key,
-    required this.index,
+    this.index,
+    this.selectedIndex,
+    this.onTap,
     required this.text,
-    required this.onTap,
     required this.screenWidth,
     required this.screenHeight,
-    required this.selectedIndex,
+    this.fontSizeMultiplier = 1.0, // Domyślna wartość mnożnika
   });
 
   @override
@@ -48,7 +50,8 @@ class OptionButton extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            fontSize: 18,
+            fontSize:
+                18 * fontSizeMultiplier, // Użyj mnożnika do obliczenia fontSize
             color: isSelected
                 ? AppColors.textEnabledColor
                 : AppColors.textEnabledColor,

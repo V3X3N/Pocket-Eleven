@@ -55,7 +55,7 @@ class Player {
     this.yellowCards = 0,
     this.redCards = 0,
   }) {
-    badge = _calculateBadge();
+    updateDerivedAttributes(); // Automatyczne wyliczanie po inicjalizacji
   }
 
   // Factory method to create a Player object from Firestore document
@@ -63,8 +63,7 @@ class Player {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
     return Player(
-      playerID: doc
-          .id, // doc.id is the unique Firestore document ID, it should be assigned here
+      playerID: doc.id,
       name: data['name'] ?? '',
       position: data['position'] ?? '',
       ovr: data['ovr'] ?? 0,
@@ -119,6 +118,20 @@ class Player {
     };
   }
 
+  // Update badge, OVR, value and salary based on player's parameters
+  void updateDerivedAttributes() {
+    // OVR is calculated as the average of the four parameters
+    ovr = ((param1 + param2 + param3 + param4) / 4).round();
+
+    // Update badge based on the new OVR
+    badge = _calculateBadge();
+
+    // Calculate value and salary based on OVR and age
+    value = ((ovr * 450000 / age) / 10000).round() * 10000;
+    salary = ((age * ovr) / 10).round() * 10;
+  }
+
+  // Badge calculation logic
   String _calculateBadge() {
     if (ovr >= 80) {
       return 'purple';
@@ -131,6 +144,7 @@ class Player {
     }
   }
 
+  // Generate random parameters for a new player (this method remains unchanged)
   static Future<Player> generateRandomFootballer({
     String? nationality,
     String? position,
@@ -190,6 +204,7 @@ class Player {
     );
   }
 
+  // Helper methods to generate parameters, positions, and names remain unchanged
   static Map<String, String> _getParameterNames(String position) {
     switch (position) {
       case 'GK':

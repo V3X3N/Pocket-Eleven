@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
@@ -111,8 +113,7 @@ class _TrainingViewState extends State<TrainingView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(
-                        screenWidth * 0.04), // Proporcjonalny padding
+                    padding: EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
                       color: AppColors.hoverColor,
                       border:
@@ -124,6 +125,7 @@ class _TrainingViewState extends State<TrainingView> {
                       level: level,
                       upgradeCost: upgradeCost,
                       isUpgradeEnabled: userMoney >= upgradeCost,
+                      onUpgradePressed: increaseLevel,
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
@@ -174,6 +176,7 @@ class _TrainingViewState extends State<TrainingView> {
                                           player.param1Name,
                                           player.param1,
                                           screenWidth,
+                                          screenHeight,
                                         ),
                                         _buildTrainingButton(
                                           player,
@@ -181,6 +184,7 @@ class _TrainingViewState extends State<TrainingView> {
                                           player.param2Name,
                                           player.param2,
                                           screenWidth,
+                                          screenHeight,
                                         ),
                                         _buildTrainingButton(
                                           player,
@@ -188,6 +192,7 @@ class _TrainingViewState extends State<TrainingView> {
                                           player.param3Name,
                                           player.param3,
                                           screenWidth,
+                                          screenHeight,
                                         ),
                                         _buildTrainingButton(
                                           player,
@@ -195,6 +200,7 @@ class _TrainingViewState extends State<TrainingView> {
                                           player.param4Name,
                                           player.param4,
                                           screenWidth,
+                                          screenHeight,
                                         ),
                                       ],
                                     ),
@@ -213,8 +219,52 @@ class _TrainingViewState extends State<TrainingView> {
     );
   }
 
-  Widget _buildTrainingButton(Player player, String paramName,
-      String paramLabel, int paramValue, double screenWidth) {
+  Future<void> increaseLevel() async {
+    if (userId != null) {
+      try {
+        DocumentSnapshot userDoc =
+            await FirebaseFunctions.getUserDocument(userId!);
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        double userMoney = (userData['money'] ?? 0).toDouble();
+        int currentLevel = userData['trainingLevel'] ?? 1;
+
+        int currentUpgradeCost =
+            FirebaseFunctions.calculateUpgradeCost(currentLevel);
+
+        if (userMoney >= currentUpgradeCost) {
+          int newLevel = currentLevel + 1;
+
+          await FirebaseFunctions.updateTrainingLevel(userId!, newLevel);
+
+          await FirebaseFunctions.updateUserData(
+              {'money': userMoney - currentUpgradeCost});
+
+          setState(() {
+            level = newLevel;
+            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Not enough money to upgrade the training.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 1),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error upgrading training: $e');
+      }
+    }
+  }
+
+  Widget _buildTrainingButton(
+      Player player,
+      String paramName,
+      String paramLabel,
+      int paramValue,
+      double screenWidth,
+      double screenHeight) {
     return Expanded(
       child: Column(
         children: [
@@ -222,24 +272,16 @@ class _TrainingViewState extends State<TrainingView> {
             '$paramLabel: $paramValue',
             style: TextStyle(
               color: AppColors.textEnabledColor,
-              fontSize: screenWidth * 0.035, // Skalowanie rozmiaru tekstu
+              fontSize: screenWidth * 0.030, // Skalowanie rozmiaru tekstu
             ),
           ),
           SizedBox(height: screenWidth * 0.02), // Proporcjonalny odstęp
-          ElevatedButton(
-            onPressed: () => trainPlayer(player, paramName),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.02,
-                vertical: screenWidth * 0.02,
-              ),
-            ),
-            child: Text(
-              'Trenuj',
-              style:
-                  TextStyle(fontSize: screenWidth * 0.035), // Skalowanie tekstu
-            ),
+          OptionButton(
+            onTap: () => trainPlayer(player, paramName),
+            screenWidth: screenWidth,
+            screenHeight: screenHeight * 0.7,
+            text: 'Train',
+            fontSizeMultiplier: 0.7,
           ),
         ],
       ),
