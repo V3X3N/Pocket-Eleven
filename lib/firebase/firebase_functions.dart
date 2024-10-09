@@ -583,4 +583,15 @@ class FirebaseFunctions {
           duration: Duration(seconds: 1)),
     );
   }
+
+  static Future<void> updatePlayerData(
+      String playerID, Map<String, dynamic> playerData) async {
+    try {
+      final DocumentReference playerDoc =
+          FirebaseFirestore.instance.collection('players').doc(playerID);
+      await playerDoc.update(playerData);
+    } catch (e) {
+      debugPrint('Error updating player data: $e');
+    }
+  }
 }
