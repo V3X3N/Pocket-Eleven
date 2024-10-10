@@ -30,6 +30,8 @@ class Player {
   String param3Name;
   String param4Name;
 
+  bool isYouth;
+
   Player({
     this.playerID = '',
     this.name = '',
@@ -54,6 +56,7 @@ class Player {
     this.assists = 0,
     this.yellowCards = 0,
     this.redCards = 0,
+    this.isYouth = false,
   }) {
     updateDerivedAttributes(); // Automatyczne wyliczanie po inicjalizacji
   }
@@ -86,6 +89,7 @@ class Player {
       assists: data['assists'] ?? 0,
       yellowCards: data['yellowCards'] ?? 0,
       redCards: data['redCards'] ?? 0,
+      isYouth: data['isYouth'] ?? false,
     );
   }
 
@@ -115,6 +119,7 @@ class Player {
       'assists': assists,
       'yellowCards': yellowCards,
       'redCards': redCards,
+      'isYouth': isYouth,
     };
   }
 
@@ -165,16 +170,21 @@ class Player {
   static Future<Player> generateRandomFootballer({
     String? nationality,
     String? position,
-    int? ovr,
-    int? age,
+    int? minOvr,
+    int? maxOvr,
+    int? minAge,
+    int? maxAge,
+    bool isYouth = false,
   }) async {
     final random = Random();
     nationality ??= await _getRandomNationality(random);
     position ??= _getRandomPosition(random);
-    age ??= random.nextInt(14) + 18;
+
+    int age = random.nextInt((maxAge ?? 30) - (minAge ?? 18)) + (minAge ?? 18);
 
     // Generate the parameters based on the position with a limit of 99
-    List<int> parameters = _generateParameters(random);
+    List<int> parameters =
+        _generateParameters(random, minOvr ?? 30, maxOvr ?? 99);
     int param1 = parameters[0];
     int param2 = parameters[1];
     int param3 = parameters[2];
@@ -184,7 +194,7 @@ class Player {
     Map<String, String> paramNames = _getParameterNames(position);
 
     // Calculate OVR as the average of the four parameters
-    ovr = ((param1 + param2 + param3 + param4) / 4).round();
+    int ovr = ((param1 + param2 + param3 + param4) / 4).round();
 
     String name = _getSelectedFootballerName(nationality);
     String imagePath = _getImagePath(ovr);
@@ -213,11 +223,7 @@ class Player {
       param2Name: paramNames['param2Name']!,
       param3Name: paramNames['param3Name']!,
       param4Name: paramNames['param4Name']!,
-      matchesPlayed: 0,
-      goals: 0,
-      assists: 0,
-      yellowCards: 0,
-      redCards: 0,
+      isYouth: isYouth,
     );
   }
 
@@ -265,13 +271,10 @@ class Player {
     }
   }
 
-  static List<int> _generateParameters(Random random) {
-    return List.generate(4, (_) => _generateParameter(random));
-  }
-
-  static int _generateParameter(Random random) {
-    int baseValue = random.nextInt(70) + 30; // Generate a value from 30 to 99
-    return min((baseValue * sqrt(random.nextDouble())).round(), 99);
+  static List<int> _generateParameters(
+      Random random, int minParam, int maxParam) {
+    return List.generate(
+        4, (_) => random.nextInt(maxParam - minParam) + minParam);
   }
 
   static Future<String> _getRandomNationality(Random random) async {
@@ -310,7 +313,7 @@ class Player {
       'RM',
       'CAM',
       'LW',
-      'ST',
+      'ST'
     ];
     return positions[random.nextInt(positions.length)];
   }

@@ -530,7 +530,7 @@ class FirebaseFunctions {
   ///
   /// Returns a Future<void> that completes when the operation is finished.
   static Future<void> savePlayerToFirestore(
-      BuildContext context, dynamic player) async {
+      BuildContext context, Player player) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -545,13 +545,11 @@ class FirebaseFunctions {
 
     final playersCollection = FirebaseFirestore.instance.collection('players');
 
-    // Tworzymy nowy dokument w kolekcji i uzyskujemy jego ID
-    final newPlayerRef =
-        playersCollection.doc(); // Tworzymy referencję z automatycznym ID
-    final playerId = newPlayerRef.id; // Uzyskujemy ID dokumentu
+    final newPlayerRef = playersCollection.doc();
+    final playerId = newPlayerRef.id;
 
     await newPlayerRef.set({
-      'id': playerId, // Dodajemy ID jako pole
+      'id': playerId,
       'name': player.name,
       'position': player.position,
       'ovr': player.ovr,
@@ -574,7 +572,9 @@ class FirebaseFunctions {
       'assists': player.assists,
       'yellowCards': player.yellowCards,
       'redCards': player.redCards,
+      'isYouth': player.isYouth,
       'club': clubRef,
+      'createdAt': FieldValue.serverTimestamp(), // Timestamp for cooldown
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -145,11 +145,9 @@ class _TrainingViewState extends State<TrainingView> {
                               final player = players[index];
                               return Container(
                                 margin: EdgeInsets.only(
-                                  bottom: screenHeight *
-                                      0.01, // Proporcjonalny margines
+                                  bottom: screenHeight * 0.01,
                                 ),
-                                padding: EdgeInsets.all(screenWidth *
-                                    0.03), // Proporcjonalny padding
+                                padding: EdgeInsets.all(screenWidth * 0.03),
                                 decoration: BoxDecoration(
                                   color: AppColors.hoverColor,
                                   border: Border.all(
