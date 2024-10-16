@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart'; // Dodajemy FirebaseFunctions
 import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -34,6 +35,19 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  // Nowa funkcja, która sprawdza, czy klub użytkownika jest przypisany do ligi
+  Future<void> _checkAndAssignLeague(String email) async {
+    bool hasClub = await AuthServices.userHasClub(email);
+    if (hasClub) {
+      // Sprawdzenie, czy klub jest w lidze
+      bool inLeague = await FirebaseFunctions.isClubInLeague(email);
+      if (!inLeague) {
+        // Jeśli nie ma przypisanej ligi, dodaj go do istniejącej ligi lub stwórz nową
+        await FirebaseFunctions.assignClubToLeague(email);
+      }
+    }
   }
 
   @override
@@ -191,9 +205,13 @@ class _LoginPageState extends State<LoginPage> {
                                               email, password, context)
                                           : await AuthServices.signupUser(email,
                                               password, managerName, context);
+
+                                      // Sprawdzenie, czy użytkownik ma klub
                                       bool hasClub =
                                           await AuthServices.userHasClub(email);
                                       if (hasClub) {
+                                        // Sprawdzenie, czy klub użytkownika jest przypisany do ligi
+                                        await _checkAndAssignLeague(email);
                                         Navigator.pushAndRemoveUntil(
                                           context,
                                           MaterialPageRoute(
