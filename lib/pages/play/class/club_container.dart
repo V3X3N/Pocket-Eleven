@@ -35,30 +35,30 @@ class ClubInfoContainer extends StatelessWidget {
     return null;
   }
 
-  // Pobieranie najbliższego meczu użytkownika
-  Future<Map<String, dynamic>> _getNextMatch(String userClubName) async {
+// Pobieranie meczów i grupowanie według rund
+  Future<List<Map<String, dynamic>>> _getMatches() async {
     var leaguesSnapshot = await FirebaseFirestore.instance
         .collection('leagues')
-        .where('clubs', arrayContains: userClubName)
+        .limit(1) // Zakładamy, że liga jest tylko jedna w danym kontekście
         .get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData = leaguesSnapshot.docs.first.data();
-      var matches = leagueData['matches'] as List;
+      var leagueData =
+          leaguesSnapshot.docs.first.data() as Map<String, dynamic>;
+      var matches = leagueData['matches'] as Map<String, dynamic>;
 
-      // Filtrujemy mecze, aby znaleźć najbliższy, który jeszcze się nie odbył
-      var now = DateTime.now();
-      matches.sort((a, b) =>
-          (a['matchTime'].toDate()).compareTo(b['matchTime'].toDate()));
-      var nextMatch = matches.firstWhere(
-          (match) => match['matchTime'].toDate().isAfter(now),
-          orElse: () => {});
+      // Lista, która będzie zawierać wszystkie mecze z rund
+      List<Map<String, dynamic>> allMatches = [];
 
-      return nextMatch.isNotEmpty
-          ? nextMatch
-          : {'club1': 'N/A', 'club2': 'N/A', 'matchTime': null};
+      // Iterujemy przez rundy w "matches"
+      matches.forEach((roundKey, roundMatches) {
+        var matchList = List<Map<String, dynamic>>.from(roundMatches);
+        allMatches.addAll(matchList);
+      });
+
+      return allMatches;
     }
-    return {'club1': 'N/A', 'club2': 'N/A', 'matchTime': null};
+    return [];
   }
 
   @override
@@ -73,22 +73,30 @@ class ClubInfoContainer extends StatelessWidget {
           }
 
           var userClubName = clubNameSnapshot.data!;
-          return FutureBuilder<Map<String, dynamic>>(
-            future: _getNextMatch(userClubName),
+          return FutureBuilder<List<Map<String, dynamic>>>(
+            future: _getMatches(),
             builder: (context, matchSnapshot) {
               if (!matchSnapshot.hasData || matchSnapshot.data == null) {
                 return const CircularProgressIndicator();
               }
 
-              var match = matchSnapshot.data!;
-              var club1 = match['club1'];
-              var club2 = match['club2'];
-              var matchTime = match['matchTime'] != null
-                  ? (match['matchTime'] as Timestamp).toDate()
-                  : null;
+              var allMatches = matchSnapshot.data!;
 
-              // Określenie, kto jest przeciwnikiem
-              var opponentName = club1 == userClubName ? club2 : club1;
+              // Filtrujemy mecze użytkownika
+              var nextMatch = allMatches.firstWhere(
+                  (match) =>
+                      match['club1'] == userClubName ||
+                      match['club2'] == userClubName,
+                  orElse: () => {});
+
+              if (nextMatch.isEmpty) {
+                return const Text("Brak meczów do wyświetlenia");
+              }
+
+              var opponentName = nextMatch['club1'] == userClubName
+                  ? nextMatch['club2']
+                  : nextMatch['club1'];
+              var matchTime = (nextMatch['matchTime'] as Timestamp).toDate();
               var matchTimeText = matchTime != null
                   ? matchTime.toString()
                   : 'Brak następnego meczu';
