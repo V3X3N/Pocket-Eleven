@@ -35,7 +35,7 @@ class ClubInfoContainer extends StatelessWidget {
     return null;
   }
 
-// Pobieranie meczów i grupowanie według rund
+  // Pobieranie meczów i grupowanie według rund
   Future<List<Map<String, dynamic>>> _getMatches() async {
     var leaguesSnapshot = await FirebaseFirestore.instance
         .collection('leagues')
@@ -53,6 +53,13 @@ class ClubInfoContainer extends StatelessWidget {
       matches.forEach((roundKey, roundMatches) {
         var matchList = List<Map<String, dynamic>>.from(roundMatches);
         allMatches.addAll(matchList);
+      });
+
+      // Sortowanie meczów według czasu meczu
+      allMatches.sort((a, b) {
+        return (a['matchTime'] as Timestamp)
+            .toDate()
+            .compareTo((b['matchTime'] as Timestamp).toDate());
       });
 
       return allMatches;
@@ -81,16 +88,26 @@ class ClubInfoContainer extends StatelessWidget {
 
               var allMatches = matchSnapshot.data!;
 
-              // Filtrujemy mecze użytkownika
-              var nextMatch = allMatches.firstWhere(
-                  (match) =>
+              // Filtrujemy mecze użytkownika i sortujemy je
+              var userMatches = allMatches
+                  .where((match) =>
                       match['club1'] == userClubName ||
-                      match['club2'] == userClubName,
-                  orElse: () => {});
+                      match['club2'] == userClubName)
+                  .toList();
 
-              if (nextMatch.isEmpty) {
+              // Sortujemy mecze według daty, aby mieć najbliższy mecz na górze
+              userMatches.sort((a, b) {
+                return (a['matchTime'] as Timestamp)
+                    .toDate()
+                    .compareTo((b['matchTime'] as Timestamp).toDate());
+              });
+
+              if (userMatches.isEmpty) {
                 return const Text("Brak meczów do wyświetlenia");
               }
+
+              // Pobieramy najbliższy mecz
+              var nextMatch = userMatches.first;
 
               var opponentName = nextMatch['club1'] == userClubName
                   ? nextMatch['club2']

@@ -40,7 +40,8 @@ class MatchesContainer extends StatelessWidget {
         await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData = leaguesSnapshot.docs.first.data();
+      var leagueData =
+          leaguesSnapshot.docs.first.data() as Map<String, dynamic>;
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
       List<Map<String, dynamic>> allMatches = [];
@@ -76,12 +77,14 @@ class MatchesContainer extends StatelessWidget {
 
               var allMatches = matchSnapshot.data!;
 
+              // Filtruj mecze gracza
               var userMatches = allMatches
                   .where((match) =>
                       match['club1'] == userClubName ||
                       match['club2'] == userClubName)
                   .toList();
 
+              // Sortowanie meczów według daty
               userMatches.sort((a, b) {
                 return (a['matchTime'] as Timestamp)
                     .toDate()
@@ -92,41 +95,79 @@ class MatchesContainer extends StatelessWidget {
                 return const Text("Brak nadchodzących meczów.");
               }
 
-              return Container(
-                margin: EdgeInsets.all(screenWidth * 0.05),
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                decoration: BoxDecoration(
-                  color: AppColors.hoverColor,
-                  border: Border.all(color: AppColors.borderColor, width: 1),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                height: screenHeight * 0.8,
-                child: ListView.builder(
-                  itemCount: userMatches.length,
-                  itemBuilder: (context, index) {
-                    var match = userMatches[index];
-                    var opponentName = match['club1'] == userClubName
-                        ? match['club2']
-                        : match['club1'];
-                    var matchTime = (match['matchTime'] as Timestamp).toDate();
-                    var matchTimeText = matchTime.toString();
+              // Pobranie najbliższego meczu (pierwszy mecz po sortowaniu)
+              var nextMatch =
+                  userMatches.removeAt(0); // Usuń najbliższy mecz z listy
+              var nextOpponent = nextMatch['club1'] == userClubName
+                  ? nextMatch['club2']
+                  : nextMatch['club1'];
+              var nextMatchTime =
+                  (nextMatch['matchTime'] as Timestamp).toDate();
+              var nextMatchTimeText = nextMatchTime.toString();
 
-                    return Column(
-                      children: [
-                        MatchTileButton(
-                          isSelected: false,
-                          opponentName: opponentName,
-                          matchTime: matchTimeText,
-                          screenWidth: screenWidth,
-                          screenHeight: screenHeight,
-                          fontSizeMultiplier: 1.0,
-                          onTap: () {},
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                      ],
-                    );
-                  },
-                ),
+              return Column(
+                children: [
+                  // ClubContainer - Najbliższy mecz
+                  Container(
+                    margin: EdgeInsets.all(screenWidth * 0.05),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Text(
+                      'Następny mecz: $nextOpponent - $nextMatchTimeText',
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+
+                  // MatchesContainer - Pozostałe mecze
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.all(screenWidth * 0.05),
+                      padding: EdgeInsets.all(screenWidth * 0.04),
+                      decoration: BoxDecoration(
+                        color: AppColors.hoverColor,
+                        border:
+                            Border.all(color: AppColors.borderColor, width: 1),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      child: ListView.builder(
+                        itemCount: userMatches.length,
+                        itemBuilder: (context, index) {
+                          var match = userMatches[index];
+                          var opponentName = match['club1'] == userClubName
+                              ? match['club2']
+                              : match['club1'];
+                          var matchTime =
+                              (match['matchTime'] as Timestamp).toDate();
+                          var matchTimeText = matchTime.toString();
+
+                          return Column(
+                            children: [
+                              MatchTileButton(
+                                isSelected: false,
+                                opponentName: opponentName,
+                                matchTime: matchTimeText,
+                                screenWidth: screenWidth,
+                                screenHeight: screenHeight,
+                                fontSizeMultiplier: 1.0,
+                                onTap: () {
+                                  // Można dodać logikę po kliknięciu
+                                },
+                              ),
+                              SizedBox(
+                                  height: screenHeight *
+                                      0.02), // Odstęp między pastylkami
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           );
