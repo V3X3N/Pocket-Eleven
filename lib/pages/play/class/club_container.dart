@@ -43,8 +43,7 @@ class ClubInfoContainer extends StatelessWidget {
         .get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData =
-          leaguesSnapshot.docs.first.data() as Map<String, dynamic>;
+      var leagueData = leaguesSnapshot.docs.first.data();
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
       // Lista, która będzie zawierać wszystkie mecze z rund
@@ -120,17 +119,17 @@ class ClubInfoContainer extends StatelessWidget {
                           clubCrestPath: 'assets/crests/crest_1.png',
                           clubName: userClubName,
                         ),
-                        Text("VS"),
+                        const Text("VS"),
                         ClubInfo(
                           clubCrestPath: 'assets/crests/crest_2.png',
                           clubName: opponentName,
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       "Najbliższy mecz: $matchTimeText",
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 16, color: AppColors.textEnabledColor),
                     ),
                   ],

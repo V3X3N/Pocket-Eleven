@@ -621,15 +621,15 @@ class FirebaseFunctions {
             // Zastąp bota we wszystkich meczach
             await _replaceBotInMatches(availableLeague, botToReplace, clubName);
 
-            print(
+            debugPrint(
                 "Zastąpiono bota $botToReplace klubem $clubName w lidze ${availableLeague.id}");
           } else {
-            print("Nie znaleziono bota do zamiany.");
+            debugPrint("Nie znaleziono bota do zamiany.");
           }
         } else {
           // Jeśli nie ma dostępnej ligi z botami, stwórz nową ligę
           String newLeagueId = await _createNewLeagueWithBots(clubName);
-          print("Utworzono nową ligę z ID: $newLeagueId");
+          debugPrint("Utworzono nową ligę z ID: $newLeagueId");
         }
       } else {
         debugPrint('User not found');
@@ -649,7 +649,7 @@ class FirebaseFunctions {
         .get();
 
     if (clubSnapshot.docs.isNotEmpty) {
-      var clubData = clubSnapshot.docs.first.data() as Map<String, dynamic>;
+      var clubData = clubSnapshot.docs.first.data();
       var leagueId = clubData['leagueId'];
       return leagueId != null; // Sprawdzamy, czy klub ma przypisaną ligę
     }
@@ -657,23 +657,6 @@ class FirebaseFunctions {
   }
 
   // Znajduje dostępną ligę, która ma boty do zastąpienia
-  static Future<DocumentSnapshot?> _findAvailableLeague() async {
-    var leagues = await FirebaseFirestore.instance
-        .collection('leagues')
-        .where('clubs_count', isEqualTo: 10) // Liga pełna, ale może mieć boty
-        .get();
-
-    // Sprawdzamy, czy istnieje liga z botami do zastąpienia
-    for (var league in leagues.docs) {
-      var leagueData = league.data() as Map<String, dynamic>;
-      var clubs = List<String>.from(leagueData['clubs']);
-      if (clubs.any((club) => club.startsWith('Bot_'))) {
-        return league; // Znaleźliśmy ligę z botami
-      }
-    }
-
-    return null; // Nie znaleziono ligi z botami
-  }
 
   // Przypisuje klub do ligi lub tworzy nową, jeśli nie ma miejsca
   static Future<void> assignClubToLeague(String email) async {
@@ -686,7 +669,7 @@ class FirebaseFunctions {
 
     if (clubSnapshot.docs.isNotEmpty) {
       var clubDoc = clubSnapshot.docs.first;
-      var clubData = clubDoc.data() as Map<String, dynamic>;
+      var clubData = clubDoc.data();
       var clubName = clubData['clubName'];
 
       // Sprawdź dostępne ligi
@@ -717,15 +700,15 @@ class FirebaseFunctions {
           // Zastąp bota we wszystkich meczach
           await _replaceBotInMatches(availableLeague, botToReplace, clubName);
 
-          print(
+          debugPrint(
               "Zastąpiono bota $botToReplace klubem $clubName w lidze ${availableLeague.id}");
         } else {
-          print("Nie znaleziono bota do zamiany.");
+          debugPrint("Nie znaleziono bota do zamiany.");
         }
       } else {
         // Jeśli nie ma dostępnej ligi z botami, stwórz nową ligę
         String newLeagueId = await _createNewLeagueWithBots(clubName);
-        print("Utworzono nową ligę z ID: $newLeagueId");
+        debugPrint("Utworzono nową ligę z ID: $newLeagueId");
       }
     }
   }
@@ -739,7 +722,7 @@ class FirebaseFunctions {
 
     // Przeszukujemy ligi, aby znaleźć taką, która zawiera boty
     for (var league in leagues.docs) {
-      var leagueData = league.data() as Map<String, dynamic>;
+      var leagueData = league.data();
       var clubs = List<String>.from(leagueData['clubs']);
 
       if (clubs.any((club) => club.startsWith('Bot_'))) {
@@ -830,12 +813,12 @@ class FirebaseFunctions {
         roundMatches[i]['matchTime'] = matchTime;
 
         // Zwiększamy czas o 2 godziny dla każdego kolejnego meczu
-        matchTime = matchTime.add(Duration(hours: 2));
+        matchTime = matchTime.add(const Duration(hours: 2));
 
         // Po 5 meczach przechodzimy do następnego dnia
         if ((i + 1) % numMatchesPerDay == 0) {
-          matchTime =
-              matchTime.add(Duration(hours: 18)); // Następny dzień o 12:00
+          matchTime = matchTime
+              .add(const Duration(hours: 18)); // Następny dzień o 12:00
         }
       }
     });
@@ -865,6 +848,7 @@ class FirebaseFunctions {
       'matches': matches,
     });
 
-    print("Zastąpiono bota $botName klubem $clubName we wszystkich meczach.");
+    debugPrint(
+        "Zastąpiono bota $botName klubem $clubName we wszystkich meczach.");
   }
 }

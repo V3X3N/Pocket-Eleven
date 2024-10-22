@@ -116,7 +116,7 @@ class _TrainingViewState extends State<TrainingView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
                       color: AppColors.hoverColor,
                       border:
