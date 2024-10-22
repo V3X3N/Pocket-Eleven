@@ -20,7 +20,8 @@ class MatchView extends StatelessWidget {
       children: [
         ClubInfoContainer(screenWidth: screenWidth, screenHeight: screenHeight),
         Expanded(
-          child: MatchesContainer(screenWidth: screenWidth),
+          child: MatchesContainer(
+              screenWidth: screenWidth, screenHeight: screenHeight),
         ),
       ],
     );
