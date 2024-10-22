@@ -15,7 +15,6 @@ class MedicalView extends StatefulWidget {
 }
 
 class _MedicalViewState extends State<MedicalView> {
-  late Image _image;
   int level = 1;
   int upgradeCost = 100000;
   double userMoney = 0;
@@ -24,7 +23,6 @@ class _MedicalViewState extends State<MedicalView> {
   @override
   void initState() {
     super.initState();
-    _image = Image.asset('assets/background/club_medical.png');
     _loadUserData();
   }
 
@@ -92,14 +90,7 @@ class _MedicalViewState extends State<MedicalView> {
         children: [
           AspectRatio(
             aspectRatio: 3 / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _image.image,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            child: Container(),
           ),
           Expanded(
             child: Container(

@@ -96,9 +96,7 @@ class ClubInfoContainer extends StatelessWidget {
                   ? nextMatch['club2']
                   : nextMatch['club1'];
               var matchTime = (nextMatch['matchTime'] as Timestamp).toDate();
-              var matchTimeText = matchTime != null
-                  ? matchTime.toString()
-                  : 'Brak następnego meczu';
+              var matchTimeText = matchTime.toString();
 
               return Container(
                 margin: EdgeInsets.all(screenWidth * 0.05),
