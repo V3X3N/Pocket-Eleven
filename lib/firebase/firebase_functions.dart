@@ -115,40 +115,6 @@ class FirebaseFunctions {
     }
   }
 
-  static Future<void> createClub(String clubName, String managerEmail) async {
-    try {
-      DocumentReference clubRef = await FirebaseFirestore.instance
-          .collection('clubs')
-          .add({'clubName': clubName});
-
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: managerEmail)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-        await userDoc.reference.update({
-          'club': clubRef,
-          'money': 3000000,
-          'trainingPoints': 50,
-          'trainingLevel': 1,
-          'medicalPoints': 50,
-          'medicalLevel': 1,
-          'youthPoints': 50,
-          'youthLevel': 1,
-          'stadiumPoints': 50,
-          'stadiumLevel': 1,
-          'scoutingLevel': 1,
-        });
-      } else {
-        debugPrint('User not found');
-      }
-    } catch (e) {
-      debugPrint('Error creating club: $e');
-    }
-  }
-
   static Future<Map<String, dynamic>> getUserData() async {
     String? email = FirebaseAuth.instance.currentUser?.email;
     if (email == null) return {};
@@ -228,11 +194,14 @@ class FirebaseFunctions {
     }
   }
 
-  /// Retrieves a list of players associated with a specific club.
+  /// Retrieves all players associated with a given club ID.
   ///
-  /// @param {String} clubId - The ID of the club.
-  /// @return {Future<List<Player>>} A Future that resolves to a list of Player objects.
-  /// @throws {Error} If there is an error fetching players.
+  /// Parameters:
+  ///   clubId (String): The ID of the club.
+  ///
+  /// Returns:
+  ///   Future<List<Player>>: A future that resolves to a list of Player objects associated with the given club ID.
+  /// @throws {Error} If there is an error loading the players.
   static Future<List<Player>> getPlayersForClub(String clubId) async {
     try {
       DocumentReference clubRef =
@@ -245,29 +214,32 @@ class FirebaseFunctions {
 
       return snapshot.docs.map((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
         return Player(
-          name: data['name'],
-          position: data['position'],
-          ovr: data['ovr'],
-          age: data['age'],
-          nationality: data['nationality'],
-          imagePath: data['imagePath'],
-          flagPath: data['flagPath'],
-          value: data['value'],
-          salary: data['salary'],
-          param1: data['param1'],
-          param2: data['param2'],
-          param3: data['param3'],
-          param4: data['param4'],
-          param1Name: data['param1Name'],
-          param2Name: data['param2Name'],
-          param3Name: data['param3Name'],
-          param4Name: data['param4Name'],
-          matchesPlayed: data['matchesPlayed'],
-          goals: data['goals'],
-          assists: data['assists'],
-          yellowCards: data['yellowCards'],
-          redCards: data['redCards'],
+          playerID:
+              doc.id, // Ustawiamy playerID na doc.id (Firestore document ID)
+          name: data['name'] ?? '',
+          position: data['position'] ?? '',
+          ovr: data['ovr'] ?? 0,
+          age: data['age'] ?? 0,
+          nationality: data['nationality'] ?? '',
+          imagePath: data['imagePath'] ?? '',
+          flagPath: data['flagPath'] ?? '',
+          value: data['value'] ?? 0,
+          salary: data['salary'] ?? 0,
+          param1: data['param1'] ?? 0,
+          param2: data['param2'] ?? 0,
+          param3: data['param3'] ?? 0,
+          param4: data['param4'] ?? 0,
+          param1Name: data['param1Name'] ?? '',
+          param2Name: data['param2Name'] ?? '',
+          param3Name: data['param3Name'] ?? '',
+          param4Name: data['param4Name'] ?? '',
+          matchesPlayed: data['matchesPlayed'] ?? 0,
+          goals: data['goals'] ?? 0,
+          assists: data['assists'] ?? 0,
+          yellowCards: data['yellowCards'] ?? 0,
+          redCards: data['redCards'] ?? 0,
         );
       }).toList();
     } catch (error) {
@@ -528,7 +500,7 @@ class FirebaseFunctions {
   ///
   /// Returns a Future<void> that completes when the operation is finished.
   static Future<void> savePlayerToFirestore(
-      BuildContext context, dynamic player) async {
+      BuildContext context, Player player) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -543,7 +515,11 @@ class FirebaseFunctions {
 
     final playersCollection = FirebaseFirestore.instance.collection('players');
 
-    await playersCollection.add({
+    final newPlayerRef = playersCollection.doc();
+    final playerId = newPlayerRef.id;
+
+    await newPlayerRef.set({
+      'id': playerId,
       'name': player.name,
       'position': player.position,
       'ovr': player.ovr,
@@ -566,7 +542,9 @@ class FirebaseFunctions {
       'assists': player.assists,
       'yellowCards': player.yellowCards,
       'redCards': player.redCards,
+      'isYouth': player.isYouth,
       'club': clubRef,
+      'createdAt': FieldValue.serverTimestamp(), // Timestamp for cooldown
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -574,5 +552,303 @@ class FirebaseFunctions {
           content: Text('Player added to your club successfully'),
           duration: Duration(seconds: 1)),
     );
+  }
+
+  static Future<void> updatePlayerData(
+      String playerID, Map<String, dynamic> playerData) async {
+    try {
+      final DocumentReference playerDoc =
+          FirebaseFirestore.instance.collection('players').doc(playerID);
+      await playerDoc.update(playerData);
+    } catch (e) {
+      debugPrint('Error updating player data: $e');
+    }
+  }
+
+  static Future<void> createClub(String clubName, String managerEmail) async {
+    try {
+      // Tworzenie nowego klubu w Firestore
+      DocumentReference clubRef = await FirebaseFirestore.instance
+          .collection('clubs')
+          .add({'clubName': clubName});
+
+      // Wyszukiwanie użytkownika po emailu
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: managerEmail)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+
+        // Aktualizacja informacji o użytkowniku, przypisanie nowego klubu
+        await userDoc.reference.update({
+          'club': clubRef,
+          'money': 3000000,
+          'trainingLevel': 1,
+          'medicalLevel': 1,
+          'youthLevel': 1,
+          'stadiumLevel': 1,
+          'scoutingLevel': 1,
+        });
+
+        // Znajdź ligę, która ma boty do zastąpienia
+        DocumentSnapshot? availableLeague = await _findAvailableLeagueWithBot();
+
+        if (availableLeague != null) {
+          // Pobranie danych ligi
+          var leagueData = availableLeague.data() as Map<String, dynamic>;
+          var clubs = List<String>.from(leagueData['clubs']);
+
+          // Znalezienie bota do zamiany
+          String? botToReplace;
+          for (var club in clubs) {
+            if (club.startsWith('Bot_')) {
+              botToReplace = club;
+              break;
+            }
+          }
+
+          if (botToReplace != null) {
+            // Zamieniamy bota na nowy klub
+            clubs[clubs.indexOf(botToReplace)] = clubName;
+
+            // Aktualizujemy listę klubów w lidze
+            await availableLeague.reference.update({
+              'clubs': clubs,
+            });
+
+            // Zastąp bota we wszystkich meczach
+            await _replaceBotInMatches(availableLeague, botToReplace, clubName);
+
+            debugPrint(
+                "Zastąpiono bota $botToReplace klubem $clubName w lidze ${availableLeague.id}");
+          } else {
+            debugPrint("Nie znaleziono bota do zamiany.");
+          }
+        } else {
+          // Jeśli nie ma dostępnej ligi z botami, stwórz nową ligę
+          String newLeagueId = await _createNewLeagueWithBots(clubName);
+          debugPrint("Utworzono nową ligę z ID: $newLeagueId");
+        }
+      } else {
+        debugPrint('User not found');
+      }
+    } catch (e) {
+      debugPrint('Error creating club: $e');
+    }
+  }
+
+  // Sprawdzamy, czy klub użytkownika jest w lidze
+  static Future<bool> isClubInLeague(String email) async {
+    // Pobierz klub użytkownika na podstawie emaila
+    var clubSnapshot = await FirebaseFirestore.instance
+        .collection('clubs')
+        .where('managerEmail', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (clubSnapshot.docs.isNotEmpty) {
+      var clubData = clubSnapshot.docs.first.data();
+      var leagueId = clubData['leagueId'];
+      return leagueId != null; // Sprawdzamy, czy klub ma przypisaną ligę
+    }
+    return false;
+  }
+
+  // Znajduje dostępną ligę, która ma boty do zastąpienia
+
+  // Przypisuje klub do ligi lub tworzy nową, jeśli nie ma miejsca
+  static Future<void> assignClubToLeague(String email) async {
+    // Pobieramy klub użytkownika
+    var clubSnapshot = await FirebaseFirestore.instance
+        .collection('clubs')
+        .where('managerEmail', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (clubSnapshot.docs.isNotEmpty) {
+      var clubDoc = clubSnapshot.docs.first;
+      var clubData = clubDoc.data();
+      var clubName = clubData['clubName'];
+
+      // Sprawdź dostępne ligi
+      DocumentSnapshot? availableLeague = await _findAvailableLeagueWithBot();
+
+      if (availableLeague != null) {
+        var leagueData = availableLeague.data() as Map<String, dynamic>;
+        var clubs = List<String>.from(leagueData['clubs']);
+
+        // Znajdź klub, który jest botem
+        String? botToReplace;
+        for (var club in clubs) {
+          if (club.startsWith('Bot_')) {
+            botToReplace = club;
+            break;
+          }
+        }
+
+        if (botToReplace != null) {
+          // Zamieniamy bota na nowy klub
+          clubs[clubs.indexOf(botToReplace)] = clubName;
+
+          // Aktualizujemy listę klubów w lidze
+          await availableLeague.reference.update({
+            'clubs': clubs,
+          });
+
+          // Zastąp bota we wszystkich meczach
+          await _replaceBotInMatches(availableLeague, botToReplace, clubName);
+
+          debugPrint(
+              "Zastąpiono bota $botToReplace klubem $clubName w lidze ${availableLeague.id}");
+        } else {
+          debugPrint("Nie znaleziono bota do zamiany.");
+        }
+      } else {
+        // Jeśli nie ma dostępnej ligi z botami, stwórz nową ligę
+        String newLeagueId = await _createNewLeagueWithBots(clubName);
+        debugPrint("Utworzono nową ligę z ID: $newLeagueId");
+      }
+    }
+  }
+
+  // Znajdź ligę z botami do zamiany
+  static Future<DocumentSnapshot?> _findAvailableLeagueWithBot() async {
+    var leagues = await FirebaseFirestore.instance
+        .collection('leagues')
+        .where('clubs_count', isEqualTo: 10) // Liga pełna, ale może mieć boty
+        .get();
+
+    // Przeszukujemy ligi, aby znaleźć taką, która zawiera boty
+    for (var league in leagues.docs) {
+      var leagueData = league.data();
+      var clubs = List<String>.from(leagueData['clubs']);
+
+      if (clubs.any((club) => club.startsWith('Bot_'))) {
+        return league; // Znaleźliśmy ligę z botami do zastąpienia
+      }
+    }
+
+    return null; // Nie znaleziono ligi z botami
+  }
+
+// Tworzy nową ligę z botami i generuje mecze za pomocą algorytmu Sonneborn-Berger
+  static Future<String> _createNewLeagueWithBots(String clubName) async {
+    List<String> bots = List.generate(9, (index) => 'Bot_${index + 1}');
+
+    // Generujemy mecze pogrupowane w rundy
+    Map<String, dynamic> matchesByRound =
+        _generateInitialMatches([clubName, ...bots]);
+
+    DocumentReference leagueRef =
+        await FirebaseFirestore.instance.collection('leagues').add({
+      'clubs': [clubName, ...bots], // Klub i 9 botów
+      'clubs_count': 10,
+      'matches': matchesByRound, // Mecze pogrupowane wg rund
+    });
+
+    return leagueRef.id;
+  }
+
+  static Map<String, dynamic> _generateInitialMatches(List<String> clubs) {
+    Map<String, dynamic> matchesByRound = {};
+
+    // Sprawdzenie, czy liczba drużyn jest nieparzysta. Jeśli tak, dodajemy "BYE" (wolny dzień).
+    if (clubs.length % 2 != 0) {
+      clubs.add('BYE');
+    }
+
+    int numTeams = clubs.length;
+    int numRounds = numTeams - 1;
+    int numMatchesPerDay = numTeams ~/ 2;
+
+    List<String> currentClubs = List.from(clubs); // Kopia listy klubów
+
+    for (int round = 0; round < numRounds; round++) {
+      List<Map<String, dynamic>> roundMatches = []; // Mecze dla danej rundy
+
+      // Generujemy mecze dla każdej rundy
+      for (int i = 0; i < numMatchesPerDay; i++) {
+        String homeTeam = currentClubs[i];
+        String awayTeam = currentClubs[numTeams - 1 - i];
+
+        // Tworzymy mecz i dodajemy do listy meczów w tej rundzie
+        roundMatches.add({
+          'club1': homeTeam,
+          'club2': awayTeam,
+          'matchTime': null, // Czas meczu zostanie ustalony później
+          'score': null, // Wynik pojawi się po meczu
+        });
+      }
+
+      // Przypisujemy mecze tej rundy do mapy matchesByRound
+      matchesByRound['round${round + 1}'] = roundMatches;
+
+      // Przesuwamy drużyny zgodnie z zasadami Sonneborn-Berger
+      String lastTeam =
+          currentClubs.removeAt(currentClubs.length - 1); // Ostatnia drużyna
+      currentClubs.insert(
+          1, lastTeam); // Wstawiamy ostatnią drużynę na drugą pozycję
+    }
+
+    // Po wygenerowaniu meczów, przypisujemy im czasy rozgrywania
+    matchesByRound = _assignMatchTimesByRound(matchesByRound);
+
+    return matchesByRound;
+  }
+
+// Przypisuje czas meczów grupując je według rund
+  static Map<String, dynamic> _assignMatchTimesByRound(
+      Map<String, dynamic> matchesByRound) {
+    DateTime now = DateTime.now();
+    int numMatchesPerDay = 5;
+
+    DateTime matchTime =
+        DateTime(now.year, now.month, now.day, 12); // Pierwszy mecz o 12:00
+
+    // Iterujemy przez rundy
+    matchesByRound.forEach((roundKey, roundMatches) {
+      for (int i = 0; i < roundMatches.length; i++) {
+        roundMatches[i]['matchTime'] = matchTime;
+
+        // Zwiększamy czas o 2 godziny dla każdego kolejnego meczu
+        matchTime = matchTime.add(const Duration(hours: 2));
+
+        // Po 5 meczach przechodzimy do następnego dnia
+        if ((i + 1) % numMatchesPerDay == 0) {
+          matchTime = matchTime
+              .add(const Duration(hours: 18)); // Następny dzień o 12:00
+        }
+      }
+    });
+
+    return matchesByRound;
+  }
+
+  // Zastępuje bota we wszystkich meczach
+  static Future<void> _replaceBotInMatches(
+      DocumentSnapshot leagueSnapshot, String botName, String clubName) async {
+    var leagueData = leagueSnapshot.data() as Map<String, dynamic>;
+    List<dynamic> matches = leagueData['matches'];
+
+    for (int i = 0; i < matches.length; i++) {
+      var match = matches[i] as Map<String, dynamic>;
+
+      // Zastępujemy bota w meczach
+      if (match['club1'] == botName) {
+        matches[i]['club1'] = clubName;
+      } else if (match['club2'] == botName) {
+        matches[i]['club2'] = clubName;
+      }
+    }
+
+    // Aktualizujemy mecze w Firestore
+    await leagueSnapshot.reference.update({
+      'matches': matches,
+    });
+
+    debugPrint(
+        "Zastąpiono bota $botName klubem $clubName we wszystkich meczach.");
   }
 }

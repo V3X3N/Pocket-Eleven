@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class BuildInfo extends StatelessWidget {
@@ -19,6 +20,9 @@ class BuildInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -47,19 +51,11 @@ class BuildInfo extends StatelessWidget {
         ),
         Column(
           children: [
-            ElevatedButton(
-              onPressed: isUpgradeEnabled ? onUpgradePressed : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.blueColor,
-              ),
-              child: const Text(
-                'Upgrade',
-                style: TextStyle(
-                  color: AppColors.textEnabledColor,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            OptionButton(
+              onTap: isUpgradeEnabled ? onUpgradePressed : null,
+              text: "Upgrade",
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
             ),
             const SizedBox(height: 8.0),
             Text(

@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-class OptionButton extends StatelessWidget {
-  final int? index;
-  final int? selectedIndex;
+class MatchTileButton extends StatelessWidget {
+  final bool isSelected;
+  final String opponentName;
+  final String matchTime;
   final VoidCallback? onTap;
-  final String text;
   final double screenWidth;
   final double screenHeight;
-  final double fontSizeMultiplier; // Opcjonalny mnożnik dla fontSize
+  final double fontSizeMultiplier;
 
-  const OptionButton({
+  const MatchTileButton({
     super.key,
-    this.index,
-    this.selectedIndex,
+    required this.isSelected,
+    required this.opponentName,
+    required this.matchTime,
     this.onTap,
-    required this.text,
     required this.screenWidth,
     required this.screenHeight,
-    this.fontSizeMultiplier = 1.0, // Domyślna wartość mnożnika
+    this.fontSizeMultiplier = 1.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    bool isSelected = selectedIndex == index;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -47,16 +45,26 @@ class OptionButton extends StatelessWidget {
                 ]
               : [],
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize:
-                18 * fontSizeMultiplier, // Użyj mnożnika do obliczenia fontSize
-            color: isSelected
-                ? AppColors.textEnabledColor
-                : AppColors.textEnabledColor,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              opponentName,
+              style: TextStyle(
+                fontSize: 18 * fontSizeMultiplier,
+                color: AppColors.textEnabledColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            Text(
+              matchTime,
+              style: TextStyle(
+                fontSize: 14 * fontSizeMultiplier,
+                color: AppColors.textEnabledColor,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -29,7 +30,12 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
         stream: FirebaseFunctions.getUserDataStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: LoadingAnimationWidget.waveDots(
+                color: AppColors.textEnabledColor,
+                size: 50,
+              ),
+            );
           }
 
           if (snapshot.hasError) {
@@ -37,10 +43,6 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
           }
 
           final userData = snapshot.data ?? {};
-          final stadiumPoints = userData['stadiumPoints'] ?? 0;
-          final trainingPoints = userData['trainingPoints'] ?? 0;
-          final medicalPoints = userData['medicalPoints'] ?? 0;
-          final youthPoints = userData['youthPoints'] ?? 0;
           final money = (userData['money'] ?? 0).toDouble();
 
           return Row(
@@ -50,13 +52,6 @@ class _ReusableAppBarState extends State<ReusableAppBar> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildInfoRow(
-                        UniconsLine.no_entry, stadiumPoints.toString()),
-                    _buildInfoRow(
-                        UniconsLine.dumbbell, trainingPoints.toString()),
-                    _buildInfoRow(UniconsLine.medkit, medicalPoints.toString()),
-                    _buildInfoRow(
-                        UniconsLine.sixteen_plus, youthPoints.toString()),
                     _buildInfoRow(
                         UniconsLine.usd_circle, money.toStringAsFixed(0)),
                   ],

@@ -12,6 +12,7 @@ class TransfersView extends StatefulWidget {
 
 class _TransfersViewState extends State<TransfersView> {
   List<Player> _players = [];
+  Player? _selectedPlayer;
 
   @override
   void initState() {
@@ -30,6 +31,12 @@ class _TransfersViewState extends State<TransfersView> {
     });
   }
 
+  void _onPlayerSelected(Player player) {
+    setState(() {
+      _selectedPlayer = player;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -41,14 +48,15 @@ class _TransfersViewState extends State<TransfersView> {
         border: Border.all(color: AppColors.borderColor, width: 1),
         borderRadius: BorderRadius.circular(10.0),
       ),
-      child: ListView.builder(
+      child: ListView(
         padding: EdgeInsets.all(screenWidth * 0.04),
-        itemCount: _players.length,
-        itemBuilder: (context, index) {
+        children: _players.map((player) {
           return TransferPlayerConfirmWidget(
-              // TODO: Implement transfers data to firestore
-              player: _players[index]);
-        },
+            player: player,
+            isSelected: _selectedPlayer == player,
+            onPlayerSelected: _onPlayerSelected,
+          );
+        }).toList(),
       ),
     );
   }

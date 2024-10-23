@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
+import 'package:pocket_eleven/models/player.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
 
 class YouthView extends StatefulWidget {
   const YouthView({
@@ -15,16 +17,17 @@ class YouthView extends StatefulWidget {
 }
 
 class _YouthViewState extends State<YouthView> {
-  late Image _image;
   int level = 1;
   int upgradeCost = 100000;
   double userMoney = 0;
   String? userId;
+  DateTime? lastGeneratedTime;
+  List<Player> _players = [];
+  Player? _selectedPlayer;
 
   @override
   void initState() {
     super.initState();
-    _image = Image.asset('assets/background/club_youth.png');
     _loadUserData();
   }
 
@@ -36,6 +39,8 @@ class _YouthViewState extends State<YouthView> {
         level = await FirebaseFunctions.getYouthLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
+        lastGeneratedTime = userData['lastGeneratedTime']?.toDate();
+        _generatePlayers();
         setState(() {});
       }
     } catch (e) {
@@ -82,67 +87,115 @@ class _YouthViewState extends State<YouthView> {
     }
   }
 
+  Future<void> _generatePlayers() async {
+    if (lastGeneratedTime != null &&
+        DateTime.now().difference(lastGeneratedTime!).inHours < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You can generate new players every 4 hours.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    List<Player> players = [];
+    for (int i = 0; i < 5; i++) {
+      Player player = await Player.generateRandomFootballer(
+        minAge: 16,
+        maxAge: 19,
+        minOvr: 20,
+        maxOvr: 40,
+        isYouth: true,
+      );
+      players.add(player);
+    }
+
+    setState(() {
+      _players = players;
+      lastGeneratedTime = DateTime.now();
+    });
+  }
+
+  void _onPlayerSelected(Player player) async {
+    await FirebaseFunctions.savePlayerToFirestore(context, player);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Player added to your club successfully'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+    setState(() {
+      _players.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: AppColors.primaryColor,
       body: Column(
         children: [
-          AspectRatio(
-            aspectRatio: 3 / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _image.image,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              color: AppColors.primaryColor,
-              padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: screenHeight * 0.02),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BuildInfo(
-                    headerText: 'Youth',
+          Container(
+            color: AppColors.primaryColor,
+            padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.hoverColor,
+                    border: Border.all(color: AppColors.borderColor, width: 1),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: BuildInfo(
+                    headerText: 'Youth Academy',
                     level: level,
                     upgradeCost: upgradeCost,
                     isUpgradeEnabled: userMoney >= upgradeCost,
                     onUpgradePressed: increaseLevel,
                   ),
-                  SizedBox(height: screenHeight * 0.04),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textEnabledColor,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  const Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        'The club stadium is the heart of our community, where fans gather '
-                        'to cheer for their favorite teams. With a capacity of 50,000 seats, '
-                        'it has hosted numerous memorable matches and events.',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: AppColors.textEnabledColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                SizedBox(height: screenHeight * 0.02),
+              ],
             ),
+          ),
+          Expanded(
+            child: _players.isNotEmpty
+                ? Container(
+                    margin: EdgeInsets.all(screenWidth * 0.04),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(screenWidth * 0.04),
+                      itemCount: _players.length,
+                      itemBuilder: (context, index) {
+                        final player = _players[index];
+                        return TransferPlayerConfirmWidget(
+                          player: player,
+                          isSelected: _selectedPlayer == player,
+                          onPlayerSelected: _onPlayerSelected,
+                        );
+                      },
+                    ),
+                  )
+                : const Center(
+                    child: Text(
+                      'No players available at the moment.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
           ),
         ],
       ),

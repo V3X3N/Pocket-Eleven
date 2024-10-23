@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 
 class PlayersView extends StatefulWidget {
   const PlayersView({super.key});
@@ -60,7 +62,10 @@ class _PlayersViewState extends State<PlayersView> {
       width: screenWidth,
       height: screenHeight,
       child: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? LoadingAnimationWidget.waveDots(
+              color: AppColors.textEnabledColor,
+              size: 50,
+            )
           : players.isEmpty
               ? const Center(
                   child: Text(
@@ -81,7 +86,9 @@ class _PlayersViewState extends State<PlayersView> {
                   itemCount: players.length,
                   itemBuilder: (context, index) {
                     final player = players[index];
-                    return GestureDetector(
+                    return PlayerCube(
+                      name: player.name,
+                      imagePath: player.imagePath,
                       onTap: () {
                         showDialog(
                           context: context,
@@ -90,9 +97,6 @@ class _PlayersViewState extends State<PlayersView> {
                           },
                         );
                       },
-                      child: Container(
-                        color: Colors.green,
-                      ),
                     );
                   },
                 ),

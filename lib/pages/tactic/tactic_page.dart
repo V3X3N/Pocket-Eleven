@@ -66,16 +66,9 @@ class _TacticPageState extends State<TacticPage> {
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: [
-                  FormationView(
-                    selectedFormation: selectedFormation,
-                    onFormationChanged: (newFormation) {
-                      setState(() {
-                        selectedFormation = newFormation;
-                      });
-                    },
-                  ),
-                  const PlayersView(),
+                children: const [
+                  FormationView(),
+                  PlayersView(),
                 ],
               ),
             ),

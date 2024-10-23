@@ -1,11 +1,13 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:random_name_generator/random_name_generator.dart';
 
 class Player {
-  final String name;
-  final String position;
-  final String nationality;
-  final String flagPath;
+  String playerID;
+  String name;
+  String position;
+  String nationality;
+  String flagPath;
 
   int ovr;
   int age;
@@ -28,62 +30,73 @@ class Player {
   String param3Name;
   String param4Name;
 
+  bool isYouth;
+
   Player({
-    required this.name,
-    required this.position,
-    required this.ovr,
-    required this.age,
-    required this.nationality,
-    required this.imagePath,
-    required this.flagPath,
-    required this.value,
-    required this.salary,
-    required this.param1,
-    required this.param2,
-    required this.param3,
-    required this.param4,
-    required this.param1Name,
-    required this.param2Name,
-    required this.param3Name,
-    required this.param4Name,
+    this.playerID = '',
+    this.name = '',
+    this.position = '',
+    this.ovr = 0,
+    this.age = 0,
+    this.nationality = '',
+    this.imagePath = '',
+    this.flagPath = '',
+    this.value = 0,
+    this.salary = 0,
+    this.param1 = 0,
+    this.param2 = 0,
+    this.param3 = 0,
+    this.param4 = 0,
+    this.param1Name = '',
+    this.param2Name = '',
+    this.param3Name = '',
+    this.param4Name = '',
     this.matchesPlayed = 0,
     this.goals = 0,
     this.assists = 0,
     this.yellowCards = 0,
     this.redCards = 0,
+    this.isYouth = false,
   }) {
-    badge = _calculateBadge();
+    updateDerivedAttributes(); // Automatyczne wyliczanie po inicjalizacji
   }
 
-  factory Player.fromJson(Map<String, dynamic> json) {
+  // Factory method to create a Player object from Firestore document
+  factory Player.fromDocument(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
     return Player(
-      name: json['name'],
-      position: json['position'],
-      ovr: json['ovr'],
-      age: json['age'],
-      nationality: json['nationality'],
-      imagePath: json['imagePath'],
-      flagPath: json['flagPath'],
-      value: json['value'],
-      salary: json['salary'],
-      param1: json['param1'],
-      param2: json['param2'],
-      param3: json['param3'],
-      param4: json['param4'],
-      param1Name: json['param1Name'],
-      param2Name: json['param2Name'],
-      param3Name: json['param3Name'],
-      param4Name: json['param4Name'],
-      matchesPlayed: json['matchesPlayed'] ?? 0,
-      goals: json['goals'] ?? 0,
-      assists: json['assists'] ?? 0,
-      yellowCards: json['yellowCards'] ?? 0,
-      redCards: json['redCards'] ?? 0,
+      playerID: doc.id,
+      name: data['name'] ?? '',
+      position: data['position'] ?? '',
+      ovr: data['ovr'] ?? 0,
+      age: data['age'] ?? 0,
+      nationality: data['nationality'] ?? '',
+      imagePath: data['imagePath'] ?? '',
+      flagPath: data['flagPath'] ?? '',
+      value: data['value'] ?? 0,
+      salary: data['salary'] ?? 0,
+      param1: data['param1'] ?? 0,
+      param2: data['param2'] ?? 0,
+      param3: data['param3'] ?? 0,
+      param4: data['param4'] ?? 0,
+      param1Name: data['param1Name'] ?? '',
+      param2Name: data['param2Name'] ?? '',
+      param3Name: data['param3Name'] ?? '',
+      param4Name: data['param4Name'] ?? '',
+      matchesPlayed: data['matchesPlayed'] ?? 0,
+      goals: data['goals'] ?? 0,
+      assists: data['assists'] ?? 0,
+      yellowCards: data['yellowCards'] ?? 0,
+      redCards: data['redCards'] ?? 0,
+      isYouth: data['isYouth'] ?? false,
     );
   }
 
-  Map<String, dynamic> toJson() {
+  // Method to convert a Player object into a Firestore document
+  Map<String, dynamic> toDocument() {
     return {
+      'id': playerID,
       'name': name,
       'position': position,
       'ovr': ovr,
@@ -106,34 +119,72 @@ class Player {
       'assists': assists,
       'yellowCards': yellowCards,
       'redCards': redCards,
+      'isYouth': isYouth,
     };
   }
 
+  // Aktualizacja zależnych atrybutów: OVR, badge, value, salary, imagePath
+  void updateDerivedAttributes() {
+    // OVR jest wyliczane jako średnia z czterech parametrów
+    ovr = ((param1 + param2 + param3 + param4) / 4).round();
+
+    // Aktualizacja badge w oparciu o nowy OVR
+    badge = _calculateBadge();
+
+    // Aktualizacja ścieżki obrazka w zależności od badge
+    imagePath = _getImagePathForBadge(badge);
+
+    // Obliczanie wartości i pensji na podstawie OVR i wieku
+    value = ((ovr * 450000 / age) / 10000).round() * 10000;
+    salary = ((age * ovr) / 10).round() * 10;
+  }
+
+  // Metoda do obliczania badge
   String _calculateBadge() {
     if (ovr >= 80) {
       return 'purple';
-    } else if (ovr >= 60 && ovr < 79) {
+    } else if (ovr >= 60 && ovr < 80) {
       return 'gold';
-    } else if (ovr >= 40 && ovr < 59) {
+    } else if (ovr >= 40 && ovr < 60) {
       return 'silver';
     } else {
       return 'bronze';
     }
   }
 
+  // Metoda do przypisania ścieżki obrazka na podstawie badge
+  String _getImagePathForBadge(String badge) {
+    switch (badge) {
+      case 'purple':
+        return 'assets/players/player_card_purple.png';
+      case 'gold':
+        return 'assets/players/player_card_gold.png';
+      case 'silver':
+        return 'assets/players/player_card_silver.png';
+      default:
+        return 'assets/players/player_card_bronze.png';
+    }
+  }
+
+  // Generate random parameters for a new player (this method remains unchanged)
   static Future<Player> generateRandomFootballer({
     String? nationality,
     String? position,
-    int? ovr,
-    int? age,
+    int? minOvr,
+    int? maxOvr,
+    int? minAge,
+    int? maxAge,
+    bool isYouth = false,
   }) async {
     final random = Random();
     nationality ??= await _getRandomNationality(random);
     position ??= _getRandomPosition(random);
-    age ??= random.nextInt(14) + 18;
+
+    int age = random.nextInt((maxAge ?? 30) - (minAge ?? 18)) + (minAge ?? 18);
 
     // Generate the parameters based on the position with a limit of 99
-    List<int> parameters = _generateParameters(random);
+    List<int> parameters =
+        _generateParameters(random, minOvr ?? 30, maxOvr ?? 99);
     int param1 = parameters[0];
     int param2 = parameters[1];
     int param3 = parameters[2];
@@ -143,7 +194,7 @@ class Player {
     Map<String, String> paramNames = _getParameterNames(position);
 
     // Calculate OVR as the average of the four parameters
-    ovr = ((param1 + param2 + param3 + param4) / 4).round();
+    int ovr = ((param1 + param2 + param3 + param4) / 4).round();
 
     String name = _getSelectedFootballerName(nationality);
     String imagePath = _getImagePath(ovr);
@@ -154,6 +205,7 @@ class Player {
     int salary = ((age * ovr) / 10).round() * 10;
 
     return Player(
+      playerID: '',
       name: name,
       position: position,
       ovr: ovr,
@@ -171,14 +223,11 @@ class Player {
       param2Name: paramNames['param2Name']!,
       param3Name: paramNames['param3Name']!,
       param4Name: paramNames['param4Name']!,
-      matchesPlayed: 0,
-      goals: 0,
-      assists: 0,
-      yellowCards: 0,
-      redCards: 0,
+      isYouth: isYouth,
     );
   }
 
+  // Helper methods to generate parameters, positions, and names remain unchanged
   static Map<String, String> _getParameterNames(String position) {
     switch (position) {
       case 'GK':
@@ -222,14 +271,10 @@ class Player {
     }
   }
 
-  static List<int> _generateParameters(Random random) {
-    return List.generate(4, (_) => _generateParameter(random));
-  }
-
-  static int _generateParameter(Random random) {
-    // Generate a value from 30 to 99 with a quadratic distribution
-    int baseValue = random.nextInt(70) + 30; // Generate a value from 30 to 99
-    return min((baseValue * sqrt(random.nextDouble())).round(), 99);
+  static List<int> _generateParameters(
+      Random random, int minParam, int maxParam) {
+    return List.generate(
+        4, (_) => random.nextInt(maxParam - minParam) + minParam);
   }
 
   static Future<String> _getRandomNationality(Random random) async {
@@ -268,8 +313,7 @@ class Player {
       'RM',
       'CAM',
       'LW',
-      'RW',
-      'ST',
+      'ST'
     ];
     return positions[random.nextInt(positions.length)];
   }

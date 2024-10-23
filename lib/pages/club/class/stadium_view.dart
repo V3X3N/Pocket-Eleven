@@ -15,7 +15,6 @@ class StadiumView extends StatefulWidget {
 }
 
 class _StadiumViewState extends State<StadiumView> {
-  late Image _clubStadiumImage;
   int level = 1;
   int upgradeCost = 100000;
   double userMoney = 0;
@@ -24,7 +23,6 @@ class _StadiumViewState extends State<StadiumView> {
   @override
   void initState() {
     super.initState();
-    _clubStadiumImage = Image.asset('assets/background/club_stadion.png');
     _loadUserData();
   }
 
@@ -92,14 +90,7 @@ class _StadiumViewState extends State<StadiumView> {
         children: [
           AspectRatio(
             aspectRatio: 3 / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: _clubStadiumImage.image,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            child: Container(),
           ),
           Expanded(
             child: Container(
