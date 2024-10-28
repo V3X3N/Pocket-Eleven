@@ -36,8 +36,7 @@ class MatchesContainer extends StatelessWidget {
         await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData =
-          leaguesSnapshot.docs.first.data() as Map<String, dynamic>;
+      var leagueData = leaguesSnapshot.docs.first.data();
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
       List<Map<String, dynamic>> allMatches = [];

@@ -138,26 +138,30 @@ class _ScoutingViewState extends State<ScoutingView> {
           int newLevel = currentLevel + 1;
 
           await YouthFunctions.updateScoutingLevel(userId!, newLevel);
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
 
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
 
-          widget.onCurrencyChange();
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade scouting level.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the scouting.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
-      } catch (error) {
-        debugPrint('Error upgrading scouting level: $error');
+      } catch (e) {
+        debugPrint('Error upgrading scouting: $e');
       }
     }
   }
