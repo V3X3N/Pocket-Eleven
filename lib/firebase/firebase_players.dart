@@ -9,9 +9,10 @@ class PlayerFunctions {
       BuildContext context, Player player) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
-      );
+      const snackBar = SnackBar(content: Text('User not logged in'));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
       return;
     }
 
@@ -52,11 +53,14 @@ class PlayerFunctions {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Player added to your club successfully'),
-          duration: Duration(seconds: 1)),
+    const successSnackBar = SnackBar(
+      content: Text('Player added to your club successfully'),
+      duration: Duration(seconds: 1),
     );
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(successSnackBar);
+    }
   }
 
   static Future<void> updatePlayerData(

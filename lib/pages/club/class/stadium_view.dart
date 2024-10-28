@@ -59,21 +59,26 @@ class _StadiumViewState extends State<StadiumView> {
 
           await StadiumFunctions.updateStadiumLevel(userId!, newLevel);
 
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
-
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
+
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade the stadium.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the stadium.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } catch (e) {
         debugPrint('Error upgrading stadium: $e');
