@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/components/name_formatter.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -138,14 +139,11 @@ class _FormationViewState extends State<FormationView> {
   }
 
   Future<void> _selectPlayer(BuildContext context, String position) async {
-    // Pobieramy zawodnika na danej pozycji
     final Player? currentPlayer = selectedPlayers[position];
 
-    // Jeżeli zawodnik jest już na tej pozycji, wyświetlamy dialog
     if (currentPlayer != null) {
-      // Pobieramy wszystkich zawodników, z wyjątkiem obecnie wybranego
-      List<Player> availablePlayers = await FirebaseFunctions.getPlayersForClub(
-          await FirebaseFunctions.getClubId(
+      List<Player> availablePlayers = await ClubFunctions.getPlayersForClub(
+          await ClubFunctions.getClubId(
               FirebaseAuth.instance.currentUser!.uid));
       availablePlayers = availablePlayers
           .where((player) => player.playerID != currentPlayer.playerID)
@@ -159,26 +157,20 @@ class _FormationViewState extends State<FormationView> {
       );
 
       if (player != null) {
-        // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
         selectedPlayers.forEach((key, existingPlayer) {
           if (existingPlayer != null &&
               existingPlayer.playerID == player.playerID) {
-            // Usuwamy zawodnika z aktualnej pozycji
             selectedPlayers[key] = null;
           }
         });
 
-        // Dodajemy nowego zawodnika na nową pozycję
         setState(() {
           selectedPlayers[position] = player;
         });
 
-        // Zapisujemy zmiany do Firestore
         await _saveFormationToFirestore(context);
       }
-    }
-    // Jeżeli nie ma zawodnika na tej pozycji, sprawdzamy limit zawodników
-    else {
+    } else {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
@@ -198,7 +190,6 @@ class _FormationViewState extends State<FormationView> {
             currentPlayers?.values.where((value) => value != null).length ?? 0;
 
         if (playerCount >= 12) {
-          // Wyświetlamy komunikat o przekroczeniu limitu
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Cannot select more than 11 players')),
           );
@@ -206,9 +197,8 @@ class _FormationViewState extends State<FormationView> {
         }
       }
 
-      // Pobieramy dostępnych zawodników do wyboru
-      List<Player> availablePlayers = await FirebaseFunctions.getPlayersForClub(
-          await FirebaseFunctions.getClubId(
+      List<Player> availablePlayers = await ClubFunctions.getPlayersForClub(
+          await ClubFunctions.getClubId(
               FirebaseAuth.instance.currentUser!.uid));
 
       final Player? player = await showDialog<Player?>(
@@ -219,7 +209,6 @@ class _FormationViewState extends State<FormationView> {
       );
 
       if (player != null) {
-        // Sprawdzamy, czy zawodnik z tym playerID już istnieje w formacji
         selectedPlayers.forEach((key, existingPlayer) {
           if (existingPlayer != null &&
               existingPlayer.playerID == player.playerID) {
@@ -227,12 +216,10 @@ class _FormationViewState extends State<FormationView> {
           }
         });
 
-        // Dodajemy nowego zawodnika na wybraną pozycję
         setState(() {
           selectedPlayers[position] = player;
         });
 
-        // Zapisujemy zmiany do Firestore
         await _saveFormationToFirestore(context);
       }
     }

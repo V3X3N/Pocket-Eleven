@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_medical.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 
 class MedicalView extends StatefulWidget {
@@ -31,7 +32,7 @@ class _MedicalViewState extends State<MedicalView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getMedicalLevel(userId!);
+        level = await MedicalFunctions.getMedicalLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -56,7 +57,7 @@ class _MedicalViewState extends State<MedicalView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateMedicalLevel(userId!, newLevel);
+          await MedicalFunctions.updateMedicalLevel(userId!, newLevel);
 
           await FirebaseFunctions.updateUserData(
               {'money': userMoney - currentUpgradeCost});

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/components/player_details.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 
@@ -27,10 +27,10 @@ class _PlayersViewState extends State<PlayersView> {
   Future<void> _loadPlayers() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final String clubId = await FirebaseFunctions.getClubId(user.uid);
+      final String clubId = await ClubFunctions.getClubId(user.uid);
       if (clubId.isNotEmpty) {
         final List<Player> loadedPlayers =
-            await FirebaseFunctions.getPlayersForClub(clubId);
+            await ClubFunctions.getPlayersForClub(clubId);
         setState(() {
           players = loadedPlayers;
           isLoading = false;

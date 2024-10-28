@@ -3,8 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
+import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_players.dart';
+import 'package:pocket_eleven/firebase/firebase_training.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
 
@@ -37,7 +40,7 @@ class _TrainingViewState extends State<TrainingView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getTrainingLevel(userId!);
+        level = await TrainingFunctions.getTrainingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -49,10 +52,10 @@ class _TrainingViewState extends State<TrainingView> {
 
   Future<void> _loadPlayers() async {
     if (userId != null) {
-      final String clubId = await FirebaseFunctions.getClubId(userId!);
+      final String clubId = await ClubFunctions.getClubId(userId!);
       if (clubId.isNotEmpty) {
         final List<Player> loadedPlayers =
-            await FirebaseFunctions.getPlayersForClub(clubId);
+            await ClubFunctions.getPlayersForClub(clubId);
         setState(() {
           players = loadedPlayers;
           isLoading = false;
@@ -66,7 +69,6 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> trainPlayer(Player player, String paramName) async {
-    // Zwiększenie wybranego parametru i aktualizacja w Firestore
     int newValue;
     switch (paramName) {
       case 'param1':
@@ -87,14 +89,11 @@ class _TrainingViewState extends State<TrainingView> {
         break;
     }
 
-    // Przeliczenie zależnych wartości: OVR, badge, value, salary
     player.updateDerivedAttributes();
 
-    // Aktualizacja zawodnika w Firestore
-    await FirebaseFunctions.updatePlayerData(
+    await PlayerFunctions.updatePlayerData(
         player.playerID, player.toDocument());
 
-    // Odświeżenie UI
     setState(() {});
   }
 
@@ -132,8 +131,6 @@ class _TrainingViewState extends State<TrainingView> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
-
-                  // Sekcja: Trening zawodników
                   isLoading
                       ? const Center(
                           child: CircularProgressIndicator(),
@@ -160,8 +157,7 @@ class _TrainingViewState extends State<TrainingView> {
                                     Text(
                                       player.name,
                                       style: TextStyle(
-                                        fontSize: screenWidth *
-                                            0.045, // Skalowanie rozmiaru tekstu
+                                        fontSize: screenWidth * 0.045,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textEnabledColor,
                                       ),
@@ -235,7 +231,7 @@ class _TrainingViewState extends State<TrainingView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateTrainingLevel(userId!, newLevel);
+          await TrainingFunctions.updateTrainingLevel(userId!, newLevel);
 
           await FirebaseFunctions.updateUserData(
               {'money': userMoney - currentUpgradeCost});
@@ -273,10 +269,10 @@ class _TrainingViewState extends State<TrainingView> {
             '$paramLabel: $paramValue',
             style: TextStyle(
               color: AppColors.textEnabledColor,
-              fontSize: screenWidth * 0.030, // Skalowanie rozmiaru tekstu
+              fontSize: screenWidth * 0.030,
             ),
           ),
-          SizedBox(height: screenWidth * 0.02), // Proporcjonalny odstęp
+          SizedBox(height: screenWidth * 0.02),
           OptionButton(
             onTap: () => trainPlayer(player, paramName),
             screenWidth: screenWidth,

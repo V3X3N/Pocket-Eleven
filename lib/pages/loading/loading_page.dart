@@ -6,7 +6,7 @@ import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/pages/loading/main_menu.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart'; // Import loading_animation_widget
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});
@@ -39,8 +39,6 @@ class _LoadingPageState extends State<LoadingPage> {
     await Future.delayed(const Duration(seconds: 2));
 
     await ImageLoader.precacheImages(context);
-
-    // You can still perform other actions here if needed
 
     await Future.delayed(const Duration(seconds: 1));
 

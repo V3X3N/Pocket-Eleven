@@ -20,7 +20,6 @@ class _ClubCreatePageState extends State<ClubCreatePage> {
   void initState() {
     super.initState();
     _clubNameController = TextEditingController();
-    // Preload the loading image.
     _loadLoadingImage();
   }
 

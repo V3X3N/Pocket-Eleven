@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pocket_eleven/firebase/firebase_players.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
@@ -58,7 +59,7 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      await FirebaseFunctions.savePlayerToFirestore(context, player);
+      await PlayerFunctions.savePlayerToFirestore(context, player);
     }
   }
 

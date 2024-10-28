@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_players.dart';
+import 'package:pocket_eleven/firebase/firebase_youth.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/transfer_player_confirm_widget.dart';
@@ -36,7 +38,7 @@ class _YouthViewState extends State<YouthView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getYouthLevel(userId!);
+        level = await YouthFunctions.getYouthLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         lastGeneratedTime = userData['lastGeneratedTime']?.toDate();
@@ -63,7 +65,7 @@ class _YouthViewState extends State<YouthView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateYouthLevel(userId!, newLevel);
+          await YouthFunctions.updateYouthLevel(userId!, newLevel);
 
           await FirebaseFunctions.updateUserData(
               {'money': userMoney - currentUpgradeCost});
@@ -119,7 +121,7 @@ class _YouthViewState extends State<YouthView> {
   }
 
   void _onPlayerSelected(Player player) async {
-    await FirebaseFunctions.savePlayerToFirestore(context, player);
+    await PlayerFunctions.savePlayerToFirestore(context, player);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Player added to your club successfully'),
