@@ -13,7 +13,7 @@ class FormationView extends StatefulWidget {
   const FormationView({super.key});
 
   @override
-  _FormationViewState createState() => _FormationViewState();
+  State<FormationView> createState() => _FormationViewState();
 }
 
 class _FormationViewState extends State<FormationView> {

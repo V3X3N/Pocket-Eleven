@@ -11,7 +11,7 @@ class PlayersView extends StatefulWidget {
   const PlayersView({super.key});
 
   @override
-  _PlayersViewState createState() => _PlayersViewState();
+  State<PlayersView> createState() => _PlayersViewState();
 }
 
 class _PlayersViewState extends State<PlayersView> {
