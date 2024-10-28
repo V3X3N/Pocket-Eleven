@@ -67,21 +67,26 @@ class _YouthViewState extends State<YouthView> {
 
           await YouthFunctions.updateYouthLevel(userId!, newLevel);
 
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
-
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
+
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade the youth.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the youth.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } catch (e) {
         debugPrint('Error upgrading youth: $e');
@@ -122,16 +127,18 @@ class _YouthViewState extends State<YouthView> {
 
   void _onPlayerSelected(Player player) async {
     await PlayerFunctions.savePlayerToFirestore(context, player);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Player added to your club successfully'),
-        duration: Duration(seconds: 1),
-      ),
+
+    const snackBar = SnackBar(
+      content: Text('Player added to your club successfully'),
+      duration: Duration(seconds: 1),
     );
 
-    setState(() {
-      _players.clear();
-    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() {
+        _players.clear();
+      });
+    }
   }
 
   @override
