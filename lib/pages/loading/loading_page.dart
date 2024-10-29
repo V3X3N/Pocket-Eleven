@@ -28,21 +28,17 @@ class _LoadingPageState extends State<LoadingPage> {
 
   Future<void> _loadLoadingImage() async {
     _loadingImageAsset = Image.asset('assets/background/loading_bg.png');
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    setState(() => _isLoading = false);
   }
 
   Future<void> _loadResources() async {
+    ImageLoader.precacheImages(context);
+
     await Future.delayed(const Duration(seconds: 2));
 
-    await ImageLoader.precacheImages(context);
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    _handleAuthentication();
+    if (mounted) {
+      _handleAuthentication();
+    }
   }
 
   Future<void> _handleAuthentication() async {
@@ -52,23 +48,21 @@ class _LoadingPageState extends State<LoadingPage> {
       if (user != null) {
         bool userHasClub = await AuthServices.userHasClub(user.email!);
         if (mounted) {
-          if (userHasClub) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const ClubCreatePage()),
-            );
-          }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  userHasClub ? const HomePage() : const ClubCreatePage(),
+            ),
+          );
         }
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainMenu()),
-        );
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MainMenu()),
+          );
+        }
       }
     }
   }
@@ -79,19 +73,19 @@ class _LoadingPageState extends State<LoadingPage> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          _isLoading
-              ? Center(
-                  child: LoadingAnimationWidget.waveDots(
-                    color: AppColors.textEnabledColor,
-                    size: 50,
-                  ),
-                )
-              : Container(
+          !_isLoading
+              ? Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: _loadingImageAsset.image,
                       fit: BoxFit.cover,
                     ),
+                  ),
+                )
+              : Center(
+                  child: LoadingAnimationWidget.waveDots(
+                    color: AppColors.textEnabledColor,
+                    size: 50,
                   ),
                 ),
           Positioned(
@@ -119,10 +113,11 @@ class _LoadingPageState extends State<LoadingPage> {
                     ),
                   ),
                   if (_isLoading) const SizedBox(height: 20),
-                  LoadingAnimationWidget.waveDots(
-                    color: AppColors.textEnabledColor,
-                    size: 50,
-                  ),
+                  if (_isLoading)
+                    LoadingAnimationWidget.waveDots(
+                      color: AppColors.textEnabledColor,
+                      size: 50,
+                    ),
                 ],
               ),
             ),
