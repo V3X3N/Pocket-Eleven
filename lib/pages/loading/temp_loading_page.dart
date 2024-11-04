@@ -3,10 +3,10 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/functions/image_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/loading/club_create_page.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
+import 'package:pocket_eleven/pages/loading/temp_register_page.dart';
 
 class TempLoadingScreen extends StatefulWidget {
   const TempLoadingScreen({super.key});
@@ -45,7 +45,7 @@ class _TempLoadingScreenState extends State<TempLoadingScreen> {
             context,
             MaterialPageRoute(
               builder: (context) =>
-                  userHasClub ? const HomePage() : const ClubCreatePage(),
+                  userHasClub ? const HomePage() : const TempRegisterPage(),
             ),
           );
         }

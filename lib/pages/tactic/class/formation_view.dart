@@ -106,8 +106,7 @@ class _FormationViewState extends State<FormationView> {
     final String userId = user.uid;
 
     try {
-      final DocumentReference clubRef =
-          await FirebaseFunctions.getClubReference(userId);
+      final String clubRef = await FirebaseFunctions.getClubName(userId);
       QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
           .collection('formations')
           .where('club', isEqualTo: clubRef)
@@ -175,8 +174,7 @@ class _FormationViewState extends State<FormationView> {
       if (user == null) return;
 
       final String userId = user.uid;
-      final DocumentReference clubRef =
-          await FirebaseFunctions.getClubReference(userId);
+      final String clubRef = await FirebaseFunctions.getClubName(userId);
       QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
           .collection('formations')
           .where('club', isEqualTo: clubRef)
@@ -237,8 +235,7 @@ class _FormationViewState extends State<FormationView> {
     final String userId = user.uid;
 
     try {
-      final DocumentReference clubRef =
-          await FirebaseFunctions.getClubReference(userId);
+      final String clubRef = await FirebaseFunctions.getClubName(userId);
       final formationsCollection =
           FirebaseFirestore.instance.collection('formations');
 

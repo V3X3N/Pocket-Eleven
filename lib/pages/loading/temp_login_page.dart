@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/loading/temp_register_page.dart';
+import 'package:pocket_eleven/pages/home_page.dart';
 
 class TempLoginPage extends StatefulWidget {
   const TempLoginPage({super.key});
@@ -34,7 +36,7 @@ class _TempLoginPageState extends State<TempLoginPage> {
           children: [
             _gameText(),
             const SizedBox(height: 50),
-            _inputField("Username", usernameController),
+            _inputField("Email", usernameController),
             const SizedBox(height: 20),
             _inputField("Password", passwordController, isPassword: true),
             const SizedBox(height: 50),
@@ -96,9 +98,19 @@ class _TempLoginPageState extends State<TempLoginPage> {
     return OptionButton(
       index: 0,
       text: 'Sign in',
-      onTap: () {
-        debugPrint("Username : ${usernameController.text}");
-        debugPrint("Password : ${passwordController.text}");
+      onTap: () async {
+        // Call AuthServices.signinUser
+        await AuthServices.signinUser(
+          usernameController.text,
+          passwordController.text,
+          context,
+        );
+
+        // Navigate to HomePage after successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       },
       screenWidth: screenWidth,
       screenHeight: screenHeight,
@@ -108,12 +120,11 @@ class _TempLoginPageState extends State<TempLoginPage> {
   Widget _extraText() {
     return InkWell(
       child: const Text(
-        "Already with US? Login here!",
+        "New here? Register now!",
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 16, color: Colors.white),
       ),
       onTap: () {
-        debugPrint("Tapped");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const TempRegisterPage()),

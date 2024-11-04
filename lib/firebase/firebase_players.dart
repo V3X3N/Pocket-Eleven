@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'firebase_functions.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
 
 class PlayerFunctions {
@@ -16,13 +16,10 @@ class PlayerFunctions {
       return;
     }
 
-    final String userId = user.uid;
-    final DocumentReference clubRef =
-        await FirebaseFunctions.getClubReference(userId);
-
     final playersCollection = FirebaseFirestore.instance.collection('players');
     final newPlayerRef = playersCollection.doc();
     final playerId = newPlayerRef.id;
+    final clubName = await FirebaseFunctions.getClubName(user.uid);
 
     await newPlayerRef.set({
       'id': playerId,
@@ -49,7 +46,7 @@ class PlayerFunctions {
       'yellowCards': player.yellowCards,
       'redCards': player.redCards,
       'isYouth': player.isYouth,
-      'club': clubRef,
+      'club': clubName,
       'createdAt': FieldValue.serverTimestamp(),
     });
 

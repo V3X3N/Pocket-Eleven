@@ -5,14 +5,64 @@ import 'package:pocket_eleven/firebase/firebase_league.dart';
 
 class FirebaseFunctions {
   static Future<void> saveUser(
-      String managerName, String email, String uid) async {
+    String managerName,
+    String email,
+    String uid,
+    String clubName,
+  ) async {
     try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(uid);
+
+      await userRef.set({
         'email': email,
         'managerName': managerName,
+        'clubName': clubName,
+        'money': 3000000,
+        'trainingLevel': 1,
+        'medicalLevel': 1,
+        'youthLevel': 1,
+        'stadiumLevel': 1,
+        'scoutingLevel': 1,
       });
+
+      DocumentSnapshot? availableLeague =
+          await LeagueFunctions.findAvailableLeagueWithBot();
+
+      if (availableLeague != null) {
+        var leagueData = availableLeague.data() as Map<String, dynamic>;
+        var clubs = List<String>.from(leagueData['clubs']);
+
+        String? botToReplace;
+        for (var club in clubs) {
+          if (club.startsWith('Bot_')) {
+            botToReplace = club;
+            break;
+          }
+        }
+
+        if (botToReplace != null) {
+          clubs[clubs.indexOf(botToReplace)] = clubName;
+          await availableLeague.reference.update({
+            'clubs': clubs,
+          });
+          await LeagueFunctions.replaceBotInMatches(
+            availableLeague,
+            botToReplace,
+            clubName,
+          );
+          debugPrint(
+              "Replaced bot: $botToReplace with club: $clubName in league: ${availableLeague.id}");
+        } else {
+          debugPrint("Bot for replacement not found.");
+        }
+      } else {
+        String newLeagueId =
+            await LeagueFunctions.createNewLeagueWithBots(clubName);
+        debugPrint("New league created with ID: $newLeagueId");
+      }
     } catch (error) {
-      debugPrint('Error saving user data: $error');
+      debugPrint('Error saving user with club data: $error');
     }
   }
 
@@ -29,14 +79,7 @@ class FirebaseFunctions {
   static Future<String> getClubName(String userId) async {
     try {
       DocumentSnapshot userDoc = await getUserDocument(userId);
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-
-      if (userData != null && userData.containsKey('club')) {
-        DocumentReference clubRef = userData['club'];
-        DocumentSnapshot clubDoc = await clubRef.get();
-        return clubDoc.get('clubName') ?? '';
-      }
-      return '';
+      return userDoc.get('clubName') ?? '';
     } catch (error) {
       debugPrint('Error loading club name: $error');
       return '';
@@ -50,30 +93,6 @@ class FirebaseFunctions {
     } catch (error) {
       debugPrint('Error loading email: $error');
       return '';
-    }
-  }
-
-  static Future<void> updateClubName(String email, String clubName) async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        DocumentSnapshot documentSnapshot = querySnapshot.docs.first;
-        Map<String, dynamic>? userData =
-            documentSnapshot.data() as Map<String, dynamic>?;
-
-        if (userData != null && userData.containsKey('club')) {
-          DocumentReference clubRef = userData['club'];
-          await clubRef.update({'clubName': clubName});
-        }
-      } else {
-        debugPrint('User not found');
-      }
-    } catch (e) {
-      debugPrint('Error updating club name: $e');
     }
   }
 
@@ -121,21 +140,6 @@ class FirebaseFunctions {
     }
   }
 
-  static Future<DocumentReference> getClubReference(String userId) async {
-    try {
-      DocumentSnapshot userDoc = await getUserDocument(userId);
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-
-      if (userData != null && userData.containsKey('club')) {
-        return userData['club'];
-      }
-      throw 'Club reference not found';
-    } catch (error) {
-      debugPrint('Error loading club reference: $error');
-      rethrow;
-    }
-  }
-
   static int calculateUpgradeCost(int level) {
     return ((100000 * level) * 2) * 3;
   }
@@ -153,79 +157,11 @@ class FirebaseFunctions {
     }
   }
 
-  static Future<void> createClub(String clubName, String managerEmail) async {
-    try {
-      DocumentReference clubRef = await FirebaseFirestore.instance
-          .collection('clubs')
-          .add({'clubName': clubName});
-
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('email', isEqualTo: managerEmail)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        DocumentSnapshot userDoc = querySnapshot.docs.first;
-
-        await userDoc.reference.update({
-          'club': clubRef,
-          'money': 3000000,
-          'trainingLevel': 1,
-          'medicalLevel': 1,
-          'youthLevel': 1,
-          'stadiumLevel': 1,
-          'scoutingLevel': 1,
-        });
-
-        DocumentSnapshot? availableLeague =
-            await LeagueFunctions.findAvailableLeagueWithBot();
-
-        if (availableLeague != null) {
-          var leagueData = availableLeague.data() as Map<String, dynamic>;
-          var clubs = List<String>.from(leagueData['clubs']);
-
-          String? botToReplace;
-          for (var club in clubs) {
-            if (club.startsWith('Bot_')) {
-              botToReplace = club;
-              break;
-            }
-          }
-
-          if (botToReplace != null) {
-            clubs[clubs.indexOf(botToReplace)] = clubName;
-
-            await availableLeague.reference.update({
-              'clubs': clubs,
-            });
-
-            await LeagueFunctions.replaceBotInMatches(
-                availableLeague, botToReplace, clubName);
-
-            debugPrint(
-                "Zastąpiono bota $botToReplace klubem $clubName w lidze ${availableLeague.id}");
-          } else {
-            debugPrint("Nie znaleziono bota do zamiany.");
-          }
-        } else {
-          String newLeagueId =
-              await LeagueFunctions.createNewLeagueWithBots(clubName);
-          debugPrint("Utworzono nową ligę z ID: $newLeagueId");
-        }
-      } else {
-        debugPrint('User not found');
-      }
-    } catch (e) {
-      debugPrint('Error creating club: $e');
-    }
-  }
-
-  static Future<bool> canAddPlayer(String clubId) async {
+  static Future<bool> canAddPlayer(String clubName) async {
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('players')
-          .where('club',
-              isEqualTo: FirebaseFirestore.instance.doc('/clubs/$clubId'))
+          .where('clubName', isEqualTo: clubName)
           .get();
       return snapshot.docs.length < 30;
     } catch (error) {

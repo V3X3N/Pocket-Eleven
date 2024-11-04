@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/auth_functions.dart';
 import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
+import 'package:pocket_eleven/pages/home_page.dart';
 
 class TempRegisterPage extends StatefulWidget {
   const TempRegisterPage({super.key});
@@ -41,7 +43,7 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
             const SizedBox(height: 20),
             _inputField("Username", usernameController),
             const SizedBox(height: 20),
-            _inputField("Email", usernameController),
+            _inputField("Email", emailController),
             const SizedBox(height: 20),
             _inputField("Password", passwordController, isPassword: true),
             const SizedBox(height: 20),
@@ -106,12 +108,25 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
     return OptionButton(
       index: 0,
       text: 'Sign up',
-      onTap: () {
-        debugPrint("Clubname : ${clubnameController.text}");
-        debugPrint("Username : ${usernameController.text}");
-        debugPrint("Email : ${emailController.text}");
-        debugPrint("Password : ${passwordController.text}");
-        debugPrint("Confirm Password : ${confirmPasswordController.text}");
+      onTap: () async {
+        if (passwordController.text != confirmPasswordController.text) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Passwords do not match')));
+          return;
+        }
+
+        await AuthServices.signupUser(
+          emailController.text,
+          passwordController.text,
+          usernameController.text,
+          clubnameController.text,
+          context,
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       },
       screenWidth: screenWidth,
       screenHeight: screenHeight,
@@ -126,7 +141,6 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
         style: TextStyle(fontSize: 16, color: Colors.white),
       ),
       onTap: () {
-        debugPrint("Tapped");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const TempLoginPage()),

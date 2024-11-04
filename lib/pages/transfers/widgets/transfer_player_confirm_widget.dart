@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pocket_eleven/firebase/firebase_players.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -30,10 +29,8 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
     }
 
     final String userId = user.uid;
-    final DocumentReference clubRef =
-        await FirebaseFunctions.getClubReference(userId);
 
-    final bool canAdd = await FirebaseFunctions.canAddPlayer(clubRef.id);
+    final bool canAdd = await FirebaseFunctions.canAddPlayer(userId);
 
     if (!canAdd) {
       ScaffoldMessenger.of(context).showSnackBar(
