@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/models/player.dart';
+import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/pages/tactic/widget/player_cube.dart';
 
 class PlayersView extends StatefulWidget {
@@ -27,19 +27,22 @@ class _PlayersViewState extends State<PlayersView> {
   Future<void> _loadPlayers() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final String clubId = await ClubFunctions.getClubId(user.uid);
-      if (clubId.isNotEmpty) {
-        final List<Player> loadedPlayers =
-            await ClubFunctions.getPlayersForClub(clubId);
-        setState(() {
-          players = loadedPlayers;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      final DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('players')
+          .where('userRef', isEqualTo: userRef)
+          .get();
+
+      final List<Player> loadedPlayers = snapshot.docs.map((doc) {
+        return Player.fromDocument(doc);
+      }).toList();
+
+      setState(() {
+        players = loadedPlayers;
+        isLoading = false;
+      });
     } else {
       setState(() {
         isLoading = false;
@@ -86,9 +89,7 @@ class _PlayersViewState extends State<PlayersView> {
                   itemCount: players.length,
                   itemBuilder: (context, index) {
                     final player = players[index];
-                    return PlayerCube(
-                      name: player.name,
-                      imagePath: player.imagePath,
+                    return GestureDetector(
                       onTap: () {
                         showDialog(
                           context: context,
@@ -97,6 +98,11 @@ class _PlayersViewState extends State<PlayersView> {
                           },
                         );
                       },
+                      child: PlayerCube(
+                        name: player.name,
+                        imagePath: player.imagePath,
+                        onTap: () {},
+                      ),
                     );
                   },
                 ),

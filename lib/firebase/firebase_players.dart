@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
 
 class PlayerFunctions {
@@ -19,34 +18,14 @@ class PlayerFunctions {
     final playersCollection = FirebaseFirestore.instance.collection('players');
     final newPlayerRef = playersCollection.doc();
     final playerId = newPlayerRef.id;
-    final clubName = await FirebaseFunctions.getClubName(user.uid);
+
+    final DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
 
     await newPlayerRef.set({
+      ...player.toDocument(),
+      'userRef': userRef,
       'id': playerId,
-      'name': player.name,
-      'position': player.position,
-      'ovr': player.ovr,
-      'age': player.age,
-      'nationality': player.nationality,
-      'imagePath': player.imagePath,
-      'flagPath': player.flagPath,
-      'value': player.value,
-      'salary': player.salary,
-      'param1': player.param1,
-      'param2': player.param2,
-      'param3': player.param3,
-      'param4': player.param4,
-      'param1Name': player.param1Name,
-      'param2Name': player.param2Name,
-      'param3Name': player.param3Name,
-      'param4Name': player.param4Name,
-      'matchesPlayed': player.matchesPlayed,
-      'goals': player.goals,
-      'assists': player.assists,
-      'yellowCards': player.yellowCards,
-      'redCards': player.redCards,
-      'isYouth': player.isYouth,
-      'club': clubName,
       'createdAt': FieldValue.serverTimestamp(),
     });
 
