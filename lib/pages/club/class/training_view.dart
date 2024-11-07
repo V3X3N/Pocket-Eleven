@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
-import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_players.dart';
@@ -32,7 +31,7 @@ class _TrainingViewState extends State<TrainingView> {
   void initState() {
     super.initState();
     _loadUserData();
-    _loadPlayers(); // Load players for training
+    _loadPlayers();
   }
 
   Future<void> _loadUserData() async {
@@ -51,20 +50,28 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> _loadPlayers() async {
-    if (userId != null) {
-      final String clubId = await ClubFunctions.getClubId(userId!);
-      if (clubId.isNotEmpty) {
-        final List<Player> loadedPlayers =
-            await ClubFunctions.getPlayersForClub(clubId);
-        setState(() {
-          players = loadedPlayers;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('players')
+          .where('userRef', isEqualTo: userRef)
+          .get();
+
+      final List<Player> loadedPlayers = snapshot.docs.map((doc) {
+        return Player.fromDocument(doc);
+      }).toList();
+
+      setState(() {
+        players = loadedPlayers;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
