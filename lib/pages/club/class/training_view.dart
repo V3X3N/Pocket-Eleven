@@ -26,6 +26,10 @@ class _TrainingViewState extends State<TrainingView> {
   String? userId;
   List<Player> players = [];
   bool isLoading = true;
+  int basePlayerTrainingCost = 10000;
+
+  // Zmienna do przechowywania reductionCost
+  double reductionCost = 0.0;
 
   @override
   void initState() {
@@ -42,6 +46,9 @@ class _TrainingViewState extends State<TrainingView> {
         level = await TrainingFunctions.getTrainingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
+        // Oblicz reductionCost w zależności od poziomu
+        reductionCost =
+            max(0, 100 - level * 5).toDouble(); // Przykładowa logika
         setState(() {});
       }
     } catch (e) {
@@ -76,32 +83,52 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> trainPlayer(Player player, String paramName) async {
-    int newValue;
-    switch (paramName) {
-      case 'param1':
-        newValue = min(player.param1 + 1, 99);
-        player.param1 = newValue;
-        break;
-      case 'param2':
-        newValue = min(player.param2 + 1, 99);
-        player.param2 = newValue;
-        break;
-      case 'param3':
-        newValue = min(player.param3 + 1, 99);
-        player.param3 = newValue;
-        break;
-      case 'param4':
-        newValue = min(player.param4 + 1, 99);
-        player.param4 = newValue;
-        break;
+    int trainingCost = max(basePlayerTrainingCost - 500 * (level - 1), 0);
+
+    if (userMoney >= trainingCost) {
+      int newValue;
+      switch (paramName) {
+        case 'param1':
+          newValue = min(player.param1 + 1, 99);
+          player.param1 = newValue;
+          break;
+        case 'param2':
+          newValue = min(player.param2 + 1, 99);
+          player.param2 = newValue;
+          break;
+        case 'param3':
+          newValue = min(player.param3 + 1, 99);
+          player.param3 = newValue;
+          break;
+        case 'param4':
+          newValue = min(player.param4 + 1, 99);
+          player.param4 = newValue;
+          break;
+      }
+
+      player.updateDerivedAttributes();
+
+      await PlayerFunctions.updatePlayerData(
+          player.playerID, player.toDocument());
+
+      await FirebaseFunctions.updateUserData({
+        'money': userMoney - trainingCost,
+      });
+
+      setState(() {
+        userMoney -= trainingCost;
+      });
+    } else {
+      const snackBar = SnackBar(
+        content: Text('Not enough money for training.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 1),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
-
-    player.updateDerivedAttributes();
-
-    await PlayerFunctions.updatePlayerData(
-        player.playerID, player.toDocument());
-
-    setState(() {});
   }
 
   @override
@@ -248,6 +275,8 @@ class _TrainingViewState extends State<TrainingView> {
             setState(() {
               level = newLevel;
               upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+              reductionCost = max(0, 100 - newLevel * 5)
+                  .toDouble(); // Zaktualizowanie reductionCost
             });
           }
         } else {

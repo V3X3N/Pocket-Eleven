@@ -218,19 +218,29 @@ class _ScoutingViewState extends State<ScoutingView> {
                 ),
               ),
               Tooltip(
-                waitDuration: const Duration(seconds: 1),
+                triggerMode: TooltipTriggerMode.tap,
                 message: 'Current time reduction: $reductionPercentage%',
                 decoration: BoxDecoration(
                   color: AppColors.hoverColor,
                   borderRadius: BorderRadius.circular(10.0),
                 ),
-                child: Text(
-                  'Level $level',
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textEnabledColor,
-                  ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Level $level',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4.0),
+                    const Icon(
+                      Icons.info_outline,
+                      color: AppColors.textEnabledColor,
+                      size: 16.0,
+                    ),
+                  ],
                 ),
               ),
             ],

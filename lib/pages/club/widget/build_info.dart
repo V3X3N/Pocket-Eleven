@@ -22,6 +22,7 @@ class BuildInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+    int trainingCost = 10000 - ((level - 1) * 500);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -38,12 +39,30 @@ class BuildInfo extends StatelessWidget {
                   color: AppColors.textEnabledColor,
                 ),
               ),
-              Text(
-                'Level $level',
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
+              Tooltip(
+                triggerMode: TooltipTriggerMode.tap,
+                message: 'Current training cost: $trainingCost',
+                decoration: BoxDecoration(
+                  color: AppColors.hoverColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Level $level',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textEnabledColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4.0),
+                    const Icon(
+                      Icons.info_outline,
+                      color: AppColors.textEnabledColor,
+                      size: 16.0,
+                    ),
+                  ],
                 ),
               ),
             ],
