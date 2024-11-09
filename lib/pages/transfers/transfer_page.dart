@@ -3,7 +3,6 @@ import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/transfers/class/scouting_view.dart';
-import 'package:pocket_eleven/pages/transfers/class/stuff_view.dart';
 import 'package:pocket_eleven/pages/transfers/class/transfers_view.dart';
 
 class TransferPage extends StatefulWidget {
@@ -54,17 +53,8 @@ class _TransferPageState extends State<TransferPage> {
                   SizedBox(width: screenWidth * 0.04),
                   OptionButton(
                     index: 1,
-                    text: 'Stuff',
-                    onTap: () => _onOptionSelected(1),
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                    selectedIndex: _selectedIndex,
-                  ),
-                  SizedBox(width: screenWidth * 0.04),
-                  OptionButton(
-                    index: 2,
                     text: 'Scouting',
-                    onTap: () => _onOptionSelected(2),
+                    onTap: () => _onOptionSelected(1),
                     screenWidth: screenWidth,
                     screenHeight: screenHeight,
                     selectedIndex: _selectedIndex,
@@ -77,7 +67,6 @@ class _TransferPageState extends State<TransferPage> {
                 index: _selectedIndex,
                 children: [
                   const TransfersView(),
-                  const StuffView(),
                   ScoutingView(onCurrencyChange: widget.onCurrencyChange),
                 ],
               ),
