@@ -28,7 +28,6 @@ class _TrainingViewState extends State<TrainingView> {
   bool isLoading = true;
   int basePlayerTrainingCost = 10000;
 
-  // Zmienna do przechowywania reductionCost
   double reductionCost = 0.0;
 
   @override
@@ -46,9 +45,7 @@ class _TrainingViewState extends State<TrainingView> {
         level = await TrainingFunctions.getTrainingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
-        // Oblicz reductionCost w zależności od poziomu
-        reductionCost =
-            max(0, 100 - level * 5).toDouble(); // Przykładowa logika
+        reductionCost = max(0, 100 - level * 5).toDouble();
         setState(() {});
       }
     } catch (e) {
@@ -275,8 +272,7 @@ class _TrainingViewState extends State<TrainingView> {
             setState(() {
               level = newLevel;
               upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
-              reductionCost = max(0, 100 - newLevel * 5)
-                  .toDouble(); // Zaktualizowanie reductionCost
+              reductionCost = max(0, 100 - newLevel * 5).toDouble();
             });
           }
         } else {
