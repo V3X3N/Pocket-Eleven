@@ -15,19 +15,20 @@ class ClubInfoContainer extends StatelessWidget {
   });
 
   Future<String?> _getUserClubName() async {
-    var userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .get();
+    try {
+      var userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get();
 
-    if (userDoc.exists) {
-      var userData = userDoc.data() as Map<String, dynamic>;
-      DocumentReference clubRef = userData['club'] as DocumentReference;
-
-      // Pobieranie danych klubu
-      var clubDoc = await clubRef.get();
-      var clubData = clubDoc.data() as Map<String, dynamic>;
-      return clubData['clubName'] as String?;
+      if (userDoc.exists) {
+        var userData = userDoc.data();
+        if (userData != null) {
+          return userData['clubName'] as String?;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching user club name: $e');
     }
     return null;
   }
