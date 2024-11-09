@@ -4,6 +4,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -39,6 +40,25 @@ class ProfilePageState extends State<ProfilePage> {
       }
     } catch (error) {
       debugPrint('Error loading user data: $error');
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    setState(() {
+      _loading = true;
+    });
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const TempLoginPage()),
+      );
+    } catch (error) {
+      debugPrint('Error signing out: $error');
     } finally {
       setState(() {
         _loading = false;
@@ -83,6 +103,20 @@ class ProfilePageState extends State<ProfilePage> {
                     _buildClubInfo(),
                     _buildManagerInfo(),
                   ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _logout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.hoverColor,
+              ),
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  color: AppColors.textEnabledColor,
+                  fontSize: 18,
                 ),
               ),
             ),
