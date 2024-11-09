@@ -33,7 +33,9 @@ class MatchesContainer extends StatelessWidget {
     return null;
   }
 
-  Future<List<Map<String, dynamic>>> _getMatches() async {
+  Future<List<Map<String, dynamic>>> _getUpcomingMatches(
+      String userClubName) async {
+    var now = DateTime.now();
     var leaguesSnapshot =
         await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
@@ -43,13 +45,30 @@ class MatchesContainer extends StatelessWidget {
 
       List<Map<String, dynamic>> allMatches = [];
 
-      matches.forEach((roundKey, roundMatches) {
+      matches.forEach((_, roundMatches) {
         var matchList = List<Map<String, dynamic>>.from(roundMatches);
         allMatches.addAll(matchList);
       });
 
-      return allMatches;
+      var upcomingMatches = allMatches.where((match) {
+        var matchTime = (match['matchTime'] as Timestamp).toDate();
+        return matchTime.isAfter(now) &&
+            (match['club1'] == userClubName || match['club2'] == userClubName);
+      }).toList();
+
+      upcomingMatches.sort((a, b) {
+        return (a['matchTime'] as Timestamp)
+            .toDate()
+            .compareTo((b['matchTime'] as Timestamp).toDate());
+      });
+
+      if (upcomingMatches.isNotEmpty) {
+        upcomingMatches.removeAt(0);
+      }
+
+      return upcomingMatches;
     }
+
     return [];
   }
 
@@ -66,34 +85,17 @@ class MatchesContainer extends StatelessWidget {
 
           var userClubName = clubNameSnapshot.data!;
           return FutureBuilder<List<Map<String, dynamic>>>(
-            future: _getMatches(),
+            future: _getUpcomingMatches(userClubName),
             builder: (context, matchSnapshot) {
               if (!matchSnapshot.hasData || matchSnapshot.data == null) {
                 return const CircularProgressIndicator();
               }
 
-              var allMatches = matchSnapshot.data!;
-
-              var userMatches = allMatches
-                  .where((match) =>
-                      match['club1'] == userClubName ||
-                      match['club2'] == userClubName)
-                  .toList();
-
-              userMatches.sort((a, b) {
-                return (a['matchTime'] as Timestamp)
-                    .toDate()
-                    .compareTo((b['matchTime'] as Timestamp).toDate());
-              });
+              var userMatches = matchSnapshot.data!;
 
               if (userMatches.isEmpty) {
                 return const Text("Brak nadchodzących meczów.");
               }
-
-              var nextMatch = userMatches.removeAt(0);
-              var nextMatchTime =
-                  (nextMatch['matchTime'] as Timestamp).toDate();
-              nextMatchTime.toString();
 
               return Column(
                 children: [
