@@ -46,8 +46,8 @@ class PlayerSelectionDialog extends StatelessWidget {
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           childAspectRatio: 0.6,
-                          crossAxisSpacing: 8.0, // Odstępy poziome
-                          mainAxisSpacing: 8.0, // Odstępy pionowe
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
                         ),
                         itemCount: players.length,
                         itemBuilder: (context, index) {
