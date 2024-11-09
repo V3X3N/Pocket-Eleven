@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_stadium.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 
 class StadiumView extends StatefulWidget {
@@ -31,7 +32,7 @@ class _StadiumViewState extends State<StadiumView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getStadiumLevel(userId!);
+        level = await StadiumFunctions.getStadiumLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -56,23 +57,28 @@ class _StadiumViewState extends State<StadiumView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateStadiumLevel(userId!, newLevel);
+          await StadiumFunctions.updateStadiumLevel(userId!, newLevel);
 
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
-
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
+
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade the stadium.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the stadium.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } catch (e) {
         debugPrint('Error upgrading stadium: $e');

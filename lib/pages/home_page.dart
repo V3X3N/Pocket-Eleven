@@ -57,9 +57,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void onCurrencyChange(dynamic newCurrency) {
-    // Logic to handle currency change
     debugPrint("Currency changed: $newCurrency");
-    _loadUserData(); // Reload user data when currency changes
+    _loadUserData();
   }
 
   @override

@@ -22,11 +22,6 @@ class ImageLoader {
       'assets/flags/flag_POL.png',
       'assets/flags/flag_TUR.png',
       'assets/flags/flag_USA.png',
-      //Club
-      'assets/background/club_youth.png',
-      'assets/background/club_medical.png',
-      'assets/background/club_training.png',
-      'assets/background/club_stadion.png',
     ];
 
     for (var imagePath in imagePaths) {

@@ -8,7 +8,7 @@ class OptionButton extends StatelessWidget {
   final String text;
   final double screenWidth;
   final double screenHeight;
-  final double fontSizeMultiplier; // Opcjonalny mnożnik dla fontSize
+  final double fontSizeMultiplier;
 
   const OptionButton({
     super.key,
@@ -18,7 +18,7 @@ class OptionButton extends StatelessWidget {
     required this.text,
     required this.screenWidth,
     required this.screenHeight,
-    this.fontSizeMultiplier = 1.0, // Domyślna wartość mnożnika
+    this.fontSizeMultiplier = 1.0,
   });
 
   @override
@@ -50,8 +50,7 @@ class OptionButton extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            fontSize:
-                18 * fontSizeMultiplier, // Użyj mnożnika do obliczenia fontSize
+            fontSize: 18 * fontSizeMultiplier,
             color: isSelected
                 ? AppColors.textEnabledColor
                 : AppColors.textEnabledColor,

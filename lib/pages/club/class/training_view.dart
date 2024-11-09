@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_players.dart';
+import 'package:pocket_eleven/firebase/firebase_training.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
 
@@ -29,7 +31,7 @@ class _TrainingViewState extends State<TrainingView> {
   void initState() {
     super.initState();
     _loadUserData();
-    _loadPlayers(); // Load players for training
+    _loadPlayers();
   }
 
   Future<void> _loadUserData() async {
@@ -37,7 +39,7 @@ class _TrainingViewState extends State<TrainingView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getTrainingLevel(userId!);
+        level = await TrainingFunctions.getTrainingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -48,25 +50,32 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> _loadPlayers() async {
-    if (userId != null) {
-      final String clubId = await FirebaseFunctions.getClubId(userId!);
-      if (clubId.isNotEmpty) {
-        final List<Player> loadedPlayers =
-            await FirebaseFunctions.getPlayersForClub(clubId);
-        setState(() {
-          players = loadedPlayers;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('players')
+          .where('userRef', isEqualTo: userRef)
+          .get();
+
+      final List<Player> loadedPlayers = snapshot.docs.map((doc) {
+        return Player.fromDocument(doc);
+      }).toList();
+
+      setState(() {
+        players = loadedPlayers;
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> trainPlayer(Player player, String paramName) async {
-    // Zwiększenie wybranego parametru i aktualizacja w Firestore
     int newValue;
     switch (paramName) {
       case 'param1':
@@ -87,14 +96,11 @@ class _TrainingViewState extends State<TrainingView> {
         break;
     }
 
-    // Przeliczenie zależnych wartości: OVR, badge, value, salary
     player.updateDerivedAttributes();
 
-    // Aktualizacja zawodnika w Firestore
-    await FirebaseFunctions.updatePlayerData(
+    await PlayerFunctions.updatePlayerData(
         player.playerID, player.toDocument());
 
-    // Odświeżenie UI
     setState(() {});
   }
 
@@ -132,8 +138,6 @@ class _TrainingViewState extends State<TrainingView> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
-
-                  // Sekcja: Trening zawodników
                   isLoading
                       ? const Center(
                           child: CircularProgressIndicator(),
@@ -160,8 +164,7 @@ class _TrainingViewState extends State<TrainingView> {
                                     Text(
                                       player.name,
                                       style: TextStyle(
-                                        fontSize: screenWidth *
-                                            0.045, // Skalowanie rozmiaru tekstu
+                                        fontSize: screenWidth * 0.045,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.textEnabledColor,
                                       ),
@@ -235,23 +238,28 @@ class _TrainingViewState extends State<TrainingView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateTrainingLevel(userId!, newLevel);
+          await TrainingFunctions.updateTrainingLevel(userId!, newLevel);
 
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
-
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
+
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade the training.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the training.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } catch (e) {
         debugPrint('Error upgrading training: $e');
@@ -273,10 +281,10 @@ class _TrainingViewState extends State<TrainingView> {
             '$paramLabel: $paramValue',
             style: TextStyle(
               color: AppColors.textEnabledColor,
-              fontSize: screenWidth * 0.030, // Skalowanie rozmiaru tekstu
+              fontSize: screenWidth * 0.030,
             ),
           ),
-          SizedBox(height: screenWidth * 0.02), // Proporcjonalny odstęp
+          SizedBox(height: screenWidth * 0.02),
           OptionButton(
             onTap: () => trainPlayer(player, paramName),
             screenWidth: screenWidth,

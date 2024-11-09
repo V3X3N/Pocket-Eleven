@@ -15,47 +15,39 @@ class ClubInfoContainer extends StatelessWidget {
   });
 
   Future<String?> _getUserClubName() async {
-    var userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .get();
+    try {
+      var userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get();
 
-    // Sprawdzamy, czy dokument istnieje i rzutujemy go na mapę
-    if (userDoc.exists) {
-      var userData =
-          userDoc.data() as Map<String, dynamic>; // Rzutowanie danych na Map
-      DocumentReference clubRef = userData['club'] as DocumentReference;
-
-      // Pobieranie danych klubu
-      var clubDoc = await clubRef.get();
-      var clubData = clubDoc.data()
-          as Map<String, dynamic>; // Rzutowanie danych klubu na Map
-      return clubData['clubName'] as String?;
+      if (userDoc.exists) {
+        var userData = userDoc.data();
+        if (userData != null) {
+          return userData['clubName'] as String?;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching user club name: $e');
     }
     return null;
   }
 
-  // Pobieranie meczów i grupowanie według rund
   Future<List<Map<String, dynamic>>> _getMatches() async {
-    var leaguesSnapshot = await FirebaseFirestore.instance
-        .collection('leagues')
-        .limit(1) // Zakładamy, że liga jest tylko jedna w danym kontekście
-        .get();
+    var leaguesSnapshot =
+        await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
       var leagueData = leaguesSnapshot.docs.first.data();
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
-      // Lista, która będzie zawierać wszystkie mecze z rund
       List<Map<String, dynamic>> allMatches = [];
 
-      // Iterujemy przez rundy w "matches"
       matches.forEach((roundKey, roundMatches) {
         var matchList = List<Map<String, dynamic>>.from(roundMatches);
         allMatches.addAll(matchList);
       });
 
-      // Sortowanie meczów według czasu meczu
       allMatches.sort((a, b) {
         return (a['matchTime'] as Timestamp)
             .toDate()
@@ -88,14 +80,12 @@ class ClubInfoContainer extends StatelessWidget {
 
               var allMatches = matchSnapshot.data!;
 
-              // Filtrujemy mecze użytkownika i sortujemy je
               var userMatches = allMatches
                   .where((match) =>
                       match['club1'] == userClubName ||
                       match['club2'] == userClubName)
                   .toList();
 
-              // Sortujemy mecze według daty, aby mieć najbliższy mecz na górze
               userMatches.sort((a, b) {
                 return (a['matchTime'] as Timestamp)
                     .toDate()
@@ -106,7 +96,6 @@ class ClubInfoContainer extends StatelessWidget {
                 return const Text("Brak meczów do wyświetlenia");
               }
 
-              // Pobieramy najbliższy mecz
               var nextMatch = userMatches.first;
 
               var opponentName = nextMatch['club1'] == userClubName

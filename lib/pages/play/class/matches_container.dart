@@ -15,22 +15,20 @@ class MatchesContainer extends StatelessWidget {
   });
 
   Future<String?> _getUserClubName() async {
-    var userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .get();
+    try {
+      var userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .get();
 
-    // Sprawdzamy, czy dokument istnieje i rzutujemy go na mapę
-    if (userDoc.exists) {
-      var userData =
-          userDoc.data() as Map<String, dynamic>; // Rzutowanie danych na Map
-      DocumentReference clubRef = userData['club'] as DocumentReference;
-
-      // Pobieranie danych klubu
-      var clubDoc = await clubRef.get();
-      var clubData = clubDoc.data()
-          as Map<String, dynamic>; // Rzutowanie danych klubu na Map
-      return clubData['clubName'] as String?;
+      if (userDoc.exists) {
+        var userData = userDoc.data();
+        if (userData != null) {
+          return userData['clubName'] as String?;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching user club name: $e');
     }
     return null;
   }
@@ -40,8 +38,7 @@ class MatchesContainer extends StatelessWidget {
         await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
     if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData =
-          leaguesSnapshot.docs.first.data() as Map<String, dynamic>;
+      var leagueData = leaguesSnapshot.docs.first.data();
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
       List<Map<String, dynamic>> allMatches = [];
@@ -77,14 +74,12 @@ class MatchesContainer extends StatelessWidget {
 
               var allMatches = matchSnapshot.data!;
 
-              // Filtruj mecze gracza
               var userMatches = allMatches
                   .where((match) =>
                       match['club1'] == userClubName ||
                       match['club2'] == userClubName)
                   .toList();
 
-              // Sortowanie meczów według daty
               userMatches.sort((a, b) {
                 return (a['matchTime'] as Timestamp)
                     .toDate()
@@ -95,16 +90,13 @@ class MatchesContainer extends StatelessWidget {
                 return const Text("Brak nadchodzących meczów.");
               }
 
-              // Pobranie najbliższego meczu (pierwszy mecz po sortowaniu)
-              var nextMatch =
-                  userMatches.removeAt(0); // Usuń najbliższy mecz z listy
+              var nextMatch = userMatches.removeAt(0);
               var nextMatchTime =
                   (nextMatch['matchTime'] as Timestamp).toDate();
               nextMatchTime.toString();
 
               return Column(
                 children: [
-                  // MatchesContainer - Pozostałe mecze
                   Expanded(
                     child: Container(
                       margin: EdgeInsets.all(screenWidth * 0.05),
@@ -135,13 +127,9 @@ class MatchesContainer extends StatelessWidget {
                                 screenWidth: screenWidth,
                                 screenHeight: screenHeight,
                                 fontSizeMultiplier: 1.0,
-                                onTap: () {
-                                  // Można dodać logikę po kliknięciu
-                                },
+                                onTap: () {},
                               ),
-                              SizedBox(
-                                  height: screenHeight *
-                                      0.02), // Odstęp między pastylkami
+                              SizedBox(height: screenHeight * 0.02),
                             ],
                           );
                         },

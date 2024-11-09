@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pocket_eleven/firebase/firebase_youth.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/transfers/widgets/nationality_selector.dart';
@@ -48,7 +49,7 @@ class _ScoutingViewState extends State<ScoutingView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await FirebaseFunctions.getScoutingLevel(userId!);
+        level = await YouthFunctions.getScoutingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -136,27 +137,31 @@ class _ScoutingViewState extends State<ScoutingView> {
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
 
-          await FirebaseFunctions.updateScoutingLevel(userId!, newLevel);
-          await FirebaseFunctions.updateUserData(
-              {'money': userMoney - currentUpgradeCost});
+          await YouthFunctions.updateScoutingLevel(userId!, newLevel);
 
-          setState(() {
-            level = newLevel;
-            upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+          await FirebaseFunctions.updateUserData({
+            'money': userMoney - currentUpgradeCost,
           });
 
-          widget.onCurrencyChange();
+          if (mounted) {
+            setState(() {
+              level = newLevel;
+              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+            });
+          }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Not enough money to upgrade scouting level.'),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 1),
-            ),
+          const snackBar = SnackBar(
+            content: Text('Not enough money to upgrade the scouting.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 1),
           );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
-      } catch (error) {
-        debugPrint('Error upgrading scouting level: $error');
+      } catch (e) {
+        debugPrint('Error upgrading scouting: $e');
       }
     }
   }
