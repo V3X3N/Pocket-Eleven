@@ -10,23 +10,29 @@ class LeagueFunctions {
 
     for (var league in leagues.docs) {
       var leagueData = league.data();
-      var clubs = List<String>.from(leagueData['clubs']);
+      var clubs = List<DocumentReference>.from(leagueData['clubs']);
 
-      if (clubs.any((club) => club.startsWith('Bot_'))) {
+      if (clubs.any((club) => club.id.startsWith('Bot_'))) {
         return league;
       }
     }
     return null;
   }
 
-  static Future<String> createNewLeagueWithBots(String clubName) async {
-    List<String> bots = List.generate(9, (index) => 'Bot_${index + 1}');
+  static Future<String> createNewLeagueWithBots(
+      DocumentReference clubRef) async {
+    List<DocumentReference> bots = List.generate(
+        9,
+        (index) => FirebaseFirestore.instance
+            .collection('bots')
+            .doc('Bot_${index + 1}'));
+
     Map<String, dynamic> matchesByRound =
-        generateInitialMatches([clubName, ...bots]);
+        generateInitialMatches([clubRef, ...bots]);
 
     DocumentReference leagueRef =
         await FirebaseFirestore.instance.collection('leagues').add({
-      'clubs': [clubName, ...bots],
+      'clubs': [clubRef, ...bots],
       'clubs_count': 10,
       'matches': matchesByRound,
     });
@@ -34,22 +40,25 @@ class LeagueFunctions {
     return leagueRef.id;
   }
 
-  static Map<String, dynamic> generateInitialMatches(List<String> clubs) {
+  static Map<String, dynamic> generateInitialMatches(
+      List<DocumentReference> clubs) {
     Map<String, dynamic> matchesByRound = {};
-    if (clubs.length % 2 != 0) clubs.add('BYE');
+    if (clubs.length % 2 != 0) {
+      clubs.add(FirebaseFirestore.instance.collection('bots').doc('BYE'));
+    }
 
     int numTeams = clubs.length;
     int numRounds = numTeams - 1;
     int numMatchesPerDay = numTeams ~/ 2;
 
-    List<String> currentClubs = List.from(clubs);
+    List<DocumentReference> currentClubs = List.from(clubs);
 
     for (int round = 0; round < numRounds; round++) {
       List<Map<String, dynamic>> roundMatches = [];
 
       for (int i = 0; i < numMatchesPerDay; i++) {
-        String homeTeam = currentClubs[i];
-        String awayTeam = currentClubs[numTeams - 1 - i];
+        DocumentReference homeTeam = currentClubs[i];
+        DocumentReference awayTeam = currentClubs[numTeams - 1 - i];
 
         roundMatches.add({
           'club1': homeTeam,
@@ -60,7 +69,8 @@ class LeagueFunctions {
       }
 
       matchesByRound['round${round + 1}'] = roundMatches;
-      String lastTeam = currentClubs.removeAt(currentClubs.length - 1);
+      DocumentReference lastTeam =
+          currentClubs.removeAt(currentClubs.length - 1);
       currentClubs.insert(1, lastTeam);
     }
 
@@ -88,36 +98,23 @@ class LeagueFunctions {
   }
 
   static Future<void> replaceBotInMatches(
-      DocumentSnapshot leagueSnapshot, String botName, String clubName) async {
+      DocumentSnapshot leagueSnapshot, String botId, String clubId) async {
     var leagueData = leagueSnapshot.data() as Map<String, dynamic>;
-    List<dynamic> matches = leagueData['matches'];
+    Map<String, dynamic> matches = leagueData['matches'];
 
-    for (int i = 0; i < matches.length; i++) {
-      var match = matches[i] as Map<String, dynamic>;
-
-      if (match['club1'] == botName) {
-        matches[i]['club1'] = clubName;
-      } else if (match['club2'] == botName) {
-        matches[i]['club2'] = clubName;
+    matches.forEach((roundKey, roundMatches) {
+      for (var match in roundMatches) {
+        if ((match['club1'] as DocumentReference).id == botId) {
+          match['club1'] =
+              FirebaseFirestore.instance.collection('users').doc(clubId);
+        } else if ((match['club2'] as DocumentReference).id == botId) {
+          match['club2'] =
+              FirebaseFirestore.instance.collection('users').doc(clubId);
+        }
       }
-    }
+    });
 
     await leagueSnapshot.reference.update({'matches': matches});
-    debugPrint("Replaced bot $botName with $clubName in all matches.");
-  }
-
-  static Future<bool> isClubInLeague(String email) async {
-    var clubSnapshot = await FirebaseFirestore.instance
-        .collection('clubs')
-        .where('managerEmail', isEqualTo: email)
-        .limit(1)
-        .get();
-
-    if (clubSnapshot.docs.isNotEmpty) {
-      var clubData = clubSnapshot.docs.first.data();
-      var leagueId = clubData['leagueId'];
-      return leagueId != null;
-    }
-    return false;
+    debugPrint("Replaced bot $botId with $clubId in all matches.");
   }
 }

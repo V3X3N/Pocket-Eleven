@@ -51,6 +51,11 @@ class FirebaseFunctions {
             botToReplace,
             clubName,
           );
+
+          await userRef.update({
+            'leagueRef': availableLeague.reference,
+          });
+
           debugPrint(
               "Replaced bot: $botToReplace with club: $clubName in league: ${availableLeague.id}");
         } else {
@@ -58,8 +63,14 @@ class FirebaseFunctions {
         }
       } else {
         String newLeagueId =
-            await LeagueFunctions.createNewLeagueWithBots(clubName);
+            await LeagueFunctions.createNewLeagueWithBots(userRef);
         debugPrint("New league created with ID: $newLeagueId");
+
+        DocumentReference newLeagueRef =
+            FirebaseFirestore.instance.collection('leagues').doc(newLeagueId);
+        await userRef.update({
+          'leagueRef': newLeagueRef,
+        });
       }
     } catch (error) {
       debugPrint('Error saving user with club data: $error');

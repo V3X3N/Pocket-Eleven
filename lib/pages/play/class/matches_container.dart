@@ -21,16 +21,23 @@ class MatchesContainer extends StatelessWidget {
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .get();
 
-      if (userDoc.exists) {
-        var userData = userDoc.data();
-        if (userData != null) {
-          return userData['clubName'] as String?;
-        }
-      }
+      return userDoc.data()?['clubName'] as String?;
     } catch (e) {
       debugPrint('Error fetching user club name: $e');
     }
     return null;
+  }
+
+  Future<String> _resolveClubName(DocumentReference clubRef) async {
+    var doc = await clubRef.get();
+    var data = doc.data() as Map<String, dynamic>?;
+
+    if (clubRef.path.startsWith('users/')) {
+      return data?['clubName'] ?? 'Unknown Club';
+    } else if (clubRef.path.startsWith('bots/')) {
+      return clubRef.id;
+    }
+    return 'Unknown';
   }
 
   Future<List<Map<String, dynamic>>> _getUpcomingMatches(
@@ -52,8 +59,7 @@ class MatchesContainer extends StatelessWidget {
 
       var upcomingMatches = allMatches.where((match) {
         var matchTime = (match['matchTime'] as Timestamp).toDate();
-        return matchTime.isAfter(now) &&
-            (match['club1'] == userClubName || match['club2'] == userClubName);
+        return matchTime.isAfter(now);
       }).toList();
 
       upcomingMatches.sort((a, b) {
@@ -113,26 +119,36 @@ class MatchesContainer extends StatelessWidget {
                         itemCount: userMatches.length,
                         itemBuilder: (context, index) {
                           var match = userMatches[index];
-                          var opponentName = match['club1'] == userClubName
+                          var opponentRef = match['club1'] == userClubName
                               ? match['club2']
                               : match['club1'];
+
                           var matchTime =
                               (match['matchTime'] as Timestamp).toDate();
                           var matchTimeText = matchTime.toString();
 
-                          return Column(
-                            children: [
-                              MatchTileButton(
-                                isSelected: false,
-                                opponentName: opponentName,
-                                matchTime: matchTimeText,
-                                screenWidth: screenWidth,
-                                screenHeight: screenHeight,
-                                fontSizeMultiplier: 1.0,
-                                onTap: () {},
-                              ),
-                              SizedBox(height: screenHeight * 0.02),
-                            ],
+                          return FutureBuilder<String>(
+                            future: _resolveClubName(opponentRef),
+                            builder: (context, opponentSnapshot) {
+                              if (!opponentSnapshot.hasData) {
+                                return const CircularProgressIndicator();
+                              }
+
+                              return Column(
+                                children: [
+                                  MatchTileButton(
+                                    isSelected: false,
+                                    opponentName: opponentSnapshot.data!,
+                                    matchTime: matchTimeText,
+                                    screenWidth: screenWidth,
+                                    screenHeight: screenHeight,
+                                    fontSizeMultiplier: 1.0,
+                                    onTap: () {},
+                                  ),
+                                  SizedBox(height: screenHeight * 0.02),
+                                ],
+                              );
+                            },
                           );
                         },
                       ),

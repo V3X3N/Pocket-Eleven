@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
-import 'package:pocket_eleven/models/player.dart';
 import 'firebase_league.dart';
 
 class ClubFunctions {
@@ -30,49 +28,63 @@ class ClubFunctions {
     if (clubSnapshot.docs.isNotEmpty) {
       var clubDoc = clubSnapshot.docs.first;
       var clubData = clubDoc.data();
-      var clubName = clubData['clubName'];
+      var userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(clubData['managerId']);
 
       DocumentSnapshot? availableLeague =
           await LeagueFunctions.findAvailableLeagueWithBot();
 
       if (availableLeague != null) {
         var leagueData = availableLeague.data() as Map<String, dynamic>;
-        var clubs = List<String>.from(leagueData['clubs']);
+        var clubs = List<DocumentReference>.from(leagueData['clubs']);
 
-        String? botToReplace;
+        DocumentReference? botToReplace;
         for (var club in clubs) {
-          if (club.startsWith('Bot_')) {
+          if (club.id.startsWith('Bot_')) {
             botToReplace = club;
             break;
           }
         }
 
         if (botToReplace != null) {
-          clubs[clubs.indexOf(botToReplace)] = clubName;
+          clubs[clubs.indexOf(botToReplace)] = userRef;
           await availableLeague.reference.update({
             'clubs': clubs,
           });
 
           await LeagueFunctions.replaceBotInMatches(
-              availableLeague, botToReplace, clubName);
+              availableLeague, botToReplace.id, userRef.id);
+
+          await userRef.update({
+            'leagueRef': availableLeague.reference,
+          });
 
           debugPrint(
-              "Replaced bot $botToReplace with $clubName in league ${availableLeague.id}");
+              "Replaced bot ${botToReplace.id} with ${userRef.id} in league ${availableLeague.id}");
         } else {
           debugPrint("No bot found to replace.");
         }
       } else {
         String newLeagueId =
-            await LeagueFunctions.createNewLeagueWithBots(clubName);
+            await LeagueFunctions.createNewLeagueWithBots(userRef);
         debugPrint("Created new league with ID: $newLeagueId");
+
+        DocumentReference newLeagueRef =
+            FirebaseFirestore.instance.collection('leagues').doc(newLeagueId);
+        await userRef.update({
+          'leagueRef': newLeagueRef,
+        });
       }
     }
   }
 
   static Future<String> getClubId(String userId) async {
     try {
-      DocumentSnapshot userDoc =
-          await FirebaseFunctions.getUserDocument(userId);
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
       Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
 
       if (userData != null && userData.containsKey('club')) {
@@ -83,51 +95,6 @@ class ClubFunctions {
     } catch (error) {
       debugPrint('Error loading club id: $error');
       return '';
-    }
-  }
-
-  static Future<List<Player>> getPlayersForClub(String clubId) async {
-    try {
-      DocumentReference clubRef =
-          FirebaseFirestore.instance.doc('/clubs/$clubId');
-
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('players')
-          .where('club', isEqualTo: clubRef)
-          .get();
-
-      return snapshot.docs.map((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-        return Player(
-          playerID: doc.id,
-          name: data['name'] ?? '',
-          position: data['position'] ?? '',
-          ovr: data['ovr'] ?? 0,
-          age: data['age'] ?? 0,
-          nationality: data['nationality'] ?? '',
-          imagePath: data['imagePath'] ?? '',
-          flagPath: data['flagPath'] ?? '',
-          value: data['value'] ?? 0,
-          salary: data['salary'] ?? 0,
-          param1: data['param1'] ?? 0,
-          param2: data['param2'] ?? 0,
-          param3: data['param3'] ?? 0,
-          param4: data['param4'] ?? 0,
-          param1Name: data['param1Name'] ?? '',
-          param2Name: data['param2Name'] ?? '',
-          param3Name: data['param3Name'] ?? '',
-          param4Name: data['param4Name'] ?? '',
-          matchesPlayed: data['matchesPlayed'] ?? 0,
-          goals: data['goals'] ?? 0,
-          assists: data['assists'] ?? 0,
-          yellowCards: data['yellowCards'] ?? 0,
-          redCards: data['redCards'] ?? 0,
-        );
-      }).toList();
-    } catch (error) {
-      debugPrint('Error fetching players: $error');
-      return [];
     }
   }
 }

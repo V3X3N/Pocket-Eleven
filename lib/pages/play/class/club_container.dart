@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/play/widgets/club_info.dart';
 
@@ -21,12 +21,7 @@ class ClubInfoContainer extends StatelessWidget {
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .get();
 
-      if (userDoc.exists) {
-        var userData = userDoc.data();
-        if (userData != null) {
-          return userData['clubName'] as String?;
-        }
-      }
+      return userDoc.data()?['clubName'] as String?;
     } catch (e) {
       debugPrint('Error fetching user club name: $e');
     }
@@ -67,6 +62,18 @@ class ClubInfoContainer extends StatelessWidget {
     return null;
   }
 
+  Future<String> _resolveClubName(DocumentReference clubRef) async {
+    var doc = await clubRef.get();
+    var data = doc.data() as Map<String, dynamic>?;
+
+    if (clubRef.path.startsWith('users/')) {
+      return data?['clubName'] ?? 'Unknown Club';
+    } else if (clubRef.path.startsWith('bots/')) {
+      return clubRef.id;
+    }
+    return 'Unknown';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -87,46 +94,58 @@ class ClubInfoContainer extends StatelessWidget {
               }
 
               var nextMatch = matchSnapshot.data!;
-              var opponentName = nextMatch['club1'] == userClubName
+              var opponentRef = nextMatch['club1'] == userClubName
                   ? nextMatch['club2']
                   : nextMatch['club1'];
-              var matchTime =
-                  (nextMatch['matchTime'] as Timestamp).toDate().toString();
 
-              return Container(
-                margin: EdgeInsets.all(screenWidth * 0.05),
-                padding: EdgeInsets.all(screenWidth * 0.04),
-                decoration: BoxDecoration(
-                  color: AppColors.hoverColor,
-                  border: Border.all(color: AppColors.borderColor, width: 1),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                height: screenHeight * 0.25,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(
+              return FutureBuilder<String>(
+                future: _resolveClubName(opponentRef),
+                builder: (context, opponentSnapshot) {
+                  if (!opponentSnapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+
+                  var opponentName = opponentSnapshot.data!;
+                  var matchTime =
+                      (nextMatch['matchTime'] as Timestamp).toDate().toString();
+
+                  return Container(
+                    margin: EdgeInsets.all(screenWidth * 0.05),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    height: screenHeight * 0.25,
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        ClubInfo(
-                          clubCrestPath: 'assets/crests/crest_1.png',
-                          clubName: userClubName,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            ClubInfo(
+                              clubCrestPath: 'assets/crests/crest_1.png',
+                              clubName: userClubName,
+                            ),
+                            const Text("VS"),
+                            ClubInfo(
+                              clubCrestPath: 'assets/crests/crest_2.png',
+                              clubName: opponentName,
+                            ),
+                          ],
                         ),
-                        const Text("VS"),
-                        ClubInfo(
-                          clubCrestPath: 'assets/crests/crest_2.png',
-                          clubName: opponentName,
+                        const SizedBox(height: 10),
+                        Text(
+                          "Najbliższy mecz: $matchTime",
+                          style: const TextStyle(
+                              fontSize: 16, color: AppColors.textEnabledColor),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Najbliższy mecz: $matchTime",
-                      style: const TextStyle(
-                          fontSize: 16, color: AppColors.textEnabledColor),
-                    ),
-                  ],
-                ),
+                  );
+                },
               );
             },
           );
