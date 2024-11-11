@@ -63,8 +63,9 @@ class LeagueFunctions {
         roundMatches.add({
           'club1': homeTeam,
           'club2': awayTeam,
+          'club1goals': null,
+          'club2goals': null,
           'matchTime': null,
-          'score': null,
         });
       }
 
