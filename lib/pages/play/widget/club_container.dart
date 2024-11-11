@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/play/widgets/club_info.dart';
+import 'package:pocket_eleven/pages/play/widget/club_info.dart';
 
 class ClubInfoContainer extends StatelessWidget {
   final double screenWidth;
