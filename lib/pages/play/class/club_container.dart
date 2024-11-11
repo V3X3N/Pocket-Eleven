@@ -14,49 +14,78 @@ class ClubInfoContainer extends StatelessWidget {
     super.key,
   });
 
-  Future<String?> _getUserClubName() async {
-    try {
-      var userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser?.uid)
-          .get();
-
-      return userDoc.data()?['clubName'] as String?;
-    } catch (e) {
-      debugPrint('Error fetching user club name: $e');
-    }
-    return null;
-  }
-
   Future<Map<String, dynamic>?> _getNextMatch(String userClubName) async {
     var now = DateTime.now();
-    var leaguesSnapshot =
-        await FirebaseFirestore.instance.collection('leagues').limit(1).get();
 
-    if (leaguesSnapshot.docs.isNotEmpty) {
-      var leagueData = leaguesSnapshot.docs.first.data();
+    List<Map<String, dynamic>> upcomingMatchesList = [];
+
+    var userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get();
+
+    var userLeagueRef = userDoc.data()?['leagueRef'] as DocumentReference?;
+
+    if (userLeagueRef != null) {
+      var leagueDoc = await userLeagueRef.get();
+      var leagueData = leagueDoc.data() as Map<String, dynamic>;
+      var clubs = List<DocumentReference>.from(leagueData['clubs']);
+
+      debugPrint("Looking for the user's club reference...");
+      for (var club in clubs) {
+        if (club.id == FirebaseAuth.instance.currentUser?.uid) {
+          debugPrint("Found user's club reference: ${club.id}");
+        }
+      }
+
       var matches = leagueData['matches'] as Map<String, dynamic>;
 
-      List<Map<String, dynamic>> allMatches = [];
+      matches.forEach((roundKey, roundMatches) {
+        for (var match in roundMatches) {
+          if ((match['club1'] as DocumentReference).id ==
+                  FirebaseAuth.instance.currentUser?.uid ||
+              (match['club2'] as DocumentReference).id ==
+                  FirebaseAuth.instance.currentUser?.uid) {
+            var matchTime = (match['matchTime'] as Timestamp).toDate();
 
-      matches.forEach((_, roundMatches) {
-        var matchList = List<Map<String, dynamic>>.from(roundMatches);
-        allMatches.addAll(matchList);
+            if (matchTime.isAfter(now)) {
+              var club1Ref = match['club1'] as DocumentReference;
+              var club2Ref = match['club2'] as DocumentReference;
+
+              var matchData = {
+                'matchTime': matchTime,
+                'club1': club1Ref,
+                'club2': club2Ref,
+              };
+              upcomingMatchesList.add(matchData);
+            }
+          }
+        }
       });
 
-      var upcomingMatches = allMatches.where((match) {
-        var matchTime = (match['matchTime'] as Timestamp).toDate();
-        return matchTime.isAfter(now) &&
-            (match['club1'] == userClubName || match['club2'] == userClubName);
-      }).toList();
-
-      upcomingMatches.sort((a, b) {
-        return (a['matchTime'] as Timestamp)
-            .toDate()
-            .compareTo((b['matchTime'] as Timestamp).toDate());
+      upcomingMatchesList.sort((a, b) {
+        return (a['matchTime'] as DateTime)
+            .compareTo(b['matchTime'] as DateTime);
       });
 
-      return upcomingMatches.isNotEmpty ? upcomingMatches.first : null;
+      if (upcomingMatchesList.isNotEmpty) {
+        var nextMatch = upcomingMatchesList.first;
+        var userClubName = userDoc.data()?['clubName'] as String?;
+        var opponentRef = nextMatch['club1'] ==
+                FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(FirebaseAuth.instance.currentUser?.uid)
+            ? nextMatch['club2']
+            : nextMatch['club1'];
+
+        var opponentName = await _resolveClubName(opponentRef);
+
+        return {
+          'userClubName': userClubName,
+          'opponentName': opponentName,
+          'matchTime': nextMatch['matchTime'],
+        };
+      }
     }
 
     return null;
@@ -78,76 +107,52 @@ class ClubInfoContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.topCenter,
-      child: FutureBuilder<String?>(
-        future: _getUserClubName(),
-        builder: (context, clubNameSnapshot) {
-          if (!clubNameSnapshot.hasData) {
-            return const CircularProgressIndicator();
+      child: FutureBuilder<Map<String, dynamic>?>(
+        future: _getNextMatch(''),
+        builder: (context, matchSnapshot) {
+          if (!matchSnapshot.hasData || matchSnapshot.data == null) {
+            return const Text("Brak nadchodzących meczów.");
           }
 
-          var userClubName = clubNameSnapshot.data!;
-          return FutureBuilder<Map<String, dynamic>?>(
-            future: _getNextMatch(userClubName),
-            builder: (context, matchSnapshot) {
-              if (!matchSnapshot.hasData || matchSnapshot.data == null) {
-                return const Text("Brak nadchodzących meczów.");
-              }
+          var matchData = matchSnapshot.data!;
+          var userClubName = matchData['userClubName'];
+          var opponentName = matchData['opponentName'];
+          var matchTime = matchData['matchTime'].toString();
 
-              var nextMatch = matchSnapshot.data!;
-              var opponentRef = nextMatch['club1'] == userClubName
-                  ? nextMatch['club2']
-                  : nextMatch['club1'];
-
-              return FutureBuilder<String>(
-                future: _resolveClubName(opponentRef),
-                builder: (context, opponentSnapshot) {
-                  if (!opponentSnapshot.hasData) {
-                    return const CircularProgressIndicator();
-                  }
-
-                  var opponentName = opponentSnapshot.data!;
-                  var matchTime =
-                      (nextMatch['matchTime'] as Timestamp).toDate().toString();
-
-                  return Container(
-                    margin: EdgeInsets.all(screenWidth * 0.05),
-                    padding: EdgeInsets.all(screenWidth * 0.04),
-                    decoration: BoxDecoration(
-                      color: AppColors.hoverColor,
-                      border:
-                          Border.all(color: AppColors.borderColor, width: 1),
-                      borderRadius: BorderRadius.circular(10.0),
+          return Container(
+            margin: EdgeInsets.all(screenWidth * 0.05),
+            padding: EdgeInsets.all(screenWidth * 0.04),
+            decoration: BoxDecoration(
+              color: AppColors.hoverColor,
+              border: Border.all(color: AppColors.borderColor, width: 1),
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            height: screenHeight * 0.25,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ClubInfo(
+                      clubCrestPath: 'assets/crests/crest_1.png',
+                      clubName: userClubName,
                     ),
-                    height: screenHeight * 0.25,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            ClubInfo(
-                              clubCrestPath: 'assets/crests/crest_1.png',
-                              clubName: userClubName,
-                            ),
-                            const Text("VS"),
-                            ClubInfo(
-                              clubCrestPath: 'assets/crests/crest_2.png',
-                              clubName: opponentName,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Najbliższy mecz: $matchTime",
-                          style: const TextStyle(
-                              fontSize: 16, color: AppColors.textEnabledColor),
-                        ),
-                      ],
+                    const Text("VS"),
+                    ClubInfo(
+                      clubCrestPath: 'assets/crests/crest_2.png',
+                      clubName: opponentName,
                     ),
-                  );
-                },
-              );
-            },
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Najbliższy mecz: $matchTime",
+                  style: const TextStyle(
+                      fontSize: 16, color: AppColors.textEnabledColor),
+                ),
+              ],
+            ),
           );
         },
       ),
