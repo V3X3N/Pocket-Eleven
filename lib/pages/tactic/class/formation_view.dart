@@ -223,6 +223,15 @@ class _FormationViewState extends State<FormationView> {
         await formationRef.set({'userRef': userRef});
       }
 
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() as Map<String, dynamic>?;
+
+      if (userData == null || userData['formationRef'] == null) {
+        await userRef.update({
+          'formationRef': formationRef,
+        });
+      }
+
       Map<String, dynamic> formationData = {
         for (String position in selectedPlayers.keys)
           position: selectedPlayers[position] != null
