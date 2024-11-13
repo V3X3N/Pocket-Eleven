@@ -27,12 +27,11 @@ class LeagueFunctions {
             .collection('bots')
             .doc('Bot_${index + 1}'));
 
-    Map<String, dynamic> matchesByRound =
-        generateInitialMatches([clubRef, ...bots]);
+    Map<String, dynamic> matchesByRound = generateInitialMatches([...bots]);
 
     DocumentReference leagueRef =
         await FirebaseFirestore.instance.collection('leagues').add({
-      'clubs': [clubRef, ...bots],
+      'clubs': [...bots],
       'clubs_count': 10,
       'matches': matchesByRound,
     });

@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
+import 'package:pocket_eleven/firebase/firebase_league.dart';
 import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 
@@ -115,18 +118,73 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
           return;
         }
 
-        await AuthServices.signupUser(
-          emailController.text,
-          passwordController.text,
-          usernameController.text,
-          clubnameController.text,
-          context,
-        );
+        String email = emailController.text;
+        String password = passwordController.text;
+        String username = usernameController.text;
+        String clubName = clubnameController.text;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        try {
+          await AuthServices.signupUser(
+            email,
+            password,
+            username,
+            clubName,
+            context,
+          );
+
+          DocumentReference userRef = FirebaseFirestore.instance
+              .collection('users')
+              .doc(FirebaseAuth.instance.currentUser!.uid);
+
+          DocumentSnapshot? availableLeague =
+              await LeagueFunctions.findAvailableLeagueWithBot();
+
+          if (availableLeague != null) {
+            var leagueData = availableLeague.data() as Map<String, dynamic>;
+            var clubs = List<DocumentReference>.from(leagueData['clubs']);
+
+            DocumentReference? botToReplace;
+            for (var club in clubs) {
+              if (club.id.startsWith('Bot_')) {
+                botToReplace = club;
+                break;
+              }
+            }
+
+            if (botToReplace != null) {
+              clubs[clubs.indexOf(botToReplace)] = userRef;
+
+              await availableLeague.reference.update({'clubs': clubs});
+
+              await LeagueFunctions.replaceBotInMatches(
+                  availableLeague, botToReplace.id, userRef.id);
+
+              await userRef.update({'leagueRef': availableLeague.reference});
+
+              debugPrint(
+                  "Replaced bot ${botToReplace.id} with ${userRef.id} in league ${availableLeague.id}");
+            }
+          } else {
+            String newLeagueId =
+                await LeagueFunctions.createNewLeagueWithBots(userRef);
+            debugPrint("Created new league with ID: $newLeagueId");
+
+            DocumentReference newLeagueRef = FirebaseFirestore.instance
+                .collection('leagues')
+                .doc(newLeagueId);
+            await userRef.update({'leagueRef': newLeagueRef});
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } catch (e) {
+          debugPrint('Error during signup process: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error during signup')),
+          );
+        }
       },
       screenWidth: screenWidth,
       screenHeight: screenHeight,
