@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -163,8 +164,11 @@ class _TrainingViewState extends State<TrainingView> {
                   ),
                   SizedBox(height: screenHeight * 0.04),
                   isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(),
+                      ? Center(
+                          child: LoadingAnimationWidget.waveDots(
+                            color: AppColors.textEnabledColor,
+                            size: 50,
+                          ),
                         )
                       : Expanded(
                           child: ListView.builder(

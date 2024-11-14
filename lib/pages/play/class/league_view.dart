@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pocket_eleven/pages/play/widget/league_service.dart';
@@ -28,7 +29,12 @@ class LeagueView extends StatelessWidget {
           future: LeagueService.getLeagueStandings(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(
+                child: LoadingAnimationWidget.waveDots(
+                  color: AppColors.textEnabledColor,
+                  size: 50,
+                ),
+              );
             } else if (snapshot.hasError) {
               return Center(
                 child: Text(
@@ -48,7 +54,12 @@ class LeagueView extends StatelessWidget {
               future: LeagueService.fetchClubNames(standings.keys),
               builder: (context, namesSnapshot) {
                 if (namesSnapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: LoadingAnimationWidget.waveDots(
+                      color: AppColors.textEnabledColor,
+                      size: 50,
+                    ),
+                  );
                 } else if (namesSnapshot.hasError) {
                   return Center(
                     child: Text(

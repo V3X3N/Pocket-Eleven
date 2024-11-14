@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/components/match_tile_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
@@ -83,7 +84,12 @@ class MatchesContainer extends StatelessWidget {
         future: _getUpcomingUserMatches(),
         builder: (context, matchSnapshot) {
           if (!matchSnapshot.hasData) {
-            return const CircularProgressIndicator();
+            return Center(
+              child: LoadingAnimationWidget.waveDots(
+                color: AppColors.textEnabledColor,
+                size: 50,
+              ),
+            );
           }
 
           var userMatches = matchSnapshot.data!;
@@ -119,7 +125,12 @@ class MatchesContainer extends StatelessWidget {
                         future: _resolveClubName(opponentRef),
                         builder: (context, opponentSnapshot) {
                           if (!opponentSnapshot.hasData) {
-                            return const CircularProgressIndicator();
+                            return Center(
+                              child: LoadingAnimationWidget.waveDots(
+                                color: AppColors.textEnabledColor,
+                                size: 50,
+                              ),
+                            );
                           }
 
                           return Column(
