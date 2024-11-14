@@ -28,11 +28,22 @@ class LeagueFunctions {
 
     Map<String, dynamic> matchesByRound = generateInitialMatches(bots);
 
+    Map<String, dynamic> standings = {
+      for (var bot in bots)
+        bot.id: {
+          'points': 0,
+          'matchesPlayed': 0,
+          'goalsScored': 0,
+          'goalsConceded': 0,
+        }
+    };
+
     DocumentReference leagueRef =
         await FirebaseFirestore.instance.collection('leagues').add({
       'clubs': bots,
       'clubs_count': 10,
       'matches': matchesByRound,
+      'standings': standings,
     });
 
     return leagueRef.id;
@@ -112,5 +123,35 @@ class LeagueFunctions {
 
     await leagueSnapshot.reference.update({'matches': matches});
     debugPrint("Replaced bot $botId with $clubId in all matches.");
+
+    await replaceBotInStandings(leagueSnapshot.reference, botId, clubId);
+  }
+
+  static Future<void> replaceBotInStandings(
+      DocumentReference leagueRef, String botId, String userId) async {
+    try {
+      DocumentSnapshot leagueDoc = await leagueRef.get();
+      if (!leagueDoc.exists) {
+        debugPrint("League document not found.");
+        return;
+      }
+
+      Map<String, dynamic> leagueData =
+          leagueDoc.data() as Map<String, dynamic>;
+
+      Map<String, dynamic> standings = leagueData['standings'] ?? {};
+
+      if (standings.containsKey(botId)) {
+        standings[userId] = standings[botId];
+        standings.remove(botId);
+      } else {
+        debugPrint("Bot ID not found in standings.");
+      }
+
+      await leagueRef.update({'standings': standings});
+      debugPrint("Replaced bot $botId with user $userId in standings.");
+    } catch (e) {
+      debugPrint("Error replacing bot in standings: $e");
+    }
   }
 }
