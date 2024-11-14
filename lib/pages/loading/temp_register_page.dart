@@ -166,7 +166,7 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
             }
           } else {
             String newLeagueId =
-                await LeagueFunctions.createNewLeagueWithBots(userRef);
+                await LeagueFunctions.createNewLeagueWithBots();
             debugPrint("Created new league with ID: $newLeagueId");
 
             DocumentReference newLeagueRef = FirebaseFirestore.instance
