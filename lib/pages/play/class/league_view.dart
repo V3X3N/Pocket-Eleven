@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pocket_eleven/pages/play/widget/league_service.dart';
+import 'package:pocket_eleven/pages/play/widget/standings_list.dart';
 
 class LeagueView extends StatelessWidget {
   const LeagueView(
@@ -10,23 +13,61 @@ class LeagueView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(screenWidth * 0.04),
-      decoration: BoxDecoration(
-        color: AppColors.hoverColor,
-        border: Border.all(color: AppColors.borderColor, width: 1),
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      width: screenWidth,
-      height: screenHeight,
-      child: const Center(
-        child: Text(
-          // TODO: Implement league data from firestore
-          'Standings Container',
-          style: TextStyle(
-            color: AppColors.textEnabledColor,
-            fontSize: 18,
-          ),
+    return Scaffold(
+      backgroundColor: AppColors.primaryColor,
+      body: Container(
+        margin: EdgeInsets.all(screenWidth * 0.04),
+        decoration: BoxDecoration(
+          color: AppColors.hoverColor,
+          border: Border.all(color: AppColors.borderColor, width: 1),
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        width: screenWidth,
+        height: screenHeight,
+        child: FutureBuilder<DocumentSnapshot>(
+          future: LeagueService.getLeagueStandings(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            } else if (!snapshot.hasData || !(snapshot.data!.exists)) {
+              return const Center(child: Text('No league standings found.'));
+            }
+
+            Map<String, dynamic> standings =
+                (snapshot.data!.data() as Map<String, dynamic>)['standings'] ??
+                    {};
+
+            return FutureBuilder<Map<String, String>>(
+              future: LeagueService.fetchClubNames(standings.keys),
+              builder: (context, namesSnapshot) {
+                if (namesSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (namesSnapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error: ${namesSnapshot.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                final clubNames = namesSnapshot.data ?? {};
+                return StandingsList(
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  standings: standings,
+                  clubNames: clubNames,
+                );
+              },
+            );
+          },
         ),
       ),
     );
