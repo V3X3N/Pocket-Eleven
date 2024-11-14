@@ -62,8 +62,7 @@ class FirebaseFunctions {
           debugPrint("Bot for replacement not found.");
         }
       } else {
-        String newLeagueId =
-            await LeagueFunctions.createNewLeagueWithBots(userRef);
+        String newLeagueId = await LeagueFunctions.createNewLeagueWithBots();
         debugPrint("New league created with ID: $newLeagueId");
 
         DocumentReference newLeagueRef =

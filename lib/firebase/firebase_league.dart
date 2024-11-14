@@ -19,19 +19,18 @@ class LeagueFunctions {
     return null;
   }
 
-  static Future<String> createNewLeagueWithBots(
-      DocumentReference clubRef) async {
+  static Future<String> createNewLeagueWithBots() async {
     List<DocumentReference> bots = List.generate(
-        9,
+        10,
         (index) => FirebaseFirestore.instance
             .collection('bots')
             .doc('Bot_${index + 1}'));
 
-    Map<String, dynamic> matchesByRound = generateInitialMatches([...bots]);
+    Map<String, dynamic> matchesByRound = generateInitialMatches(bots);
 
     DocumentReference leagueRef =
         await FirebaseFirestore.instance.collection('leagues').add({
-      'clubs': [...bots],
+      'clubs': bots,
       'clubs_count': 10,
       'matches': matchesByRound,
     });
@@ -42,9 +41,6 @@ class LeagueFunctions {
   static Map<String, dynamic> generateInitialMatches(
       List<DocumentReference> clubs) {
     Map<String, dynamic> matchesByRound = {};
-    if (clubs.length % 2 != 0) {
-      clubs.add(FirebaseFirestore.instance.collection('bots').doc('BYE'));
-    }
 
     int numTeams = clubs.length;
     int numRounds = numTeams - 1;

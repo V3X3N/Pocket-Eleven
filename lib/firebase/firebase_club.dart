@@ -66,8 +66,7 @@ class ClubFunctions {
           debugPrint("No bot found to replace.");
         }
       } else {
-        String newLeagueId =
-            await LeagueFunctions.createNewLeagueWithBots(userRef);
+        String newLeagueId = await LeagueFunctions.createNewLeagueWithBots();
         debugPrint("Created new league with ID: $newLeagueId");
 
         DocumentReference newLeagueRef =
