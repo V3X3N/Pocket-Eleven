@@ -25,10 +25,8 @@ class MatchResultProcessor {
         return;
       }
 
-      String clubName = userDoc.get('clubName');
       DocumentReference leagueRef = userDoc.get('leagueRef');
 
-      debugPrint("Club Name: $clubName");
       debugPrint("League Reference: $leagueRef");
 
       DocumentSnapshot leagueDoc = await leagueRef.get();
@@ -105,6 +103,14 @@ class MatchResultProcessor {
             });
 
             debugPrint("Updated match result for Round: $roundKey");
+
+            await updateStandings(
+              leagueRef,
+              club1Ref.id,
+              club2Ref.id,
+              match['club1goals'],
+              match['club2goals'],
+            );
           }
         }
       });
@@ -147,5 +153,51 @@ class MatchResultProcessor {
     }
 
     return totalOvr;
+  }
+
+  Future<void> updateStandings(DocumentReference leagueRef, String club1Id,
+      String club2Id, int club1Goals, int club2Goals) async {
+    try {
+      DocumentSnapshot leagueDoc = await leagueRef.get();
+
+      Map<String, dynamic> standings =
+          (leagueDoc.data() as Map<String, dynamic>?)?['standings'] ?? {};
+
+      standings[club1Id] ??= {
+        'points': 0,
+        'matchesPlayed': 0,
+        'goalsScored': 0,
+        'goalsConceded': 0
+      };
+
+      standings[club2Id] ??= {
+        'points': 0,
+        'matchesPlayed': 0,
+        'goalsScored': 0,
+        'goalsConceded': 0
+      };
+
+      standings[club1Id]['matchesPlayed'] += 1;
+      standings[club1Id]['goalsScored'] += club1Goals;
+      standings[club1Id]['goalsConceded'] += club2Goals;
+
+      standings[club2Id]['matchesPlayed'] += 1;
+      standings[club2Id]['goalsScored'] += club2Goals;
+      standings[club2Id]['goalsConceded'] += club1Goals;
+
+      if (club1Goals > club2Goals) {
+        standings[club1Id]['points'] += 3;
+      } else if (club1Goals < club2Goals) {
+        standings[club2Id]['points'] += 3;
+      } else {
+        standings[club1Id]['points'] += 1;
+        standings[club2Id]['points'] += 1;
+      }
+
+      await leagueRef.update({'standings': standings});
+      debugPrint("Standings updated successfully.");
+    } catch (e) {
+      debugPrint("Error updating standings: $e");
+    }
   }
 }
