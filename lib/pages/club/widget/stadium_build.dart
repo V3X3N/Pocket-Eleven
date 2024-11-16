@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_confirm_dialog.dart';
 import 'package:pocket_eleven/pages/club/widget/stadium_painter.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
 class StadiumBuild extends StatefulWidget {
   const StadiumBuild({super.key});
@@ -105,7 +105,7 @@ class _StadiumBuildState extends State<StadiumBuild> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return CustomConfirmDialog(
+        return StadiumConfirmDialog(
           title: 'Upgrade Sector $index',
           message: 'Current Level: $currentLevel. Do you want to upgrade?',
           onConfirm: () async {
