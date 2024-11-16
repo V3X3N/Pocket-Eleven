@@ -26,7 +26,6 @@ class MatchResultProcessor {
       }
 
       DocumentReference leagueRef = userDoc.get('leagueRef');
-
       debugPrint("League Reference: $leagueRef");
 
       DocumentSnapshot leagueDoc = await leagueRef.get();
@@ -59,11 +58,16 @@ class MatchResultProcessor {
             debugPrint("Club 2 ID: ${club2Ref.id}");
             debugPrint("Match Time: $matchTime");
 
-            bool club1IsUser = club1Ref.path.startsWith('users/');
-            bool club2IsUser = club2Ref.path.startsWith('users/');
+            bool club1IsUser = club1Ref.path.startsWith('users/') &&
+                club1Ref.id == currentUser.uid;
+            bool club2IsUser = club2Ref.path.startsWith('users/') &&
+                club2Ref.id == currentUser.uid;
 
-            if (club1IsUser && club2IsUser) {
-              debugPrint("Both clubs are users. Fetching formations...");
+            bool userInvolvedInMatch = club1IsUser || club2IsUser;
+
+            if (userInvolvedInMatch) {
+              debugPrint(
+                  "User's club is involved in this match. Fetching formations...");
 
               DocumentSnapshot club1Doc = await club1Ref.get();
               DocumentSnapshot club2Doc = await club2Ref.get();
@@ -91,6 +95,39 @@ class MatchResultProcessor {
                 } else {
                   match['club1goals'] = 1;
                   match['club2goals'] = 1;
+                }
+
+                Map<String, dynamic>? sectorLevel =
+                    (userDoc.data() as Map<String, dynamic>?)?['sectorLevel'];
+                if (sectorLevel != null) {
+                  int totalSectorValue = 0;
+                  debugPrint("Sector Level data: $sectorLevel");
+                  sectorLevel.forEach((key, value) {
+                    if (value is int) {
+                      totalSectorValue += value;
+                    }
+                  });
+
+                  debugPrint("Total sector level value: $totalSectorValue");
+
+                  int matchRevenue = totalSectorValue * 1000 * 25;
+                  debugPrint("Match revenue: $matchRevenue");
+
+                  int currentMoney = userDoc.get('money') ?? 0;
+                  int updatedMoney = currentMoney + matchRevenue;
+
+                  debugPrint("Updated money: $updatedMoney");
+
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userID)
+                      .update({
+                    'money': updatedMoney,
+                  });
+
+                  debugPrint("User money updated successfully.");
+                } else {
+                  debugPrint("'sectorLevel' not found in user document.");
                 }
               }
             } else {
