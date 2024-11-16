@@ -114,7 +114,7 @@ class StadiumBuild extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
+                  color: Colors.lightGreen.shade400,
                   index: 5,
                   width: reducedCenterSquareWidth,
                   height: centerSquareHeight,

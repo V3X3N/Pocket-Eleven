@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/design/colors.dart';
 
 class LinePainter extends CustomPainter {
   final double width;
@@ -26,7 +25,7 @@ class LinePainter extends CustomPainter {
     double colorCircleCenterX = width / 2;
     double colorCircleCenterY = height / 2;
 
-    Paint colorCirclePaint = Paint()..color = AppColors.buttonColor;
+    Paint colorCirclePaint = Paint()..color = Colors.lightGreen.shade400;
 
     canvas.drawCircle(Offset(colorCircleCenterX, colorCircleCenterY),
         colorCircleRadius, colorCirclePaint);
