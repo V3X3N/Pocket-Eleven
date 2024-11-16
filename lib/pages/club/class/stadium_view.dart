@@ -10,10 +10,10 @@ class StadiumView extends StatefulWidget {
   const StadiumView({super.key});
 
   @override
-  _StadiumViewState createState() => _StadiumViewState();
+  StadiumViewState createState() => StadiumViewState();
 }
 
-class _StadiumViewState extends State<StadiumView> {
+class StadiumViewState extends State<StadiumView> {
   int level = 1;
   int upgradeCost = 100000;
   double userMoney = 0;
@@ -47,13 +47,33 @@ class _StadiumViewState extends State<StadiumView> {
     }
   }
 
-  void increaseLevel() {
+  Future<void> increaseLevel() async {
     if (userMoney >= upgradeCost) {
-      setState(() {
-        level += 1;
-        userMoney -= upgradeCost;
-        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
-      });
+      try {
+        setState(() {
+          level += 1;
+          userMoney -= upgradeCost;
+          upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        });
+
+        await StadiumFunctions.updateStadiumLevel(userId!, level);
+
+        await FirebaseFunctions.updateUserData({
+          'money': userMoney,
+        });
+
+        setState(() {});
+      } catch (e) {
+        debugPrint('Error upgrading stadium: $e');
+      }
+    } else {
+      const snackBar = SnackBar(
+        content: Text('Not enough money to upgrade the stadium.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 1),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
