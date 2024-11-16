@@ -17,8 +17,8 @@ class ClubPage extends StatefulWidget {
 
 class _ClubPageState extends State<ClubPage> {
   int _selectedIndex = 0;
-  String? clubName; // Zmienna do przechowywania nazwy klubu
-  Map<String, int>? sectorLevel; // Zmienna do przechowywania poziomów sektorów
+  String? clubName;
+  Map<String, int>? sectorLevel;
 
   @override
   void initState() {
@@ -26,34 +26,27 @@ class _ClubPageState extends State<ClubPage> {
     _getClubName();
   }
 
-  // Funkcja do pobierania userID, nazwy klubu i poziomów sektorów z Firestore
   Future<void> _getClubName() async {
     try {
-      User? currentUser =
-          FirebaseAuth.instance.currentUser; // Pobieramy użytkownika
+      User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        String userId = currentUser.uid; // Pobieramy userID
+        String userId = currentUser.uid;
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         DocumentReference userDocRef =
             firestore.collection('users').doc(userId);
 
-        // Sprawdzamy, czy dokument istnieje
         DocumentSnapshot userDoc = await userDocRef.get();
 
         if (userDoc.exists) {
-          // Pobieramy dane dokumentu jako Map<String, dynamic>
           Map<String, dynamic> userData =
               userDoc.data() as Map<String, dynamic>;
 
-          // Pobieramy nazwę klubu
           setState(() {
             clubName = userData['clubName'];
           });
-          debugPrint('Club name: $clubName'); // Debuguj nazwę klubu
+          debugPrint('Club name: $clubName');
 
-          // Sprawdzamy, czy pole 'sectorLevel' istnieje
           if (!userData.containsKey('sectorLevel')) {
-            // Jeśli nie ma pola 'sectorLevel', tworzymy domyślną mapę poziomów
             Map<String, int> defaultSectorLevels = {
               'sector1': 1,
               'sector2': 1,
@@ -66,19 +59,16 @@ class _ClubPageState extends State<ClubPage> {
               'sector9': 1,
             };
 
-            // Ustawiamy domyślne poziomy w Firestore
             await userDocRef.update({
               'sectorLevel': defaultSectorLevels,
             });
 
-            // Ustawiamy stan w aplikacji
             setState(() {
               sectorLevel = defaultSectorLevels;
             });
 
             debugPrint('Sector levels created with default values');
           } else {
-            // Jeśli pole 'sectorLevel' istnieje, pobieramy je
             setState(() {
               sectorLevel = Map<String, int>.from(userData['sectorLevel']);
             });
