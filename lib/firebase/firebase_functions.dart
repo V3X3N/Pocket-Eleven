@@ -20,7 +20,6 @@ class FirebaseFunctions {
         'clubName': clubName,
         'money': 3000000,
         'trainingLevel': 1,
-        'medicalLevel': 1,
         'youthLevel': 1,
         'stadiumLevel': 1,
         'scoutingLevel': 1,

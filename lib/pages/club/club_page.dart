@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/club/class/medical_view.dart';
 import 'package:pocket_eleven/pages/club/class/stadium_view.dart';
 import 'package:pocket_eleven/pages/club/class/training_view.dart';
 import 'package:pocket_eleven/pages/club/class/youth_view.dart';
@@ -37,62 +36,45 @@ class _ClubPageState extends State<ClubPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(
+                horizontal: screenWidth * 0.04,
                 vertical: screenHeight * 0.02,
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    OptionButton(
-                      index: 0,
-                      text: 'Stadium',
-                      onTap: () => _onOptionSelected(0),
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      selectedIndex: _selectedIndex,
-                    ),
-                    SizedBox(width: screenWidth * 0.04),
-                    OptionButton(
-                      index: 1,
-                      text: 'Training',
-                      onTap: () => _onOptionSelected(1),
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      selectedIndex: _selectedIndex,
-                    ),
-                    SizedBox(width: screenWidth * 0.04),
-                    OptionButton(
-                      index: 2,
-                      text: 'Medical',
-                      onTap: () => _onOptionSelected(2),
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      selectedIndex: _selectedIndex,
-                    ),
-                    SizedBox(width: screenWidth * 0.04),
-                    OptionButton(
-                      index: 3,
-                      text: 'Youth',
-                      onTap: () => _onOptionSelected(3),
-                      screenWidth: screenWidth,
-                      screenHeight: screenHeight,
-                      selectedIndex: _selectedIndex,
-                    ),
-                  ],
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  OptionButton(
+                    index: 0,
+                    text: 'Stadium',
+                    onTap: () => _onOptionSelected(0),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
+                  ),
+                  SizedBox(width: screenWidth * 0.04),
+                  OptionButton(
+                    index: 1,
+                    text: 'Training',
+                    onTap: () => _onOptionSelected(1),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
+                  ),
+                  SizedBox(width: screenWidth * 0.04),
+                  OptionButton(
+                    index: 2,
+                    text: 'Youth',
+                    onTap: () => _onOptionSelected(2),
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    selectedIndex: _selectedIndex,
+                  ),
+                ],
               ),
             ),
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: const [
-                  StadiumView(),
-                  TrainingView(),
-                  MedicalView(),
-                  YouthView(),
-                ],
+                children: const [StadiumView(), TrainingView(), YouthView()],
               ),
             ),
           ],
