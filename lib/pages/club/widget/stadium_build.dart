@@ -15,6 +15,7 @@ class StadiumBuild extends StatefulWidget {
 class _StadiumBuildState extends State<StadiumBuild> {
   Map<String, int>? sectorLevel;
   int stadiumLevel = 0;
+  double userMoney = 0;
 
   @override
   void initState() {
@@ -44,8 +45,12 @@ class _StadiumBuildState extends State<StadiumBuild> {
             stadiumLevel = userData['stadiumLevel'];
           });
           debugPrint('Stadium level fetched: $stadiumLevel');
-        } else {
-          debugPrint('stadiumLevel field not found in user document.');
+        }
+
+        if (userData.containsKey('money')) {
+          setState(() {
+            userMoney = userData['money'].toDouble();
+          });
         }
       } else {
         debugPrint('User document not found.');
@@ -72,6 +77,15 @@ class _StadiumBuildState extends State<StadiumBuild> {
       return;
     }
 
+    // Calculate the cost of upgrading the sector
+    int upgradeCost = 75000 * (currentLevel + 1) + 75000;
+
+    // Check if the user has enough money
+    if (userMoney < upgradeCost) {
+      _showSnackBar('Not enough money to upgrade sector $index.');
+      return;
+    }
+
     try {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
 
@@ -85,6 +99,7 @@ class _StadiumBuildState extends State<StadiumBuild> {
         int newLevel = currentLevel + 1;
         transaction.update(userDocRef, {
           'sectorLevel.$sectorKey': newLevel,
+          'money': userMoney - upgradeCost, // Deduct the upgrade cost
         });
 
         debugPrint('Sector $index upgraded to level $newLevel');
@@ -102,12 +117,16 @@ class _StadiumBuildState extends State<StadiumBuild> {
 
     debugPrint('Sector $index clicked. Level from Firestore: $currentLevel');
 
+    // Calculate the upgrade cost for this sector
+    int upgradeCost = 75000 * (currentLevel + 1) + 75000;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return StadiumConfirmDialog(
           title: 'Upgrade Sector $index',
-          message: 'Current Level: $currentLevel. Do you want to upgrade?',
+          message:
+              'Current Level: $currentLevel\nUpgrade Cost: \$${upgradeCost.toString()}.\nDo you want to upgrade?',
           onConfirm: () async {
             await _updateSectorLevel(index);
           },
