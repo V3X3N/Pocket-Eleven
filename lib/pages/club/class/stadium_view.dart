@@ -1,19 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
+import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/firebase/firebase_stadium.dart';
-import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/pages/club/widget/stadium_build.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_info.dart';
 
 class StadiumView extends StatefulWidget {
-  const StadiumView({
-    super.key,
-  });
+  const StadiumView({super.key});
 
   @override
-  State<StadiumView> createState() => _StadiumViewState();
+  _StadiumViewState createState() => _StadiumViewState();
 }
 
 class _StadiumViewState extends State<StadiumView> {
@@ -22,6 +19,7 @@ class _StadiumViewState extends State<StadiumView> {
   double userMoney = 0;
   String? userId;
   bool isLoading = true;
+  Map<String, int>? sectorLevel;
 
   @override
   void initState() {
@@ -37,6 +35,11 @@ class _StadiumViewState extends State<StadiumView> {
         level = await StadiumFunctions.getStadiumLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
+
+        sectorLevel = userData.containsKey('sectorLevel')
+            ? Map<String, int>.from(userData['sectorLevel'])
+            : null;
+
         setState(() {});
       }
     } catch (e) {
@@ -44,47 +47,13 @@ class _StadiumViewState extends State<StadiumView> {
     }
   }
 
-  Future<void> increaseLevel() async {
-    if (userId != null) {
-      try {
-        DocumentSnapshot userDoc =
-            await FirebaseFunctions.getUserDocument(userId!);
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        double userMoney = (userData['money'] ?? 0).toDouble();
-        int currentLevel = userData['stadiumLevel'] ?? 1;
-
-        int currentUpgradeCost =
-            FirebaseFunctions.calculateUpgradeCost(currentLevel);
-
-        if (userMoney >= currentUpgradeCost) {
-          int newLevel = currentLevel + 1;
-
-          await StadiumFunctions.updateStadiumLevel(userId!, newLevel);
-
-          await FirebaseFunctions.updateUserData({
-            'money': userMoney - currentUpgradeCost,
-          });
-
-          if (mounted) {
-            setState(() {
-              level = newLevel;
-              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
-            });
-          }
-        } else {
-          const snackBar = SnackBar(
-            content: Text('Not enough money to upgrade the stadium.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 1),
-          );
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
-        }
-      } catch (e) {
-        debugPrint('Error upgrading stadium: $e');
-      }
+  void increaseLevel() {
+    if (userMoney >= upgradeCost) {
+      setState(() {
+        level += 1;
+        userMoney -= upgradeCost;
+        upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+      });
     }
   }
 
@@ -114,12 +83,13 @@ class _StadiumViewState extends State<StadiumView> {
                           Border.all(color: AppColors.borderColor, width: 1),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    child: BuildInfo(
+                    child: StadiumInfo(
                       headerText: 'Stadium',
                       level: level,
                       upgradeCost: upgradeCost,
                       isUpgradeEnabled: userMoney >= upgradeCost,
                       onUpgradePressed: increaseLevel,
+                      sectorLevel: sectorLevel,
                     ),
                   ),
                   const SizedBox(height: 20.0),
