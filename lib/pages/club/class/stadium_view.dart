@@ -1,10 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_stadium.dart';
 import 'package:pocket_eleven/pages/club/widget/build_info.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_build.dart';
 
 class StadiumView extends StatefulWidget {
   const StadiumView({
@@ -20,6 +21,7 @@ class _StadiumViewState extends State<StadiumView> {
   int upgradeCost = 100000;
   double userMoney = 0;
   String? userId;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -94,49 +96,34 @@ class _StadiumViewState extends State<StadiumView> {
     return Scaffold(
       body: Column(
         children: [
-          AspectRatio(
-            aspectRatio: 3 / 2,
-            child: Container(),
-          ),
           Expanded(
             child: Container(
               color: AppColors.primaryColor,
               padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: screenHeight * 0.02),
+                horizontal: screenWidth * 0.05,
+                vertical: screenHeight * 0.02,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BuildInfo(
-                    headerText: 'Stadium',
-                    level: level,
-                    upgradeCost: upgradeCost,
-                    isUpgradeEnabled: userMoney >= upgradeCost,
-                    onUpgradePressed: increaseLevel,
-                  ),
-                  SizedBox(height: screenHeight * 0.04),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textEnabledColor,
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: BuildInfo(
+                      headerText: 'Stadium',
+                      level: level,
+                      upgradeCost: upgradeCost,
+                      isUpgradeEnabled: userMoney >= upgradeCost,
+                      onUpgradePressed: increaseLevel,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
-                  const Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        'The club stadium is the heart of our community, where fans gather '
-                        'to cheer for their favorite teams. With a capacity of 50,000 seats, '
-                        'it has hosted numerous memorable matches and events.',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: AppColors.textEnabledColor,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20.0),
+                  const Expanded(child: StadiumBuild()),
                 ],
               ),
             ),
