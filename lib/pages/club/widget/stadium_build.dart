@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_painter.dart';
 
 class StadiumBuild extends StatelessWidget {
   const StadiumBuild({super.key});
@@ -24,7 +25,7 @@ class StadiumBuild extends StatelessWidget {
           color: color,
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(
-            color: AppColors.borderColor,
+            color: index == 5 ? Colors.white : AppColors.borderColor,
             width: 2.0,
           ),
           boxShadow: [
@@ -35,6 +36,12 @@ class StadiumBuild extends StatelessWidget {
             ),
           ],
         ),
+        child: index == 5
+            ? CustomPaint(
+                painter: LinePainter(width: width, height: height),
+                child: Container(),
+              )
+            : null,
       ),
     );
   }
