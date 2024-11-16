@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/option_button.dart';
@@ -15,6 +17,84 @@ class ClubPage extends StatefulWidget {
 
 class _ClubPageState extends State<ClubPage> {
   int _selectedIndex = 0;
+  String? clubName; // Zmienna do przechowywania nazwy klubu
+  Map<String, int>? sectorLevel; // Zmienna do przechowywania poziomów sektorów
+
+  @override
+  void initState() {
+    super.initState();
+    _getClubName();
+  }
+
+  // Funkcja do pobierania userID, nazwy klubu i poziomów sektorów z Firestore
+  Future<void> _getClubName() async {
+    try {
+      User? currentUser =
+          FirebaseAuth.instance.currentUser; // Pobieramy użytkownika
+      if (currentUser != null) {
+        String userId = currentUser.uid; // Pobieramy userID
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userId);
+
+        // Sprawdzamy, czy dokument istnieje
+        DocumentSnapshot userDoc = await userDocRef.get();
+
+        if (userDoc.exists) {
+          // Pobieramy dane dokumentu jako Map<String, dynamic>
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
+
+          // Pobieramy nazwę klubu
+          setState(() {
+            clubName = userData['clubName'];
+          });
+          debugPrint('Club name: $clubName'); // Debuguj nazwę klubu
+
+          // Sprawdzamy, czy pole 'sectorLevel' istnieje
+          if (!userData.containsKey('sectorLevel')) {
+            // Jeśli nie ma pola 'sectorLevel', tworzymy domyślną mapę poziomów
+            Map<String, int> defaultSectorLevels = {
+              'sector1': 1,
+              'sector2': 1,
+              'sector3': 1,
+              'sector4': 1,
+              'sector5': 1,
+              'sector6': 1,
+              'sector7': 1,
+              'sector8': 1,
+              'sector9': 1,
+            };
+
+            // Ustawiamy domyślne poziomy w Firestore
+            await userDocRef.update({
+              'sectorLevel': defaultSectorLevels,
+            });
+
+            // Ustawiamy stan w aplikacji
+            setState(() {
+              sectorLevel = defaultSectorLevels;
+            });
+
+            debugPrint('Sector levels created with default values');
+          } else {
+            // Jeśli pole 'sectorLevel' istnieje, pobieramy je
+            setState(() {
+              sectorLevel = Map<String, int>.from(userData['sectorLevel']);
+            });
+
+            debugPrint('Sector levels: $sectorLevel');
+          }
+        } else {
+          debugPrint('User document not found');
+        }
+      } else {
+        debugPrint('No user is logged in');
+      }
+    } catch (e) {
+      debugPrint('Error fetching user data: $e');
+    }
+  }
 
   void _onOptionSelected(int index) {
     setState(() {

@@ -1,12 +1,132 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/club/widget/stadium_painter.dart';
+import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
-class StadiumBuild extends StatelessWidget {
+class StadiumBuild extends StatefulWidget {
   const StadiumBuild({super.key});
 
-  void _onRectangleTapped(int index) {
-    debugPrint('Sector $index clicked.');
+  @override
+  _StadiumBuildState createState() => _StadiumBuildState();
+}
+
+class _StadiumBuildState extends State<StadiumBuild> {
+  Map<String, int>? sectorLevel;
+  int stadiumLevel = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _getStadiumData();
+  }
+
+  Future<void> _getStadiumData() async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentReference userDocRef = firestore.collection('users').doc(userId);
+
+      DocumentSnapshot userDoc = await userDocRef.get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        if (userData.containsKey('sectorLevel')) {
+          setState(() {
+            sectorLevel = Map<String, int>.from(userData['sectorLevel']);
+          });
+        }
+
+        if (userData.containsKey('stadiumLevel')) {
+          setState(() {
+            stadiumLevel = userData['stadiumLevel'];
+          });
+          debugPrint('Stadium level fetched: $stadiumLevel');
+        } else {
+          debugPrint('stadiumLevel field not found in user document.');
+        }
+      } else {
+        debugPrint('User document not found.');
+      }
+    } catch (e) {
+      debugPrint('Error fetching stadium data: $e');
+    }
+  }
+
+  Future<void> _updateSectorLevel(int index) async {
+    String sectorKey = 'sector$index';
+
+    if (sectorLevel == null || stadiumLevel == 0) {
+      debugPrint('Sector or stadium data not loaded.');
+      return;
+    }
+
+    int currentLevel = sectorLevel?[sectorKey] ?? 0;
+
+    if (currentLevel >= stadiumLevel) {
+      debugPrint(
+          'Cannot upgrade. Sector $index level ($currentLevel) has reached stadium level ($stadiumLevel).');
+      _showSnackBar('Sector level cannot exceed the stadium level.');
+      return;
+    }
+
+    try {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
+
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+      DocumentReference userDocRef = firestore.collection('users').doc(userId);
+
+      await firestore.runTransaction((transaction) async {
+        DocumentSnapshot userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists) throw Exception("User document does not exist!");
+
+        int newLevel = currentLevel + 1;
+        transaction.update(userDocRef, {
+          'sectorLevel.$sectorKey': newLevel,
+        });
+
+        debugPrint('Sector $index upgraded to level $newLevel');
+      });
+
+      await _getStadiumData();
+    } catch (e) {
+      debugPrint('Error updating sector $index: $e');
+    }
+  }
+
+  void _onRectangleTapped(int index) async {
+    String sectorKey = 'sector$index';
+    int currentLevel = sectorLevel?[sectorKey] ?? 0;
+
+    debugPrint('Sector $index clicked. Level from Firestore: $currentLevel');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomConfirmDialog(
+          title: 'Upgrade Sector $index',
+          message: 'Current Level: $currentLevel. Do you want to upgrade?',
+          onConfirm: () async {
+            await _updateSectorLevel(index);
+          },
+          onCancel: () {
+            debugPrint('Upgrade cancelled for sector $index');
+          },
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Widget _buildInteractiveRectangle({
