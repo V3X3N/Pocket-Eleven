@@ -48,6 +48,17 @@ class StadiumViewState extends State<StadiumView> {
   }
 
   Future<void> increaseLevel() async {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Stadium is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
     if (userMoney >= upgradeCost) {
       try {
         setState(() {

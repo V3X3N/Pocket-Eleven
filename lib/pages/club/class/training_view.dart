@@ -12,9 +12,7 @@ import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
 
 class TrainingView extends StatefulWidget {
-  const TrainingView({
-    super.key,
-  });
+  const TrainingView({super.key});
 
   @override
   State<TrainingView> createState() => _TrainingViewState();
@@ -28,7 +26,6 @@ class _TrainingViewState extends State<TrainingView> {
   List<Player> players = [];
   bool isLoading = true;
   int basePlayerTrainingCost = 10000;
-
   double reductionCost = 0.0;
 
   @override
@@ -83,23 +80,38 @@ class _TrainingViewState extends State<TrainingView> {
   Future<void> trainPlayer(Player player, String paramName) async {
     int trainingCost = max(basePlayerTrainingCost - 500 * (level - 1), 0);
 
+    int currentParamValue;
+    switch (paramName) {
+      case 'param1':
+        currentParamValue = player.param1;
+        break;
+      case 'param2':
+        currentParamValue = player.param2;
+        break;
+      case 'param3':
+        currentParamValue = player.param3;
+        break;
+      case 'param4':
+        currentParamValue = player.param4;
+        break;
+      default:
+        return;
+    }
+
     if (userMoney >= trainingCost) {
-      int newValue;
+      int newValue = min(currentParamValue + 1, 99);
+
       switch (paramName) {
         case 'param1':
-          newValue = min(player.param1 + 1, 99);
           player.param1 = newValue;
           break;
         case 'param2':
-          newValue = min(player.param2 + 1, 99);
           player.param2 = newValue;
           break;
         case 'param3':
-          newValue = min(player.param3 + 1, 99);
           player.param3 = newValue;
           break;
         case 'param4':
-          newValue = min(player.param4 + 1, 99);
           player.param4 = newValue;
           break;
       }
@@ -252,6 +264,19 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> increaseLevel() async {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Training is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      return;
+    }
+
     if (userId != null) {
       try {
         DocumentSnapshot userDoc =
@@ -315,7 +340,19 @@ class _TrainingViewState extends State<TrainingView> {
           ),
           SizedBox(height: screenWidth * 0.02),
           OptionButton(
-            onTap: () => trainPlayer(player, paramName),
+            onTap: () {
+              if (paramValue >= 99) {
+                const snackBar = SnackBar(
+                  content: Text(
+                      'This attribute is already at the maximum level (99).'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 2),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } else {
+                trainPlayer(player, paramName);
+              }
+            },
             screenWidth: screenWidth,
             screenHeight: screenHeight * 0.7,
             text: 'Train',

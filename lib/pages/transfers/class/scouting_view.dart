@@ -123,6 +123,18 @@ class _ScoutingViewState extends State<ScoutingView> {
   }
 
   Future<void> increaseLevel() async {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Scouting is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      return;
+    }
     if (userId != null) {
       try {
         DocumentSnapshot userDoc =
@@ -287,10 +299,8 @@ class _ScoutingViewState extends State<ScoutingView> {
             const SizedBox(height: 8.0),
             Text(
               'Cost: $upgradeCost',
-              style: TextStyle(
-                color: userMoney >= upgradeCost
-                    ? AppColors.green
-                    : AppColors.textEnabledColor,
+              style: const TextStyle(
+                color: AppColors.textEnabledColor,
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),

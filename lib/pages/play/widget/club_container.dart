@@ -111,7 +111,7 @@ class ClubInfoContainer extends StatelessWidget {
         future: _getNextMatch(''),
         builder: (context, matchSnapshot) {
           if (!matchSnapshot.hasData || matchSnapshot.data == null) {
-            return const Text("Brak nadchodzących meczów.");
+            return const Text("No umcoming matches.");
           }
 
           var matchData = matchSnapshot.data!;
@@ -147,7 +147,7 @@ class ClubInfoContainer extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "Najbliższy mecz: $matchTime",
+                  "Next Match: $matchTime",
                   style: const TextStyle(
                       fontSize: 16, color: AppColors.textEnabledColor),
                 ),

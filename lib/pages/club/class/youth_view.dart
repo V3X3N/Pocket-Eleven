@@ -51,6 +51,19 @@ class _YouthViewState extends State<YouthView> {
   }
 
   Future<void> increaseLevel() async {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Youth Academy is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      return;
+    }
+
     if (userId != null) {
       try {
         DocumentSnapshot userDoc =
