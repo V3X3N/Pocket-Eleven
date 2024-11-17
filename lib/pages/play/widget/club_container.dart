@@ -96,11 +96,28 @@ class ClubInfoContainer extends StatelessWidget {
     var data = doc.data() as Map<String, dynamic>?;
 
     if (clubRef.path.startsWith('users/')) {
-      return data?['clubName'] ?? 'Unknown Club';
+      return data?['avatar']?.toString() ?? '0';
     } else if (clubRef.path.startsWith('bots/')) {
-      return clubRef.id;
+      var botName = clubRef.id;
+      return botName;
     }
-    return 'Unknown';
+
+    return '0';
+  }
+
+  Future<String> _resolveClubAvatar(DocumentReference clubRef) async {
+    var doc = await clubRef.get();
+    var data = doc.data() as Map<String, dynamic>?;
+
+    String avatarValue = '0';
+
+    if (clubRef.path.startsWith('users/')) {
+      avatarValue = data?['avatar']?.toString() ?? '0';
+    } else if (clubRef.path.startsWith('bots/')) {
+      avatarValue = '0';
+    }
+
+    return avatarValue;
   }
 
   @override
@@ -111,7 +128,7 @@ class ClubInfoContainer extends StatelessWidget {
         future: _getNextMatch(''),
         builder: (context, matchSnapshot) {
           if (!matchSnapshot.hasData || matchSnapshot.data == null) {
-            return const Text("No umcoming matches.");
+            return const Text("No upcoming matches.");
           }
 
           var matchData = matchSnapshot.data!;
@@ -134,14 +151,36 @@ class ClubInfoContainer extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    ClubInfo(
-                      clubCrestPath: 'assets/crests/crest_1.png',
-                      clubName: userClubName,
+                    FutureBuilder<String>(
+                      future: _resolveClubAvatar(FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(FirebaseAuth.instance.currentUser?.uid)),
+                      builder: (context, userClubAvatarSnapshot) {
+                        if (!userClubAvatarSnapshot.hasData) {
+                          return const CircularProgressIndicator();
+                        }
+                        return ClubInfo(
+                          clubCrestPath:
+                              'assets/crests/crest_${userClubAvatarSnapshot.data}.png',
+                          clubName: userClubName,
+                        );
+                      },
                     ),
                     const Text("VS"),
-                    ClubInfo(
-                      clubCrestPath: 'assets/crests/crest_2.png',
-                      clubName: opponentName,
+                    FutureBuilder<String>(
+                      future: _resolveClubAvatar(FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(opponentName)),
+                      builder: (context, opponentClubAvatarSnapshot) {
+                        if (!opponentClubAvatarSnapshot.hasData) {
+                          return const CircularProgressIndicator();
+                        }
+                        return ClubInfo(
+                          clubCrestPath:
+                              'assets/crests/crest_${opponentClubAvatarSnapshot.data}.png',
+                          clubName: opponentName,
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/bottom_nav_bar.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-import 'package:pocket_eleven/pages/profile/profile_page.dart';
+import 'package:pocket_eleven/pages/profile/class/profile_page.dart';
 import 'tactic/tactic_page.dart';
 import 'play/play_page.dart';
 import 'club/club_page.dart';

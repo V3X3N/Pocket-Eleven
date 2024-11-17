@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -5,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
+import 'package:pocket_eleven/pages/profile/widget/avatar_selector.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,6 +19,7 @@ class ProfilePageState extends State<ProfilePage> {
   String managerName = '';
   String clubName = '';
   String email = '';
+  int avatar = 1;
   bool _loading = false;
 
   @override
@@ -34,9 +37,29 @@ class ProfilePageState extends State<ProfilePage> {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final String userId = user.uid;
-        managerName = await FirebaseFunctions.getManagerName(userId);
-        clubName = await FirebaseFunctions.getClubName(userId);
-        email = await FirebaseFunctions.getEmail(userId);
+
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
+
+        if (userDoc.exists) {
+          var userData = userDoc.data() as Map<String, dynamic>?;
+          if (userData != null && !userData.containsKey('avatar')) {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(userId)
+                .update({
+              'avatar': 1,
+            });
+          } else if (userData != null) {
+            avatar = userData['avatar'] ?? 1;
+          }
+
+          managerName = await FirebaseFunctions.getManagerName(userId);
+          clubName = await FirebaseFunctions.getClubName(userId);
+          email = await FirebaseFunctions.getEmail(userId);
+        }
       }
     } catch (error) {
       debugPrint('Error loading user data: $error');
@@ -44,6 +67,28 @@ class ProfilePageState extends State<ProfilePage> {
       setState(() {
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _updateAvatar(int newAvatarIndex) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String userId = user.uid;
+
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({
+          'avatar': newAvatarIndex,
+        });
+
+        setState(() {
+          avatar = newAvatarIndex;
+        });
+      } catch (error) {
+        debugPrint('Error updating avatar: $error');
+      }
     }
   }
 
@@ -95,6 +140,10 @@ class ProfilePageState extends State<ProfilePage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
                   color: AppColors.hoverColor,
+                  border: Border.all(
+                    width: 1,
+                    color: AppColors.borderColor,
+                  ),
                 ),
                 height: 200,
                 child: Row(
@@ -130,14 +179,32 @@ class ProfilePageState extends State<ProfilePage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          height: 90,
-          width: 90,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
-            image: const DecorationImage(
-              image: AssetImage('assets/crests/crest_1.png'),
-              fit: BoxFit.cover,
+        GestureDetector(
+          onTap: () {
+            debugPrint('Avatar container clicked!');
+            showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (BuildContext context) {
+                return AvatarSelector(
+                  updateAvatar: _updateAvatar,
+                );
+              },
+            );
+          },
+          child: Container(
+            height: 90,
+            width: 90,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              image: DecorationImage(
+                image: AssetImage('assets/crests/crest_$avatar.png'),
+                fit: BoxFit.cover,
+              ),
+              border: Border.all(
+                width: 1,
+                color: AppColors.borderColor,
+              ),
             ),
           ),
         ),
