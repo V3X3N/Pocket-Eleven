@@ -1,11 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_players.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/confirmation_dialog.dart';
 
 class TransferPlayerConfirmWidget extends StatelessWidget {
   final Player player;
@@ -30,33 +29,102 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
 
     final String userId = user.uid;
 
-    final bool canAdd = await FirebaseFunctions.canAddPlayer(userId);
-
-    if (!canAdd) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Cannot add player: club limit reached'),
-            duration: Duration(seconds: 1)),
-      );
-      return;
-    }
-
     final bool? confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return CustomConfirmDialog(
-          title: 'Confirm Selection',
-          message: 'Are you sure you want to select ${player.name}?',
-          onConfirm: () {
-            onPlayerSelected(player);
-          },
-          onCancel: () {},
+        return Dialog(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.8),
+            child: Container(
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: AppColors.hoverColor,
+                border: Border.all(color: AppColors.borderColor, width: 1),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'Confirm Selection',
+                      style: TextStyle(
+                          color: AppColors.textEnabledColor, fontSize: 18),
+                    ),
+                  ),
+                  Text(
+                    'Are you sure you want to select ${player.name}?\n'
+                    'Cost: \$${player.value}',
+                    style: const TextStyle(
+                        color: AppColors.textEnabledColor, fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel',
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(true);
+                        },
+                        child: const Text('Confirm',
+                            style:
+                                TextStyle(color: AppColors.textEnabledColor)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
 
-    if (confirmed == true) {
+    if (confirmed != true) {
+      return;
+    }
+
+    final userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    if (!userDoc.exists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User document not found')),
+      );
+      return;
+    }
+
+    final double userMoney = userDoc.data()?['money']?.toDouble() ?? 0.0;
+
+    if (userMoney >= player.value) {
+      final updatedMoney = userMoney - player.value;
+
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'money': updatedMoney,
+      });
+
+      debugPrint('Player value: \$${player.value}');
+
       await PlayerFunctions.savePlayerToFirestore(context, player);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Player ${player.name} added to your club!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Not enough money to add ${player.name}'),
+        ),
+      );
     }
   }
 

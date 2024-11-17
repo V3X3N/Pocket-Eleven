@@ -37,6 +37,20 @@ class _TransfersViewState extends State<TransfersView> {
     });
   }
 
+  void _showPlayerConfirmationDialog(Player player) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return TransferPlayerConfirmWidget(
+          player: player,
+          isSelected: _selectedPlayer == player,
+          onPlayerSelected: _onPlayerSelected,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -51,10 +65,15 @@ class _TransfersViewState extends State<TransfersView> {
       child: ListView(
         padding: EdgeInsets.all(screenWidth * 0.04),
         children: _players.map((player) {
-          return TransferPlayerConfirmWidget(
-            player: player,
-            isSelected: _selectedPlayer == player,
-            onPlayerSelected: _onPlayerSelected,
+          return GestureDetector(
+            onTap: () {
+              _showPlayerConfirmationDialog(player);
+            },
+            child: TransferPlayerConfirmWidget(
+              player: player,
+              isSelected: _selectedPlayer == player,
+              onPlayerSelected: _onPlayerSelected,
+            ),
           );
         }).toList(),
       ),
