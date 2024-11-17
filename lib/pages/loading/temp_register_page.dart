@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/auth_functions.dart';
+import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/firebase/firebase_league.dart';
 import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
@@ -108,13 +109,15 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
   Widget _registerBtn() {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+
     return OptionButton(
       index: 0,
       text: 'Sign up',
       onTap: () async {
         if (passwordController.text != confirmPasswordController.text) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Passwords do not match')));
+            const SnackBar(content: Text('Passwords do not match')),
+          );
           return;
         }
 
@@ -132,9 +135,16 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
             context,
           );
 
-          DocumentReference userRef = FirebaseFirestore.instance
-              .collection('users')
-              .doc(FirebaseAuth.instance.currentUser!.uid);
+          String userId = FirebaseAuth.instance.currentUser!.uid;
+          DocumentReference userRef =
+              FirebaseFirestore.instance.collection('users').doc(userId);
+
+          Map<String, dynamic>? userData =
+              await ClubFunctions.getUserData(userId);
+
+          if (userData != null) {
+            await ClubFunctions.initializeSectorLevels(userRef, userData);
+          }
 
           DocumentSnapshot? availableLeague =
               await LeagueFunctions.findAvailableLeagueWithBot();

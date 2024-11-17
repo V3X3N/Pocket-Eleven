@@ -96,4 +96,45 @@ class ClubFunctions {
       return '';
     }
   }
+
+  static Future<Map<String, dynamic>?> getUserData(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userDoc.exists) {
+        return userDoc.data() as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      debugPrint('Error fetching user data: $e');
+    }
+    return null;
+  }
+
+  static Future<Map<String, int>> initializeSectorLevels(
+      DocumentReference userDocRef, Map<String, dynamic> userData) async {
+    Map<String, int> defaultSectorLevels = {
+      'sector1': 0,
+      'sector2': 0,
+      'sector3': 0,
+      'sector4': 0,
+      'sector5': 0,
+      'sector6': 0,
+      'sector7': 0,
+      'sector8': 0,
+      'sector9': 0,
+    };
+
+    if (!userData.containsKey('sectorLevel')) {
+      await userDocRef.update({'sectorLevel': defaultSectorLevels});
+      debugPrint('Sector levels created with default values');
+    } else {
+      defaultSectorLevels =
+          Map<String, int>.from(userData['sectorLevel'] as Map);
+      debugPrint('Loaded sector levels: $defaultSectorLevels');
+    }
+    return defaultSectorLevels;
+  }
 }

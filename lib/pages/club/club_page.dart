@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/pages/club/class/stadium_view.dart';
 import 'package:pocket_eleven/pages/club/class/training_view.dart';
 import 'package:pocket_eleven/pages/club/class/youth_view.dart';
@@ -23,10 +24,10 @@ class _ClubPageState extends State<ClubPage> {
   @override
   void initState() {
     super.initState();
-    _getClubName();
+    _getClubData();
   }
 
-  Future<void> _getClubName() async {
+  Future<void> _getClubData() async {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
@@ -35,46 +36,19 @@ class _ClubPageState extends State<ClubPage> {
         DocumentReference userDocRef =
             firestore.collection('users').doc(userId);
 
-        DocumentSnapshot userDoc = await userDocRef.get();
+        Map<String, dynamic>? userData =
+            await ClubFunctions.getUserData(userId);
 
-        if (userDoc.exists) {
-          Map<String, dynamic> userData =
-              userDoc.data() as Map<String, dynamic>;
-
+        if (userData != null) {
           setState(() {
             clubName = userData['clubName'];
           });
           debugPrint('Club name: $clubName');
 
-          if (!userData.containsKey('sectorLevel')) {
-            Map<String, int> defaultSectorLevels = {
-              'sector1': 1,
-              'sector2': 1,
-              'sector3': 1,
-              'sector4': 1,
-              'sector5': 1,
-              'sector6': 1,
-              'sector7': 1,
-              'sector8': 1,
-              'sector9': 1,
-            };
+          sectorLevel =
+              await ClubFunctions.initializeSectorLevels(userDocRef, userData);
 
-            await userDocRef.update({
-              'sectorLevel': defaultSectorLevels,
-            });
-
-            setState(() {
-              sectorLevel = defaultSectorLevels;
-            });
-
-            debugPrint('Sector levels created with default values');
-          } else {
-            setState(() {
-              sectorLevel = Map<String, int>.from(userData['sectorLevel']);
-            });
-
-            debugPrint('Sector levels: $sectorLevel');
-          }
+          setState(() {});
         } else {
           debugPrint('User document not found');
         }
@@ -82,7 +56,7 @@ class _ClubPageState extends State<ClubPage> {
         debugPrint('No user is logged in');
       }
     } catch (e) {
-      debugPrint('Error fetching user data: $e');
+      debugPrint('Error fetching club data: $e');
     }
   }
 
