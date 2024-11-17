@@ -78,13 +78,20 @@ class MatchResultProcessor {
                 DocumentReference club2FormationRef =
                     club2Doc.get('formationRef');
 
-                int club1OvrSum =
+                Map<String, int> club1Stats =
                     await _processFormation(club1FormationRef, "Club 1");
-                int club2OvrSum =
+                Map<String, int> club2Stats =
                     await _processFormation(club2FormationRef, "Club 2");
 
+                int club1OvrSum = club1Stats['totalOvr']!;
+                int club1TotalSalary = club1Stats['totalSalary']!;
+                int club2OvrSum = club2Stats['totalOvr']!;
+                int club2TotalSalary = club2Stats['totalSalary']!;
+
                 debugPrint("Club 1 Total OVR: $club1OvrSum");
+                debugPrint("Club 1 Total Salary: $club1TotalSalary");
                 debugPrint("Club 2 Total OVR: $club2OvrSum");
+                debugPrint("Club 2 Total Salary: $club2TotalSalary");
 
                 if (club1OvrSum > club2OvrSum) {
                   match['club1goals'] = 2;
@@ -97,37 +104,32 @@ class MatchResultProcessor {
                   match['club2goals'] = 1;
                 }
 
-                Map<String, dynamic>? sectorLevel =
-                    (userDoc.data() as Map<String, dynamic>?)?['sectorLevel'];
-                if (sectorLevel != null) {
-                  int totalSectorValue = 0;
-                  debugPrint("Sector Level data: $sectorLevel");
-                  sectorLevel.forEach((key, value) {
-                    if (value is int) {
-                      totalSectorValue += value;
-                    }
-                  });
-
-                  debugPrint("Total sector level value: $totalSectorValue");
-
-                  int matchRevenue = totalSectorValue * 1000 * 25;
-                  debugPrint("Match revenue: $matchRevenue");
-
+                if (club1IsUser) {
                   int currentMoney = userDoc.get('money') ?? 0;
-                  int updatedMoney = currentMoney + matchRevenue;
-
-                  debugPrint("Updated money: $updatedMoney");
+                  int updatedMoney = currentMoney - club1TotalSalary;
+                  debugPrint(
+                      "User's money after salary deduction (club1): $updatedMoney");
 
                   await FirebaseFirestore.instance
                       .collection('users')
                       .doc(userID)
-                      .update({
-                    'money': updatedMoney,
-                  });
+                      .update({'money': updatedMoney});
 
-                  debugPrint("User money updated successfully.");
-                } else {
-                  debugPrint("'sectorLevel' not found in user document.");
+                  debugPrint("User money updated successfully for club1.");
+                }
+
+                if (club2IsUser) {
+                  int currentMoney = userDoc.get('money') ?? 0;
+                  int updatedMoney = currentMoney - club2TotalSalary;
+                  debugPrint(
+                      "User's money after salary deduction (club2): $updatedMoney");
+
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userID)
+                      .update({'money': updatedMoney});
+
+                  debugPrint("User money updated successfully for club2.");
                 }
               }
             } else {
@@ -156,9 +158,10 @@ class MatchResultProcessor {
     }
   }
 
-  Future<int> _processFormation(
+  Future<Map<String, int>> _processFormation(
       DocumentReference formationRef, String clubLabel) async {
     int totalOvr = 0;
+    int totalSalary = 0;
 
     try {
       DocumentSnapshot formationDoc = await formationRef.get();
@@ -179,6 +182,10 @@ class MatchResultProcessor {
               int ovr = playerDoc.get('ovr');
               totalOvr += ovr;
               debugPrint("$clubLabel Player OVR [$key]: $ovr");
+
+              double salary = playerDoc.get('salary')?.toDouble() ?? 0.0;
+              totalSalary += salary.toInt();
+              debugPrint("$clubLabel Player Salary [$key]: $salary");
             }
           }
         }
@@ -189,7 +196,7 @@ class MatchResultProcessor {
       debugPrint("Error processing formation for $clubLabel: $e");
     }
 
-    return totalOvr;
+    return {'totalOvr': totalOvr, 'totalSalary': totalSalary};
   }
 
   Future<void> updateStandings(DocumentReference leagueRef, String club1Id,
