@@ -102,6 +102,7 @@ class _PlayersViewState extends State<PlayersView> {
                         name: player.name,
                         imagePath: player.imagePath,
                         onTap: () {},
+                        player: player,
                       ),
                     );
                   },

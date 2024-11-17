@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/name_formatter.dart';
+import 'package:pocket_eleven/components/player_details.dart';
 import 'package:unicons/unicons.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/models/player.dart';
 
 class PlayerCube extends StatelessWidget {
   final String name;
   final String imagePath;
+  final Player player;
   final VoidCallback onTap;
 
   const PlayerCube({
@@ -13,9 +16,9 @@ class PlayerCube extends StatelessWidget {
     required this.name,
     required this.imagePath,
     required this.onTap,
+    required this.player,
   });
 
-  // Funkcja zwracająca kolor w zależności od ścieżki obrazka
   Color _getContainerColor() {
     switch (imagePath) {
       case 'assets/players/player_card_bronze.png':
@@ -27,34 +30,37 @@ class PlayerCube extends StatelessWidget {
       case 'assets/players/player_card_purple.png':
         return AppColors.playerPurple;
       default:
-        return Colors
-            .green; // Domyślny kolor, jeśli obrazek nie pasuje do żadnego
+        return Colors.green;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return PlayerDetailsDialog(player: player);
+          },
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
-          color:
-              _getContainerColor(), // Użycie odpowiedniego koloru na podstawie obrazka
+          color: _getContainerColor(),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey, width: 1),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Ikona użytkownika zamiast obrazka, używana, jeśli obrazek nie jest dostępny
             const Expanded(
               child: Icon(
-                UniconsLine.user, // Ikona użytkownika z Unicons
+                UniconsLine.user,
                 color: AppColors.textEnabledColor,
                 size: 40,
               ),
             ),
-            // Dopasowanie tekstu do rozmiaru kontenera
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4.0),
               child: FittedBox(
@@ -62,8 +68,8 @@ class PlayerCube extends StatelessWidget {
                 child: Text(
                   formatPlayerName(name),
                   style: const TextStyle(
-                    color: AppColors.textEnabledColor, // Kolor tekstu
-                    fontSize: 12, // Skalowanie tekstu
+                    color: AppColors.textEnabledColor,
+                    fontSize: 12,
                   ),
                   textAlign: TextAlign.center,
                 ),
