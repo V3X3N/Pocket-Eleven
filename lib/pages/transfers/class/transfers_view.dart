@@ -10,10 +10,10 @@ class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
 
   @override
-  State<TransfersView> createState() => _TransfersViewState();
+  State<TransfersView> createState() => TransfersViewState();
 }
 
-class _TransfersViewState extends State<TransfersView> {
+class TransfersViewState extends State<TransfersView> {
   List<Player> _players = [];
   Player? _selectedPlayer;
   bool _isLoading = true;
@@ -87,8 +87,6 @@ class _TransfersViewState extends State<TransfersView> {
     if (user == null) return;
 
     final transfersRef = firestore.collection('transfers').doc(user.uid);
-    firestore.collection('temp_transfers');
-
     final transferDoc = await transfersRef.get();
     final List<dynamic> playerRefs = transferDoc['playerRefs'] ?? [];
 
@@ -138,9 +136,8 @@ class _TransfersViewState extends State<TransfersView> {
 
     debugPrint('New user transfers document created.');
 
-    final DateTime deleteDate = currentLocalTime.add(const Duration(
-        minutes:
-            4)); //TODO: Change the time how much time for a document to be deleted
+    final DateTime deleteDate = currentLocalTime.add(
+        const Duration(minutes: 4)); // TODO: Adjust the time duration if needed
     final Timestamp deleteAt = Timestamp.fromDate(deleteDate);
 
     await transfersRef.update({
@@ -176,6 +173,12 @@ class _TransfersViewState extends State<TransfersView> {
 
     setState(() {
       _players = players;
+    });
+  }
+
+  void removePlayerFromList(Player player) {
+    setState(() {
+      _players.removeWhere((p) => p.playerID == player.playerID);
     });
   }
 

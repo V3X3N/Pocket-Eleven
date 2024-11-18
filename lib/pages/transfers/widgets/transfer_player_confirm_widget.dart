@@ -5,6 +5,7 @@ import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/pages/transfers/class/transfers_view.dart';
 
 class TransferPlayerConfirmWidget extends StatelessWidget {
   final Player player;
@@ -115,6 +116,8 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
 
       await PlayerFunctions.savePlayerToFirestore(context, player);
 
+      await _removePlayerFromFirestore(context);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Player ${player.name} added to your club!')),
       );
@@ -125,6 +128,29 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
           content: Text('Not enough money to add ${player.name}'),
         ),
       );
+    }
+  }
+
+  Future<void> _removePlayerFromFirestore(BuildContext context) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    final transfersRef = firestore.collection('transfers').doc(user.uid);
+    final tempTransfersRef =
+        firestore.collection('temp_transfers').doc(player.playerID);
+
+    await transfersRef.update({
+      'playerRefs': FieldValue.arrayRemove([tempTransfersRef])
+    });
+
+    await tempTransfersRef.delete();
+
+    if (context.mounted) {
+      TransfersViewState? transfersState =
+          context.findAncestorStateOfType<TransfersViewState>();
+      transfersState?.removePlayerFromList(player);
     }
   }
 
