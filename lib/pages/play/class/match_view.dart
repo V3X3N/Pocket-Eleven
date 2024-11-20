@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/pages/play/class/club_container.dart';
-import 'package:pocket_eleven/pages/play/class/matches_container.dart';
+import 'package:pocket_eleven/pages/play/widget/club_container.dart';
+import 'package:pocket_eleven/pages/play/widget/matches_container.dart';
 
 class MatchView extends StatelessWidget {
   const MatchView({

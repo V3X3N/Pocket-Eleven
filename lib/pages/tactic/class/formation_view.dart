@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/components/name_formatter.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/firebase/firebase_club.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -104,12 +102,13 @@ class _FormationViewState extends State<FormationView> {
     }
 
     final String userId = user.uid;
+    final DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(userId);
 
     try {
-      final String clubRef = await FirebaseFunctions.getClubName(userId);
       QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
           .collection('formations')
-          .where('club', isEqualTo: clubRef)
+          .where('userRef', isEqualTo: userRef)
           .limit(1)
           .get();
 
@@ -117,12 +116,16 @@ class _FormationViewState extends State<FormationView> {
         DocumentSnapshot formationDoc = formationSnapshot.docs.first;
 
         for (String position in positionMap.keys) {
-          DocumentReference? playerRef = formationDoc[position];
-          if (playerRef != null) {
+          dynamic playerRef = formationDoc[position];
+          if (playerRef != null && playerRef is DocumentReference) {
             DocumentSnapshot playerDoc = await playerRef.get();
             if (playerDoc.exists) {
               selectedPlayers[position] = Player.fromDocument(playerDoc);
+            } else {
+              selectedPlayers[position] = null;
             }
+          } else {
+            selectedPlayers[position] = null;
           }
         }
       }
@@ -138,15 +141,28 @@ class _FormationViewState extends State<FormationView> {
   }
 
   Future<void> _selectPlayer(BuildContext context, String position) async {
-    final Player? currentPlayer = selectedPlayers[position];
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    if (currentPlayer != null) {
-      List<Player> availablePlayers = await ClubFunctions.getPlayersForClub(
-          await ClubFunctions.getClubId(
-              FirebaseAuth.instance.currentUser!.uid));
-      availablePlayers = availablePlayers
-          .where((player) => player.playerID != currentPlayer.playerID)
-          .toList();
+    final DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    List<Player> availablePlayers = [];
+
+    try {
+      availablePlayers = await FirebaseFirestore.instance
+          .collection('players')
+          .where('userRef', isEqualTo: userRef)
+          .get()
+          .then((snapshot) =>
+              snapshot.docs.map((doc) => Player.fromDocument(doc)).toList());
+
+      if (selectedPlayers[position] != null) {
+        availablePlayers = availablePlayers
+            .where((player) =>
+                player.playerID != selectedPlayers[position]!.playerID)
+            .toList();
+      }
 
       final Player? player = await showDialog<Player?>(
         context: context,
@@ -169,57 +185,10 @@ class _FormationViewState extends State<FormationView> {
 
         await _saveFormationToFirestore(context);
       }
-    } else {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final String userId = user.uid;
-      final String clubRef = await FirebaseFunctions.getClubName(userId);
-      QuerySnapshot formationSnapshot = await FirebaseFirestore.instance
-          .collection('formations')
-          .where('club', isEqualTo: clubRef)
-          .limit(1)
-          .get();
-
-      if (formationSnapshot.docs.isNotEmpty) {
-        final currentPlayers =
-            formationSnapshot.docs.first.data() as Map<String, dynamic>?;
-        final playerCount =
-            currentPlayers?.values.where((value) => value != null).length ?? 0;
-
-        if (playerCount >= 12) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cannot select more than 11 players')),
-          );
-          return;
-        }
-      }
-
-      List<Player> availablePlayers = await ClubFunctions.getPlayersForClub(
-          await ClubFunctions.getClubId(
-              FirebaseAuth.instance.currentUser!.uid));
-
-      final Player? player = await showDialog<Player?>(
-        context: context,
-        builder: (BuildContext context) {
-          return PlayerSelectionDialog(players: availablePlayers);
-        },
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error selecting player: $e')),
       );
-
-      if (player != null) {
-        selectedPlayers.forEach((key, existingPlayer) {
-          if (existingPlayer != null &&
-              existingPlayer.playerID == player.playerID) {
-            selectedPlayers[key] = null;
-          }
-        });
-
-        setState(() {
-          selectedPlayers[position] = player;
-        });
-
-        await _saveFormationToFirestore(context);
-      }
     }
   }
 
@@ -233,14 +202,15 @@ class _FormationViewState extends State<FormationView> {
     }
 
     final String userId = user.uid;
+    final DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(userId);
 
     try {
-      final String clubRef = await FirebaseFunctions.getClubName(userId);
       final formationsCollection =
           FirebaseFirestore.instance.collection('formations');
 
       QuerySnapshot formationSnapshot = await formationsCollection
-          .where('club', isEqualTo: clubRef)
+          .where('userRef', isEqualTo: userRef)
           .limit(1)
           .get();
 
@@ -250,24 +220,28 @@ class _FormationViewState extends State<FormationView> {
         formationRef = formationSnapshot.docs.first.reference;
       } else {
         formationRef = formationsCollection.doc();
-        await formationRef.set({'club': clubRef});
+        await formationRef.set({'userRef': userRef});
       }
 
-      await formationRef.set(
-        {
-          ...selectedPlayers.map((position, player) {
-            return MapEntry(
-              position,
-              player != null
-                  ? FirebaseFirestore.instance
-                      .collection('players')
-                      .doc(player.playerID)
-                  : null,
-            );
-          }),
-        },
-        SetOptions(merge: true),
-      );
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() as Map<String, dynamic>?;
+
+      if (userData == null || userData['formationRef'] == null) {
+        await userRef.update({
+          'formationRef': formationRef,
+        });
+      }
+
+      Map<String, dynamic> formationData = {
+        for (String position in selectedPlayers.keys)
+          position: selectedPlayers[position] != null
+              ? FirebaseFirestore.instance
+                  .collection('players')
+                  .doc(selectedPlayers[position]!.playerID)
+              : null
+      };
+
+      await formationRef.set(formationData, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

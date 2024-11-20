@@ -1,25 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_players.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/components/player_details.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pocket_eleven/pages/transfers/class/transfers_view.dart';
+import 'package:pocket_eleven/pages/club/class/youth_view.dart';
 
-class TransferPlayerConfirmWidget extends StatelessWidget {
+class YouthPlayerConfirmWidget extends StatelessWidget {
   final Player player;
   final bool isSelected;
   final void Function(Player) onPlayerSelected;
 
-  const TransferPlayerConfirmWidget({
+  const YouthPlayerConfirmWidget({
     super.key,
     required this.player,
     required this.isSelected,
     required this.onPlayerSelected,
   });
 
-  Future<void> _confirmPlayerSelection(BuildContext context) async {
+  Future<void> _confirmYouthSelection(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,7 +39,7 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
             constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.8),
             child: Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: AppColors.hoverColor,
                 border: Border.all(color: AppColors.borderColor, width: 1),
@@ -51,7 +51,7 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
                   const Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Text(
-                      'Confirm Selection',
+                      'Confirm Youth Selection',
                       style: TextStyle(
                           color: AppColors.textEnabledColor, fontSize: 18),
                     ),
@@ -112,20 +112,21 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
         'money': updatedMoney,
       });
 
-      debugPrint('Player value: \$${player.value}');
+      debugPrint('Youth player value: \$${player.value}');
 
       await PlayerFunctions.savePlayerToFirestore(context, player);
 
       await _removePlayerFromFirestore(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Player ${player.name} added to your club!')),
+        SnackBar(
+            content: Text('Youth player ${player.name} added to your club!')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red,
-          content: Text('Not enough money to add ${player.name}'),
+          content: Text('Not enough money to add ${player.name}.'),
         ),
       );
     }
@@ -137,9 +138,9 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
 
     if (user == null) return;
 
-    final transfersRef = firestore.collection('transfers').doc(user.uid);
+    final transfersRef = firestore.collection('youth').doc(user.uid);
     final tempTransfersRef =
-        firestore.collection('temp_transfers').doc(player.playerID);
+        firestore.collection('temp_youth').doc(player.playerID);
 
     await transfersRef.update({
       'playerRefs': FieldValue.arrayRemove([tempTransfersRef])
@@ -148,8 +149,8 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
     await tempTransfersRef.delete();
 
     if (context.mounted) {
-      TransfersViewState? transfersState =
-          context.findAncestorStateOfType<TransfersViewState>();
+      YouthViewState? transfersState =
+          context.findAncestorStateOfType<YouthViewState>();
       transfersState?.removePlayerFromList(player);
     }
   }
@@ -220,7 +221,7 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.check_box_rounded,
                         color: Colors.green),
-                    onPressed: () => _confirmPlayerSelection(context),
+                    onPressed: () => _confirmYouthSelection(context),
                   ),
               ],
             ),

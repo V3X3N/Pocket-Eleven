@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
@@ -11,9 +12,7 @@ import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
 
 class TrainingView extends StatefulWidget {
-  const TrainingView({
-    super.key,
-  });
+  const TrainingView({super.key});
 
   @override
   State<TrainingView> createState() => _TrainingViewState();
@@ -26,6 +25,8 @@ class _TrainingViewState extends State<TrainingView> {
   String? userId;
   List<Player> players = [];
   bool isLoading = true;
+  int basePlayerTrainingCost = 10000;
+  double reductionCost = 0.0;
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _TrainingViewState extends State<TrainingView> {
         level = await TrainingFunctions.getTrainingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
+        reductionCost = max(0, 100 - level * 5).toDouble();
         setState(() {});
       }
     } catch (e) {
@@ -76,32 +78,67 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> trainPlayer(Player player, String paramName) async {
-    int newValue;
+    int trainingCost = max(basePlayerTrainingCost - 500 * (level - 1), 0);
+
+    int currentParamValue;
     switch (paramName) {
       case 'param1':
-        newValue = min(player.param1 + 1, 99);
-        player.param1 = newValue;
+        currentParamValue = player.param1;
         break;
       case 'param2':
-        newValue = min(player.param2 + 1, 99);
-        player.param2 = newValue;
+        currentParamValue = player.param2;
         break;
       case 'param3':
-        newValue = min(player.param3 + 1, 99);
-        player.param3 = newValue;
+        currentParamValue = player.param3;
         break;
       case 'param4':
-        newValue = min(player.param4 + 1, 99);
-        player.param4 = newValue;
+        currentParamValue = player.param4;
         break;
+      default:
+        return;
     }
 
-    player.updateDerivedAttributes();
+    if (userMoney >= trainingCost) {
+      int newValue = min(currentParamValue + 1, 99);
 
-    await PlayerFunctions.updatePlayerData(
-        player.playerID, player.toDocument());
+      switch (paramName) {
+        case 'param1':
+          player.param1 = newValue;
+          break;
+        case 'param2':
+          player.param2 = newValue;
+          break;
+        case 'param3':
+          player.param3 = newValue;
+          break;
+        case 'param4':
+          player.param4 = newValue;
+          break;
+      }
 
-    setState(() {});
+      player.updateDerivedAttributes();
+
+      await PlayerFunctions.updatePlayerData(
+          player.playerID, player.toDocument());
+
+      await FirebaseFunctions.updateUserData({
+        'money': userMoney - trainingCost,
+      });
+
+      setState(() {
+        userMoney -= trainingCost;
+      });
+    } else {
+      const snackBar = SnackBar(
+        content: Text('Not enough money for training.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 1),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
   }
 
   @override
@@ -139,8 +176,11 @@ class _TrainingViewState extends State<TrainingView> {
                   ),
                   SizedBox(height: screenHeight * 0.04),
                   isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(),
+                      ? Center(
+                          child: LoadingAnimationWidget.waveDots(
+                            color: AppColors.textEnabledColor,
+                            size: 50,
+                          ),
                         )
                       : Expanded(
                           child: ListView.builder(
@@ -224,6 +264,19 @@ class _TrainingViewState extends State<TrainingView> {
   }
 
   Future<void> increaseLevel() async {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Training is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      return;
+    }
+
     if (userId != null) {
       try {
         DocumentSnapshot userDoc =
@@ -248,6 +301,7 @@ class _TrainingViewState extends State<TrainingView> {
             setState(() {
               level = newLevel;
               upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
+              reductionCost = max(0, 100 - newLevel * 5).toDouble();
             });
           }
         } else {
@@ -286,7 +340,19 @@ class _TrainingViewState extends State<TrainingView> {
           ),
           SizedBox(height: screenWidth * 0.02),
           OptionButton(
-            onTap: () => trainPlayer(player, paramName),
+            onTap: () {
+              if (paramValue >= 99) {
+                const snackBar = SnackBar(
+                  content: Text(
+                      'This attribute is already at the maximum level (99).'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 2),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } else {
+                trainPlayer(player, paramName);
+              }
+            },
             screenWidth: screenWidth,
             screenHeight: screenHeight * 0.7,
             text: 'Train',

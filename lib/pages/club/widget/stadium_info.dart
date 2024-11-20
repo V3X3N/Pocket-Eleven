@@ -2,27 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-class BuildInfo extends StatelessWidget {
+class StadiumInfo extends StatelessWidget {
   final String headerText;
   final int level;
   final int upgradeCost;
   final bool isUpgradeEnabled;
   final VoidCallback? onUpgradePressed;
+  final Map<String, int>? sectorLevel;
 
-  const BuildInfo({
+  const StadiumInfo({
     super.key,
     required this.headerText,
     required this.level,
     required this.upgradeCost,
     required this.isUpgradeEnabled,
     this.onUpgradePressed,
+    this.sectorLevel,
   });
+
+  int _calculateStadiumCapacity() {
+    if (sectorLevel == null) {
+      return 0;
+    }
+
+    int totalSectorLevels =
+        sectorLevel!.values.fold(0, (sum, level) => sum + level);
+    return totalSectorLevels * 1000;
+  }
 
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    int trainingCost = 10000 - ((level - 1) * 500);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +52,8 @@ class BuildInfo extends StatelessWidget {
               ),
               Tooltip(
                 triggerMode: TooltipTriggerMode.tap,
-                message: 'Current training cost: $trainingCost',
+                message:
+                    'Stadium Capacity: ${_calculateStadiumCapacity()} seats',
                 decoration: BoxDecoration(
                   color: AppColors.hoverColor,
                   borderRadius: BorderRadius.circular(10.0),
@@ -65,6 +77,7 @@ class BuildInfo extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 8.0),
             ],
           ),
         ),

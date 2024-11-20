@@ -1,25 +1,25 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/firebase/firebase_stadium.dart';
-import 'package:pocket_eleven/pages/club/widget/build_info.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_build.dart';
+import 'package:pocket_eleven/pages/club/widget/stadium_info.dart';
 
 class StadiumView extends StatefulWidget {
-  const StadiumView({
-    super.key,
-  });
+  const StadiumView({super.key});
 
   @override
-  State<StadiumView> createState() => _StadiumViewState();
+  StadiumViewState createState() => StadiumViewState();
 }
 
-class _StadiumViewState extends State<StadiumView> {
+class StadiumViewState extends State<StadiumView> {
   int level = 1;
   int upgradeCost = 100000;
   double userMoney = 0;
   String? userId;
+  bool isLoading = true;
+  Map<String, int>? sectorLevel;
 
   @override
   void initState() {
@@ -35,6 +35,11 @@ class _StadiumViewState extends State<StadiumView> {
         level = await StadiumFunctions.getStadiumLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
+
+        sectorLevel = userData.containsKey('sectorLevel')
+            ? Map<String, int>.from(userData['sectorLevel'])
+            : null;
+
         setState(() {});
       }
     } catch (e) {
@@ -43,46 +48,43 @@ class _StadiumViewState extends State<StadiumView> {
   }
 
   Future<void> increaseLevel() async {
-    if (userId != null) {
+    if (level >= 5) {
+      const snackBar = SnackBar(
+        content: Text('Stadium is already at the maximum level (5).'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+
+    if (userMoney >= upgradeCost) {
       try {
-        DocumentSnapshot userDoc =
-            await FirebaseFunctions.getUserDocument(userId!);
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        double userMoney = (userData['money'] ?? 0).toDouble();
-        int currentLevel = userData['stadiumLevel'] ?? 1;
+        setState(() {
+          level += 1;
+          userMoney -= upgradeCost;
+          upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
+        });
 
-        int currentUpgradeCost =
-            FirebaseFunctions.calculateUpgradeCost(currentLevel);
+        await StadiumFunctions.updateStadiumLevel(userId!, level);
 
-        if (userMoney >= currentUpgradeCost) {
-          int newLevel = currentLevel + 1;
+        await FirebaseFunctions.updateUserData({
+          'money': userMoney,
+        });
 
-          await StadiumFunctions.updateStadiumLevel(userId!, newLevel);
-
-          await FirebaseFunctions.updateUserData({
-            'money': userMoney - currentUpgradeCost,
-          });
-
-          if (mounted) {
-            setState(() {
-              level = newLevel;
-              upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
-            });
-          }
-        } else {
-          const snackBar = SnackBar(
-            content: Text('Not enough money to upgrade the stadium.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 1),
-          );
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          }
-        }
+        setState(() {});
       } catch (e) {
         debugPrint('Error upgrading stadium: $e');
       }
+    } else {
+      const snackBar = SnackBar(
+        content: Text('Not enough money to upgrade the stadium.'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 1),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -94,49 +96,35 @@ class _StadiumViewState extends State<StadiumView> {
     return Scaffold(
       body: Column(
         children: [
-          AspectRatio(
-            aspectRatio: 3 / 2,
-            child: Container(),
-          ),
           Expanded(
             child: Container(
               color: AppColors.primaryColor,
               padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.05,
-                  vertical: screenHeight * 0.02),
+                horizontal: screenWidth * 0.05,
+                vertical: screenHeight * 0.02,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BuildInfo(
-                    headerText: 'Stadium',
-                    level: level,
-                    upgradeCost: upgradeCost,
-                    isUpgradeEnabled: userMoney >= upgradeCost,
-                    onUpgradePressed: increaseLevel,
-                  ),
-                  SizedBox(height: screenHeight * 0.04),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textEnabledColor,
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: AppColors.hoverColor,
+                      border:
+                          Border.all(color: AppColors.borderColor, width: 1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: StadiumInfo(
+                      headerText: 'Stadium',
+                      level: level,
+                      upgradeCost: upgradeCost,
+                      isUpgradeEnabled: userMoney >= upgradeCost,
+                      onUpgradePressed: increaseLevel,
+                      sectorLevel: sectorLevel,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
-                  const Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        'The club stadium is the heart of our community, where fans gather '
-                        'to cheer for their favorite teams. With a capacity of 50,000 seats, '
-                        'it has hosted numerous memorable matches and events.',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: AppColors.textEnabledColor,
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 20.0),
+                  const Expanded(child: StadiumBuild()),
                 ],
               ),
             ),

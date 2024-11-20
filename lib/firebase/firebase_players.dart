@@ -22,20 +22,35 @@ class PlayerFunctions {
     final DocumentReference userRef =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
 
-    await newPlayerRef.set({
-      ...player.toDocument(),
-      'userRef': userRef,
-      'id': playerId,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await newPlayerRef.set({
+        ...player.toDocument(),
+        'userRef': userRef,
+        'id': playerId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-    const successSnackBar = SnackBar(
-      content: Text('Player added to your club successfully'),
-      duration: Duration(seconds: 1),
-    );
+      await userRef.update({
+        'playerRefs': FieldValue.arrayUnion([newPlayerRef]),
+      });
 
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(successSnackBar);
+      const successSnackBar = SnackBar(
+        content: Text('Player added to your club successfully'),
+        duration: Duration(seconds: 1),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(successSnackBar);
+      }
+    } catch (e) {
+      debugPrint('Error saving player to Firestore: $e');
+      const errorSnackBar = SnackBar(
+        content: Text('Failed to add player'),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(errorSnackBar);
+      }
     }
   }
 

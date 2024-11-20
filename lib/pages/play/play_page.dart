@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:pocket_eleven/components/custom_appbar.dart';
 import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/play/widgets/match_view.dart';
-import 'package:pocket_eleven/pages/play/widgets/league_view.dart';
+import 'package:pocket_eleven/models/match_result_processor.dart';
+import 'package:pocket_eleven/pages/play/class/match_view.dart';
+import 'package:pocket_eleven/pages/play/class/league_view.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage({super.key});
@@ -14,6 +15,13 @@ class PlayPage extends StatefulWidget {
 
 class _PlayPageState extends State<PlayPage> {
   int _selectedIndex = 0;
+  final MatchResultProcessor _matchResultProcessor = MatchResultProcessor();
+
+  @override
+  void initState() {
+    super.initState();
+    _matchResultProcessor.processMatchResults();
+  }
 
   void _onOptionSelected(int index) {
     setState(() {

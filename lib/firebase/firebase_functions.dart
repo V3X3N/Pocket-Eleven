@@ -20,7 +20,6 @@ class FirebaseFunctions {
         'clubName': clubName,
         'money': 3000000,
         'trainingLevel': 1,
-        'medicalLevel': 1,
         'youthLevel': 1,
         'stadiumLevel': 1,
         'scoutingLevel': 1,
@@ -51,15 +50,25 @@ class FirebaseFunctions {
             botToReplace,
             clubName,
           );
+
+          await userRef.update({
+            'leagueRef': availableLeague.reference,
+          });
+
           debugPrint(
               "Replaced bot: $botToReplace with club: $clubName in league: ${availableLeague.id}");
         } else {
           debugPrint("Bot for replacement not found.");
         }
       } else {
-        String newLeagueId =
-            await LeagueFunctions.createNewLeagueWithBots(clubName);
+        String newLeagueId = await LeagueFunctions.createNewLeagueWithBots();
         debugPrint("New league created with ID: $newLeagueId");
+
+        DocumentReference newLeagueRef =
+            FirebaseFirestore.instance.collection('leagues').doc(newLeagueId);
+        await userRef.update({
+          'leagueRef': newLeagueRef,
+        });
       }
     } catch (error) {
       debugPrint('Error saving user with club data: $error');

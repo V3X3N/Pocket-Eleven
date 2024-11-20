@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-class CustomConfirmDialog extends StatelessWidget {
+class StadiumConfirmDialog extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
-  const CustomConfirmDialog({
+  const StadiumConfirmDialog({
     super.key,
     required this.title,
     required this.message,
