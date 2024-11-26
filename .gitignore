@@ -568,7 +568,6 @@ app.*.symbols
 #Folders
 .dart_tool/
 .idea/
-assets/
 build/
 ios/
 test/
