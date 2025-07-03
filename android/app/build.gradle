@@ -25,7 +25,8 @@ if (flutterVersionName == null) {
 android {
     namespace "com.vcoffee.pocket_eleven"
     compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    ndkVersion = "29.0.13599879"
+    // Android Studio -> Tools -> SDK toold -> NDK
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
