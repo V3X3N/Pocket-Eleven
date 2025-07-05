@@ -23,41 +23,62 @@ class OptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isSelected = selectedIndex == index;
+    final isSelected = selectedIndex == index;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(
-            vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
-        decoration: BoxDecoration(
-          border: Border.all(
-            width: 1,
-            color: AppColors.borderColor,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: _animationDuration,
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.01,
+            horizontal: screenWidth * 0.03,
           ),
-          color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 6)
-                ]
-              : [],
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 18 * fontSizeMultiplier,
-            color: isSelected
-                ? AppColors.textEnabledColor
-                : AppColors.textEnabledColor,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          decoration: BoxDecoration(
+            border: _border,
+            color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
+            borderRadius: _borderRadius,
+            boxShadow: isSelected ? _selectedShadow : null,
+          ),
+          child: Text(
+            text,
+            style: _getTextStyle(fontSizeMultiplier, isSelected),
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ),
     );
+  }
+
+  // Cached objects - to są kluczowe optymalizacje
+  static const Duration _animationDuration = Duration(milliseconds: 300);
+  static const BorderRadius _borderRadius =
+      BorderRadius.all(Radius.circular(12));
+  static const Border _border = Border.fromBorderSide(
+    BorderSide(width: 1, color: AppColors.borderColor),
+  );
+  static final List<BoxShadow> _selectedShadow = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.3),
+      offset: const Offset(0, 4),
+      blurRadius: 6,
+    ),
+  ];
+
+  // Cache dla TextStyle - tylko jeśli masz dużo buttonów
+  static final Map<String, TextStyle> _textStyleCache = {};
+
+  static TextStyle _getTextStyle(double fontSizeMultiplier, bool isSelected) {
+    final key = '${fontSizeMultiplier}_$isSelected';
+    return _textStyleCache.putIfAbsent(
+        key,
+        () => TextStyle(
+              fontSize: 18 * fontSizeMultiplier,
+              color: AppColors.textEnabledColor,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ));
   }
 }

@@ -23,50 +23,82 @@ class MatchTileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.symmetric(
-            vertical: screenHeight * 0.01, horizontal: screenWidth * 0.03),
-        decoration: BoxDecoration(
-          border: Border.all(
-            width: 1,
-            color: AppColors.borderColor,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: _animationDuration,
+          curve: Curves.easeInOut,
+          padding: EdgeInsets.symmetric(
+            vertical: screenHeight * 0.01,
+            horizontal: screenWidth * 0.03,
           ),
-          color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 6)
-                ]
-              : [],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              opponentName,
-              style: TextStyle(
-                fontSize: 18 * fontSizeMultiplier,
-                color: AppColors.textEnabledColor,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          decoration: BoxDecoration(
+            border: _border,
+            color: isSelected ? AppColors.blueColor : AppColors.buttonColor,
+            borderRadius: _borderRadius,
+            boxShadow: isSelected ? _selectedShadow : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  opponentName,
+                  style: _getOpponentTextStyle(fontSizeMultiplier, isSelected),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
-            ),
-            Text(
-              matchTime,
-              style: TextStyle(
-                fontSize: 14 * fontSizeMultiplier,
-                color: AppColors.textEnabledColor,
-                fontWeight: FontWeight.normal,
+              Text(
+                matchTime,
+                style: _getTimeTextStyle(fontSizeMultiplier),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  // Cached objects
+  static const Duration _animationDuration = Duration(milliseconds: 300);
+  static const BorderRadius _borderRadius =
+      BorderRadius.all(Radius.circular(12));
+  static const Border _border = Border.fromBorderSide(
+    BorderSide(width: 1, color: AppColors.borderColor),
+  );
+  static final List<BoxShadow> _selectedShadow = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.3),
+      offset: const Offset(0, 4),
+      blurRadius: 6,
+    ),
+  ];
+
+  // TextStyle cache
+  static final Map<String, TextStyle> _textStyleCache = {};
+
+  static TextStyle _getOpponentTextStyle(
+      double fontSizeMultiplier, bool isSelected) {
+    final key = 'opponent_${fontSizeMultiplier}_$isSelected';
+    return _textStyleCache.putIfAbsent(
+        key,
+        () => TextStyle(
+              fontSize: 18 * fontSizeMultiplier,
+              color: AppColors.textEnabledColor,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ));
+  }
+
+  static TextStyle _getTimeTextStyle(double fontSizeMultiplier) {
+    final key = 'time_$fontSizeMultiplier';
+    return _textStyleCache.putIfAbsent(
+        key,
+        () => TextStyle(
+              fontSize: 14 * fontSizeMultiplier,
+              color: AppColors.textEnabledColor,
+              fontWeight: FontWeight.normal,
+            ));
   }
 }
