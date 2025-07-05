@@ -7,7 +7,6 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/pages/club/class/stadium_view.dart';
 import 'package:pocket_eleven/pages/club/class/training_view.dart';
-import 'package:pocket_eleven/pages/club/class/youth_view.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({super.key});
@@ -103,22 +102,13 @@ class _ClubPageState extends State<ClubPage> {
                     screenHeight: screenHeight,
                     selectedIndex: _selectedIndex,
                   ),
-                  SizedBox(width: screenWidth * 0.04),
-                  OptionButton(
-                    index: 2,
-                    text: 'Youth',
-                    onTap: () => _onOptionSelected(2),
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight,
-                    selectedIndex: _selectedIndex,
-                  ),
                 ],
               ),
             ),
             Expanded(
               child: IndexedStack(
                 index: _selectedIndex,
-                children: const [StadiumView(), TrainingView(), YouthView()],
+                children: const [StadiumView(), TrainingView()],
               ),
             ),
           ],

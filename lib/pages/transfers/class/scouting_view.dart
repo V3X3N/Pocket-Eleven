@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/firebase/firebase_youth.dart';
 import 'package:pocket_eleven/models/player.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -231,7 +230,6 @@ class _ScoutingViewState extends State<ScoutingView> {
       userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
         Map<String, dynamic> userData = await FirebaseFunctions.getUserData();
-        level = await YouthFunctions.getScoutingLevel(userId!);
         upgradeCost = FirebaseFunctions.calculateUpgradeCost(level);
         userMoney = (userData['money'] ?? 0).toDouble();
         setState(() {});
@@ -330,8 +328,6 @@ class _ScoutingViewState extends State<ScoutingView> {
 
         if (userMoney >= currentUpgradeCost) {
           int newLevel = currentLevel + 1;
-
-          await YouthFunctions.updateScoutingLevel(userId!, newLevel);
 
           await FirebaseFunctions.updateUserData({
             'money': userMoney - currentUpgradeCost,

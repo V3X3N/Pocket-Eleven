@@ -30,8 +30,6 @@ class Player {
   String param3Name;
   String param4Name;
 
-  bool isYouth;
-
   Player({
     this.playerID = '',
     this.name = '',
@@ -56,7 +54,6 @@ class Player {
     this.assists = 0,
     this.yellowCards = 0,
     this.redCards = 0,
-    this.isYouth = false,
   }) {
     updateDerivedAttributes(); // Automatyczne wyliczanie po inicjalizacji
   }
@@ -89,7 +86,6 @@ class Player {
       assists: data['assists'] ?? 0,
       yellowCards: data['yellowCards'] ?? 0,
       redCards: data['redCards'] ?? 0,
-      isYouth: data['isYouth'] ?? false,
     );
   }
 
@@ -119,7 +115,6 @@ class Player {
       'assists': assists,
       'yellowCards': yellowCards,
       'redCards': redCards,
-      'isYouth': isYouth,
     };
   }
 
@@ -174,7 +169,6 @@ class Player {
     int? maxOvr,
     int? minAge,
     int? maxAge,
-    bool isYouth = false,
   }) async {
     final random = Random();
     nationality ??= await _getRandomNationality(random);
@@ -223,7 +217,6 @@ class Player {
       param2Name: paramNames['param2Name']!,
       param3Name: paramNames['param3Name']!,
       param4Name: paramNames['param4Name']!,
-      isYouth: isYouth,
     );
   }
 
