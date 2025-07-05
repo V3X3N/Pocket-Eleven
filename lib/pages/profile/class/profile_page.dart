@@ -5,7 +5,7 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:pocket_eleven/pages/loading/temp_login_page.dart';
+import 'package:pocket_eleven/pages/loading/loginPage/temp_login_page.dart';
 import 'package:pocket_eleven/pages/profile/widget/avatar_selector.dart';
 
 class ProfilePage extends StatefulWidget {
