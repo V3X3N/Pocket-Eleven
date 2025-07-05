@@ -15,67 +15,79 @@ class StadiumConfirmDialog extends StatelessWidget {
     required this.onCancel,
   });
 
+  // Cache commonly used values to avoid repeated calculations
+  static const double _maxWidthRatio = 0.8;
+  static const double _paddingRatio = 0.04;
+  static const double _borderRadius = 10.0;
+  static const EdgeInsets _titlePadding = EdgeInsets.all(16.0);
+  static const EdgeInsets _messagePadding =
+      EdgeInsets.symmetric(horizontal: 16.0);
+  static const SizedBox _verticalSpacer = SizedBox(height: 20);
+  static const SizedBox _horizontalSpacer = SizedBox(width: 8);
+
+  // Pre-computed text styles to avoid recreation
+  static const TextStyle _textStyle =
+      TextStyle(color: AppColors.textEnabledColor);
+  static const TextStyle _cancelStyle = TextStyle(color: Colors.red);
+  static const TextStyle _confirmStyle = TextStyle(color: AppColors.blueColor);
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
+
     return Dialog(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: screenWidth * 0.8),
-        child: Container(
-          padding: EdgeInsets.all(screenWidth * 0.04),
-          decoration: BoxDecoration(
+      child: RepaintBoundary(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: screenWidth * _maxWidthRatio),
+          child: Material(
             color: AppColors.hoverColor,
-            border: Border.all(color: AppColors.borderColor, width: 1),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  title,
-                  style: const TextStyle(color: AppColors.textEnabledColor),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  message,
-                  style: const TextStyle(color: AppColors.textEnabledColor),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  const BorderRadius.all(Radius.circular(_borderRadius)),
+              side: const BorderSide(color: AppColors.borderColor, width: 1),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * _paddingRatio),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                      onCancel();
-                    },
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: Colors.red),
-                    ),
+                  Padding(
+                    padding: _titlePadding,
+                    child: Text(title, style: _textStyle),
                   ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                      onConfirm();
-                    },
-                    child: const Text(
-                      'Confirm',
-                      style: TextStyle(color: AppColors.blueColor),
-                    ),
+                  Padding(
+                    padding: _messagePadding,
+                    child: Text(message, style: _textStyle),
+                  ),
+                  _verticalSpacer,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: _handleCancel,
+                        child: const Text('Cancel', style: _cancelStyle),
+                      ),
+                      _horizontalSpacer,
+                      TextButton(
+                        onPressed: _handleConfirm,
+                        child: const Text('Confirm', style: _confirmStyle),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void _handleCancel() {
+    onCancel();
+  }
+
+  void _handleConfirm() {
+    onConfirm();
   }
 }

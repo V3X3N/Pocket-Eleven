@@ -5,6 +5,142 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/club/widget/stadium_confirm_dialog.dart';
 import 'package:pocket_eleven/pages/club/widget/stadium_painter.dart';
 
+// Immutable data model for stadium state
+@immutable
+class StadiumData {
+  final Map<String, int> sectorLevels;
+  final int stadiumLevel;
+  final double userMoney;
+
+  const StadiumData({
+    required this.sectorLevels,
+    required this.stadiumLevel,
+    required this.userMoney,
+  });
+
+  StadiumData copyWith({
+    Map<String, int>? sectorLevels,
+    int? stadiumLevel,
+    double? userMoney,
+  }) {
+    return StadiumData(
+      sectorLevels: sectorLevels ?? this.sectorLevels,
+      stadiumLevel: stadiumLevel ?? this.stadiumLevel,
+      userMoney: userMoney ?? this.userMoney,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is StadiumData &&
+          runtimeType == other.runtimeType &&
+          stadiumLevel == other.stadiumLevel &&
+          userMoney == other.userMoney &&
+          _mapsEqual(sectorLevels, other.sectorLevels);
+
+  @override
+  int get hashCode =>
+      sectorLevels.hashCode ^ stadiumLevel.hashCode ^ userMoney.hashCode;
+
+  static bool _mapsEqual(Map<String, int> a, Map<String, int> b) {
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
+}
+
+// State management notifier for stadium data
+class StadiumNotifier extends ValueNotifier<StadiumData?> {
+  static final StadiumNotifier _instance = StadiumNotifier._internal();
+  factory StadiumNotifier() => _instance;
+  StadiumNotifier._internal() : super(null);
+
+  // Constants for cost calculation
+  static const int baseCost = 75000;
+  static const int costMultiplier = 75000;
+
+  Future<void> loadStadiumData() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!userDoc.exists) return;
+
+      final data = userDoc.data()!;
+      value = StadiumData(
+        sectorLevels: Map<String, int>.from(data['sectorLevel'] ?? {}),
+        stadiumLevel: data['stadiumLevel'] ?? 0,
+        userMoney: (data['money'] ?? 0).toDouble(),
+      );
+    } catch (e) {
+      debugPrint('Error loading stadium data: $e');
+    }
+  }
+
+  Future<bool> upgradeSector(int sectorIndex) async {
+    final currentData = value;
+    if (currentData == null) return false;
+
+    final sectorKey = 'sector$sectorIndex';
+    final currentLevel = currentData.sectorLevels[sectorKey] ?? 0;
+    final upgradeCost = calculateUpgradeCost(currentLevel);
+
+    if (currentLevel >= currentData.stadiumLevel) {
+      debugPrint('Cannot upgrade sector $sectorIndex beyond stadium level');
+      return false;
+    }
+
+    if (currentData.userMoney < upgradeCost) {
+      debugPrint('Insufficient funds for sector $sectorIndex upgrade');
+      return false;
+    }
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return false;
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final userDocRef =
+            FirebaseFirestore.instance.collection('users').doc(userId);
+
+        final userDoc = await transaction.get(userDocRef);
+        if (!userDoc.exists) throw Exception("User document does not exist!");
+
+        transaction.update(userDocRef, {
+          'sectorLevel.$sectorKey': currentLevel + 1,
+          'money': currentData.userMoney - upgradeCost,
+        });
+      });
+
+      // Update local state
+      final newSectorLevels = Map<String, int>.from(currentData.sectorLevels);
+      newSectorLevels[sectorKey] = currentLevel + 1;
+
+      value = currentData.copyWith(
+        sectorLevels: newSectorLevels,
+        userMoney: currentData.userMoney - upgradeCost,
+      );
+
+      return true;
+    } catch (e) {
+      debugPrint('Error upgrading sector $sectorIndex: $e');
+      return false;
+    }
+  }
+
+  static int calculateUpgradeCost(int currentLevel) {
+    return baseCost * (currentLevel + 1) + costMultiplier;
+  }
+}
+
 class StadiumBuild extends StatefulWidget {
   const StadiumBuild({super.key});
 
@@ -13,132 +149,47 @@ class StadiumBuild extends StatefulWidget {
 }
 
 class StadiumBuildState extends State<StadiumBuild> {
-  Map<String, int>? sectorLevel;
-  int stadiumLevel = 0;
-  double userMoney = 0;
+  final StadiumNotifier _stadiumNotifier = StadiumNotifier();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _getStadiumData();
+    _loadData();
   }
 
-  Future<void> _getStadiumData() async {
-    try {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentReference userDocRef = firestore.collection('users').doc(userId);
-
-      DocumentSnapshot userDoc = await userDocRef.get();
-
-      if (!mounted) return;
-
-      if (userDoc.exists) {
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
-        if (userData.containsKey('sectorLevel')) {
-          setState(() {
-            sectorLevel = Map<String, int>.from(userData['sectorLevel']);
-          });
-        }
-
-        if (userData.containsKey('stadiumLevel')) {
-          setState(() {
-            stadiumLevel = userData['stadiumLevel'];
-          });
-          debugPrint('Stadium level fetched: $stadiumLevel');
-        }
-
-        if (userData.containsKey('money')) {
-          setState(() {
-            userMoney = userData['money'].toDouble();
-          });
-        }
-      } else {
-        debugPrint('User document not found.');
-      }
-    } catch (e) {
-      debugPrint('Error fetching stadium data: $e');
+  Future<void> _loadData() async {
+    await _stadiumNotifier.loadStadiumData();
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _updateSectorLevel(int index) async {
-    String sectorKey = 'sector$index';
+  void _onSectorTapped(int index) {
+    final data = _stadiumNotifier.value;
+    if (data == null) return;
 
-    if (sectorLevel == null || stadiumLevel == 0) {
-      debugPrint('Sector or stadium data not loaded.');
-      return;
-    }
-
-    int currentLevel = sectorLevel?[sectorKey] ?? 0;
-
-    if (currentLevel >= stadiumLevel) {
-      debugPrint(
-          'Cannot upgrade. Sector $index level ($currentLevel) has reached stadium level ($stadiumLevel).');
-      _showSnackBar('Sector level cannot exceed the stadium level.');
-      return;
-    }
-
-    // Calculate the cost of upgrading the sector
-    int upgradeCost = 75000 * (currentLevel + 1) + 75000;
-
-    // Check if the user has enough money
-    if (userMoney < upgradeCost) {
-      _showSnackBar('Not enough money to upgrade sector $index.');
-      return;
-    }
-
-    try {
-      String userId = FirebaseAuth.instance.currentUser?.uid ?? 'unknown_user';
-
-      FirebaseFirestore firestore = FirebaseFirestore.instance;
-      DocumentReference userDocRef = firestore.collection('users').doc(userId);
-
-      await firestore.runTransaction((transaction) async {
-        DocumentSnapshot userDoc = await transaction.get(userDocRef);
-        if (!userDoc.exists) throw Exception("User document does not exist!");
-
-        int newLevel = currentLevel + 1;
-        transaction.update(userDocRef, {
-          'sectorLevel.$sectorKey': newLevel,
-          'money': userMoney - upgradeCost, // Deduct the upgrade cost
-        });
-
-        debugPrint('Sector $index upgraded to level $newLevel');
-      });
-
-      await _getStadiumData();
-    } catch (e) {
-      debugPrint('Error updating sector $index: $e');
-    }
-  }
-
-  void _onRectangleTapped(int index) async {
-    String sectorKey = 'sector$index';
-    int currentLevel = sectorLevel?[sectorKey] ?? 0;
-
-    debugPrint('Sector $index clicked. Level from Firestore: $currentLevel');
-
-    // Calculate the upgrade cost for this sector
-    int upgradeCost = 75000 * (currentLevel + 1) + 75000;
-
-    if (!mounted) return;
+    final sectorKey = 'sector$index';
+    final currentLevel = data.sectorLevels[sectorKey] ?? 0;
+    final upgradeCost = StadiumNotifier.calculateUpgradeCost(currentLevel);
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StadiumConfirmDialog(
-          title: 'Upgrade Sector $index',
-          message:
-              'Current Level: $currentLevel\nUpgrade Cost: \$${upgradeCost.toString()}.\nDo you want to upgrade?',
-          onConfirm: () async {
-            await _updateSectorLevel(index);
-          },
-          onCancel: () {
-            debugPrint('Upgrade cancelled for sector $index');
-          },
-        );
-      },
+      builder: (context) => StadiumConfirmDialog(
+        title: 'Upgrade Sector $index',
+        message: 'Current Level: $currentLevel\n'
+            'Upgrade Cost: \$${upgradeCost.toString()}\n'
+            'Do you want to upgrade?',
+        onConfirm: () async {
+          final success = await _stadiumNotifier.upgradeSector(index);
+          if (!success && mounted) {
+            _showSnackBar('Failed to upgrade sector $index');
+          }
+        },
+        onCancel: () {
+          debugPrint('Upgrade cancelled for sector $index');
+        },
+      ),
     );
   }
 
@@ -153,154 +204,269 @@ class StadiumBuildState extends State<StadiumBuild> {
     );
   }
 
-  Widget _buildInteractiveRectangle({
-    required Color color,
-    required int index,
-    required double width,
-    required double height,
-  }) {
-    return GestureDetector(
-      onTap: () => _onRectangleTapped(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8.0),
-          border: Border.all(
-            color: index == 5 ? Colors.white : AppColors.borderColor,
-            width: 2.0,
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return ValueListenableBuilder<StadiumData?>(
+      valueListenable: _stadiumNotifier,
+      builder: (context, data, child) {
+        if (data == null) {
+          return const Center(child: Text('No stadium data available'));
+        }
+
+        return _StadiumLayout(
+          stadiumData: data,
+          onSectorTapped: _onSectorTapped,
+        );
+      },
+    );
+  }
+}
+
+// Separate stateless widget for stadium layout
+class _StadiumLayout extends StatelessWidget {
+  final StadiumData stadiumData;
+  final Function(int) onSectorTapped;
+
+  const _StadiumLayout({
+    required this.stadiumData,
+    required this.onSectorTapped,
+  });
+
+  // Pre-computed constants for layout
+  static const double _containerPadding = 16.0;
+  static const double _containerBorderRadius = 16.0;
+  static const double _containerBorderWidth = 1.0;
+  static const double _sectorSpacing = 10.0;
+  static const double _rowSpacing = 10.0;
+  static const double _screenWidthRatio = 1.0;
+  static const double _centerSquareRatio = 2.0 / 3.0;
+
+  // Pre-computed decoration to avoid recreation
+  static const BoxDecoration _containerDecoration = BoxDecoration(
+    color: AppColors.hoverColor,
+    borderRadius: BorderRadius.all(Radius.circular(_containerBorderRadius)),
+    border: Border.fromBorderSide(
+      BorderSide(color: AppColors.borderColor, width: _containerBorderWidth),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Color.fromRGBO(0, 0, 0, 0.1),
+        blurRadius: 8.0,
+        spreadRadius: 4.0,
+      ),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final gridSize = screenWidth * _screenWidthRatio;
+    final smallSquareWidth = gridSize / 8;
+    final smallSquareHeight = smallSquareWidth;
+    final centerSquareWidth = smallSquareWidth * 4;
+    final centerSquareHeight = centerSquareWidth;
+    final reducedCenterSquareWidth = centerSquareWidth * _centerSquareRatio;
+
+    return RepaintBoundary(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(_containerPadding),
+          decoration: _containerDecoration,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildTopRow(
+                smallSquareWidth,
+                smallSquareHeight,
+                reducedCenterSquareWidth,
+              ),
+              const SizedBox(height: _rowSpacing),
+              _buildMiddleRow(
+                smallSquareWidth,
+                centerSquareHeight,
+                reducedCenterSquareWidth,
+              ),
+              const SizedBox(height: _rowSpacing),
+              _buildBottomRow(
+                smallSquareWidth,
+                smallSquareHeight,
+                reducedCenterSquareWidth,
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.2), // Fixed
-              blurRadius: 4.0,
-              spreadRadius: 2.0,
-            ),
-          ],
         ),
-        child: index == 5
-            ? CustomPaint(
-                painter: LinePainter(width: width, height: height),
-                child: Container(),
-              )
-            : null,
       ),
     );
   }
 
+  Widget _buildTopRow(
+      double smallWidth, double smallHeight, double centerWidth) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _SectorTile(
+          index: 1,
+          width: smallWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 2,
+          width: centerWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 3,
+          width: smallWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiddleRow(
+      double smallWidth, double centerHeight, double centerWidth) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _SectorTile(
+          index: 4,
+          width: smallWidth,
+          height: centerHeight,
+          onTap: onSectorTapped,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 5,
+          width: centerWidth,
+          height: centerHeight,
+          onTap: onSectorTapped,
+          isCenter: true,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 6,
+          width: smallWidth,
+          height: centerHeight,
+          onTap: onSectorTapped,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomRow(
+      double smallWidth, double smallHeight, double centerWidth) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _SectorTile(
+          index: 7,
+          width: smallWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 8,
+          width: centerWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+        const SizedBox(width: _sectorSpacing),
+        _SectorTile(
+          index: 9,
+          width: smallWidth,
+          height: smallHeight,
+          onTap: onSectorTapped,
+        ),
+      ],
+    );
+  }
+}
+
+// Individual sector tile widget for optimal rebuilding
+class _SectorTile extends StatelessWidget {
+  final int index;
+  final double width;
+  final double height;
+  final Function(int) onTap;
+  final bool isCenter;
+
+  const _SectorTile({
+    required this.index,
+    required this.width,
+    required this.height,
+    required this.onTap,
+    this.isCenter = false,
+  });
+
+  // Pre-computed constants
+  static const Duration _animationDuration = Duration(milliseconds: 200);
+  static const double _borderRadius = 8.0;
+  static const double _borderWidth = 2.0;
+  static const Color _shadowColor = Color.fromRGBO(0, 0, 0, 0.2);
+  static const double _shadowBlurRadius = 4.0;
+  static const double _shadowSpreadRadius = 2.0;
+
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double gridSize = screenWidth * 1.0;
-    final double smallSquareWidth = gridSize / 8;
-    final double smallSquareHeight = smallSquareWidth;
-    final double centerSquareWidth = smallSquareWidth * 4;
-    final double centerSquareHeight = centerSquareWidth;
-    final double reducedCenterSquareWidth = centerSquareWidth * (2 / 3);
+    final color = isCenter ? Colors.lightGreen.shade400 : AppColors.buttonColor;
+    final borderColor = isCenter ? Colors.white : AppColors.borderColor;
 
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: AppColors.hoverColor,
-          borderRadius: BorderRadius.circular(16.0),
-          border: Border.all(
-            color: AppColors.borderColor,
-            width: 1.0,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () => onTap(index),
+        child: AnimatedContainer(
+          duration: _animationDuration,
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius:
+                const BorderRadius.all(Radius.circular(_borderRadius)),
+            border: Border.all(
+              color: borderColor,
+              width: _borderWidth,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: _shadowColor,
+                blurRadius: _shadowBlurRadius,
+                spreadRadius: _shadowSpreadRadius,
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.1), // Fixed
-              blurRadius: 8.0,
-              spreadRadius: 4.0,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 1,
-                  width: smallSquareWidth,
-                  height: smallSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 2,
-                  width: reducedCenterSquareWidth,
-                  height: smallSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 3,
-                  width: smallSquareWidth,
-                  height: smallSquareHeight,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 4,
-                  width: smallSquareWidth,
-                  height: centerSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: Colors.lightGreen.shade400,
-                  index: 5,
-                  width: reducedCenterSquareWidth,
-                  height: centerSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 6,
-                  width: smallSquareWidth,
-                  height: centerSquareHeight,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 7,
-                  width: smallSquareWidth,
-                  height: smallSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 8,
-                  width: reducedCenterSquareWidth,
-                  height: smallSquareHeight,
-                ),
-                const SizedBox(width: 10),
-                _buildInteractiveRectangle(
-                  color: AppColors.buttonColor,
-                  index: 9,
-                  width: smallSquareWidth,
-                  height: smallSquareHeight,
-                ),
-              ],
-            ),
-          ],
+          child: isCenter
+              ? CustomPaint(
+                  painter: LinePainter(width: width, height: height),
+                  child: Container(),
+                )
+              : null,
         ),
       ),
     );
+  }
+}
+
+// Extension for convenient access to stadium data
+extension StadiumDataExtensions on StadiumData {
+  bool canUpgradeSector(int sectorIndex) {
+    final sectorKey = 'sector$sectorIndex';
+    final currentLevel = sectorLevels[sectorKey] ?? 0;
+    final upgradeCost = StadiumNotifier.calculateUpgradeCost(currentLevel);
+
+    return currentLevel < stadiumLevel && userMoney >= upgradeCost;
+  }
+
+  int getSectorLevel(int sectorIndex) {
+    return sectorLevels['sector$sectorIndex'] ?? 0;
   }
 }

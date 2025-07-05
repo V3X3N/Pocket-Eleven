@@ -20,87 +20,95 @@ class StadiumInfo extends StatelessWidget {
     this.sectorLevel,
   });
 
-  int _calculateStadiumCapacity() {
-    if (sectorLevel == null) {
-      return 0;
-    }
+  // Optimized capacity calculation - computed once per build
+  int get _stadiumCapacity {
+    final sectors = sectorLevel;
+    if (sectors == null || sectors.isEmpty) return 0;
 
-    int totalSectorLevels =
-        sectorLevel!.values.fold(0, (sum, level) => sum + level);
-    return totalSectorLevels * 1000;
+    // More efficient than fold() for performance
+    int total = 0;
+    for (final level in sectors.values) {
+      total += level;
+    }
+    return total * 1000;
   }
+
+  // Cached text styles to avoid recreation
+  static const _headerStyle = TextStyle(
+    fontSize: 24.0,
+    fontWeight: FontWeight.bold,
+    color: AppColors.textEnabledColor,
+  );
+
+  static const _levelStyle = TextStyle(
+    fontSize: 16.0,
+    fontWeight: FontWeight.bold,
+    color: AppColors.textEnabledColor,
+  );
+
+  static const _costStyle = TextStyle(
+    color: AppColors.textEnabledColor,
+    fontSize: 16.0,
+    fontWeight: FontWeight.bold,
+  );
+
+  // Cached tooltip decoration
+  static final _tooltipDecoration = BoxDecoration(
+    color: AppColors.hoverColor,
+    borderRadius: BorderRadius.circular(10.0),
+  );
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final screenSize = MediaQuery.of(context).size;
+    final capacityMessage = 'Stadium Capacity: $_stadiumCapacity seats';
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                headerText,
-                style: const TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textEnabledColor,
-                ),
-              ),
-              Tooltip(
-                triggerMode: TooltipTriggerMode.tap,
-                message:
-                    'Stadium Capacity: ${_calculateStadiumCapacity()} seats',
-                decoration: BoxDecoration(
-                  color: AppColors.hoverColor,
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'Level $level',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
+    return RepaintBoundary(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(headerText, style: _headerStyle),
+                Tooltip(
+                  triggerMode: TooltipTriggerMode.tap,
+                  message: capacityMessage,
+                  decoration: _tooltipDecoration,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Level $level', style: _levelStyle),
+                      const SizedBox(width: 4.0),
+                      const Icon(
+                        Icons.info_outline,
                         color: AppColors.textEnabledColor,
+                        size: 16.0,
                       ),
-                    ),
-                    const SizedBox(width: 4.0),
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.textEnabledColor,
-                      size: 16.0,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 8.0),
+              ],
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              OptionButton(
+                onTap: isUpgradeEnabled ? onUpgradePressed : null,
+                text: "Upgrade",
+                screenWidth: screenSize.width,
+                screenHeight: screenSize.height,
               ),
               const SizedBox(height: 8.0),
+              Text('Cost: $upgradeCost', style: _costStyle),
             ],
           ),
-        ),
-        Column(
-          children: [
-            OptionButton(
-              onTap: isUpgradeEnabled ? onUpgradePressed : null,
-              text: "Upgrade",
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-            ),
-            const SizedBox(height: 8.0),
-            Text(
-              'Cost: $upgradeCost',
-              style: const TextStyle(
-                color: AppColors.textEnabledColor,
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
