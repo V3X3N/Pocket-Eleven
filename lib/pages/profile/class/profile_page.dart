@@ -43,6 +43,8 @@ class ProfilePageState extends State<ProfilePage> {
             .doc(userId)
             .get();
 
+        if (!mounted) return;
+
         if (userDoc.exists) {
           var userData = userDoc.data() as Map<String, dynamic>?;
           if (userData != null && !userData.containsKey('avatar')) {
@@ -64,9 +66,11 @@ class ProfilePageState extends State<ProfilePage> {
     } catch (error) {
       debugPrint('Error loading user data: $error');
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -83,6 +87,7 @@ class ProfilePageState extends State<ProfilePage> {
           'avatar': newAvatarIndex,
         });
 
+        if (!mounted) return;
         setState(() {
           avatar = newAvatarIndex;
         });
@@ -98,16 +103,18 @@ class ProfilePageState extends State<ProfilePage> {
     });
     try {
       await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const TempLoginPage()),
       );
     } catch (error) {
       debugPrint('Error signing out: $error');
-    } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 

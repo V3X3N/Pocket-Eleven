@@ -42,7 +42,9 @@ class YouthViewState extends State<YouthView> {
         userMoney = (userData['money'] ?? 0).toDouble();
         lastGeneratedTime = userData['lastGeneratedTime']?.toDate();
         _initializeData();
-        setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       }
     } catch (e) {
       debugPrint('Error loading user data: $e');
@@ -69,6 +71,9 @@ class YouthViewState extends State<YouthView> {
             .collection('users')
             .doc(userId)
             .get();
+
+        if (!mounted) return;
+
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
         double userMoney = (userData['money'] ?? 0).toDouble();
         int currentLevel = userData['youthLevel'] ?? 1;
@@ -87,6 +92,8 @@ class YouthViewState extends State<YouthView> {
             'money': userMoney - currentUpgradeCost,
           });
 
+          if (!mounted) return;
+
           setState(() {
             level = newLevel;
             upgradeCost = FirebaseFunctions.calculateUpgradeCost(newLevel);
@@ -99,7 +106,9 @@ class YouthViewState extends State<YouthView> {
             duration: Duration(seconds: 2),
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         } else {
           const snackBar = SnackBar(
             content: Text('Not enough money to upgrade the youth academy.'),
@@ -107,7 +116,9 @@ class YouthViewState extends State<YouthView> {
             duration: Duration(seconds: 2),
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
         }
       } catch (e) {
         debugPrint('Error upgrading youth academy: $e');
@@ -116,16 +127,20 @@ class YouthViewState extends State<YouthView> {
   }
 
   Future<void> _initializeData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     await _checkAndRefreshYouthData();
     await _fetchPlayersFromYouth();
 
-    setState(() {
-      _isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _checkAndRefreshYouthData() async {
@@ -267,15 +282,19 @@ class YouthViewState extends State<YouthView> {
       }
     }
 
-    setState(() {
-      _players = players;
-    });
+    if (mounted) {
+      setState(() {
+        _players = players;
+      });
+    }
   }
 
   void removePlayerFromList(Player player) {
-    setState(() {
-      _players.removeWhere((p) => p.playerID == player.playerID);
-    });
+    if (mounted) {
+      setState(() {
+        _players.removeWhere((p) => p.playerID == player.playerID);
+      });
+    }
   }
 
   @override

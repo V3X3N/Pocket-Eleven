@@ -22,6 +22,7 @@ class YouthPlayerConfirmWidget extends StatelessWidget {
   Future<void> _confirmYouthSelection(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User not logged in')),
       );
@@ -93,10 +94,13 @@ class YouthPlayerConfirmWidget extends StatelessWidget {
       return;
     }
 
+    if (!context.mounted) return;
+
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
 
     if (!userDoc.exists) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User document not found')),
       );
@@ -114,21 +118,27 @@ class YouthPlayerConfirmWidget extends StatelessWidget {
 
       debugPrint('Youth player value: \$${player.value}');
 
+      if (!context.mounted) return;
       await PlayerFunctions.savePlayerToFirestore(context, player);
 
+      if (!context.mounted) return;
       await _removePlayerFromFirestore(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Youth player ${player.name} added to your club!')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Youth player ${player.name} added to your club!')),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Not enough money to add ${player.name}.'),
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Not enough money to add ${player.name}.'),
+          ),
+        );
+      }
     }
   }
 
@@ -172,7 +182,9 @@ class YouthPlayerConfirmWidget extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(vertical: 4.0),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.grey[300] : AppColors.blueColor,
+          color: isSelected
+              ? Colors.grey.withValues(alpha: 0.3)
+              : AppColors.blueColor,
           border: Border.all(color: AppColors.borderColor, width: 1),
           borderRadius: BorderRadius.circular(10.0),
         ),

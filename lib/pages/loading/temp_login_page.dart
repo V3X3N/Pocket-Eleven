@@ -106,11 +106,14 @@ class _TempLoginPageState extends State<TempLoginPage> {
           context,
         );
 
-        // Navigate to HomePage after successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+        // Check if the widget is still mounted before using context
+        if (mounted) {
+          // Navigate to HomePage after successful login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
       },
       screenWidth: screenWidth,
       screenHeight: screenHeight,

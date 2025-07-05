@@ -92,6 +92,7 @@ class _FormationViewState extends State<FormationView> {
   Future<void> _loadFormation() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User not logged in')),
       );
@@ -130,17 +131,21 @@ class _FormationViewState extends State<FormationView> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading formation: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading formation: $e')),
+        );
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _selectPlayer(BuildContext context, String position) async {
+  Future<void> _selectPlayer(String position) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
@@ -164,14 +169,16 @@ class _FormationViewState extends State<FormationView> {
             .toList();
       }
 
+      if (!mounted) return;
+
       final Player? player = await showDialog<Player?>(
         context: context,
-        builder: (BuildContext context) {
+        builder: (BuildContext dialogContext) {
           return PlayerSelectionDialog(players: availablePlayers);
         },
       );
 
-      if (player != null) {
+      if (player != null && mounted) {
         selectedPlayers.forEach((key, existingPlayer) {
           if (existingPlayer != null &&
               existingPlayer.playerID == player.playerID) {
@@ -183,21 +190,25 @@ class _FormationViewState extends State<FormationView> {
           selectedPlayers[position] = player;
         });
 
-        await _saveFormationToFirestore(context);
+        await _saveFormationToFirestore();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error selecting player: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting player: $e')),
+        );
+      }
     }
   }
 
-  Future<void> _saveFormationToFirestore(BuildContext context) async {
+  Future<void> _saveFormationToFirestore() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not logged in')),
+        );
+      }
       return;
     }
 
@@ -243,16 +254,20 @@ class _FormationViewState extends State<FormationView> {
 
       await formationRef.set(formationData, SetOptions(merge: true));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Formation saved successfully'),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Formation saved successfully'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving formation: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving formation: $e')),
+        );
+      }
     }
   }
 
@@ -286,7 +301,7 @@ class _FormationViewState extends State<FormationView> {
               itemBuilder: (context, index) {
                 final position = positionMap.keys.elementAt(index);
                 return GestureDetector(
-                  onTap: () => _selectPlayer(context, position),
+                  onTap: () => _selectPlayer(position),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.buttonColor,

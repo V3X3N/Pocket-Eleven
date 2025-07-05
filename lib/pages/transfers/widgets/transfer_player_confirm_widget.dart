@@ -22,9 +22,11 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
   Future<void> _confirmPlayerSelection(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not logged in')),
+        );
+      }
       return;
     }
 
@@ -33,11 +35,11 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.8),
+                maxWidth: MediaQuery.of(dialogContext).size.width * 0.8),
             child: Container(
               padding: EdgeInsets.all(16.0),
               decoration: BoxDecoration(
@@ -67,13 +69,13 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
+                        onPressed: () => Navigator.of(dialogContext).pop(false),
                         child: const Text('Cancel',
                             style: TextStyle(color: Colors.red)),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pop(true);
+                          Navigator.of(dialogContext).pop(true);
                         },
                         child: const Text('Confirm',
                             style:
@@ -93,8 +95,13 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
       return;
     }
 
+    // Check if context is still mounted before proceeding
+    if (!context.mounted) return;
+
     final userDoc =
         await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    if (!context.mounted) return;
 
     if (!userDoc.exists) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,11 +119,17 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
         'money': updatedMoney,
       });
 
+      if (!context.mounted) return;
+
       debugPrint('Player value: \$${player.value}');
 
       await PlayerFunctions.savePlayerToFirestore(context, player);
 
+      if (!context.mounted) return;
+
       await _removePlayerFromFirestore(context);
+
+      if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Player ${player.name} added to your club!')),
@@ -161,7 +174,7 @@ class TransferPlayerConfirmWidget extends StatelessWidget {
         if (!isSelected) {
           showDialog(
             context: context,
-            builder: (BuildContext context) {
+            builder: (BuildContext dialogContext) {
               return PlayerDetailsDialog(player: player);
             },
           );

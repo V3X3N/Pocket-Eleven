@@ -115,6 +115,7 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
       text: 'Sign up',
       onTap: () async {
         if (passwordController.text != confirmPasswordController.text) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Passwords do not match')),
           );
@@ -185,12 +186,14 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
             await userRef.update({'leagueRef': newLeagueRef});
           }
 
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
         } catch (e) {
           debugPrint('Error during signup process: $e');
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error during signup')),
           );

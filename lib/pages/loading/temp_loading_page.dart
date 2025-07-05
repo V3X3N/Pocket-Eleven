@@ -16,7 +16,7 @@ class TempLoadingScreen extends StatefulWidget {
 }
 
 class _TempLoadingScreenState extends State<TempLoadingScreen> {
-  bool _isLoading = true;
+  final bool _isLoading = true;
 
   @override
   void initState() {

@@ -9,10 +9,10 @@ class StadiumBuild extends StatefulWidget {
   const StadiumBuild({super.key});
 
   @override
-  _StadiumBuildState createState() => _StadiumBuildState();
+  StadiumBuildState createState() => StadiumBuildState();
 }
 
-class _StadiumBuildState extends State<StadiumBuild> {
+class StadiumBuildState extends State<StadiumBuild> {
   Map<String, int>? sectorLevel;
   int stadiumLevel = 0;
   double userMoney = 0;
@@ -30,6 +30,8 @@ class _StadiumBuildState extends State<StadiumBuild> {
       DocumentReference userDocRef = firestore.collection('users').doc(userId);
 
       DocumentSnapshot userDoc = await userDocRef.get();
+
+      if (!mounted) return;
 
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
@@ -120,6 +122,8 @@ class _StadiumBuildState extends State<StadiumBuild> {
     // Calculate the upgrade cost for this sector
     int upgradeCost = 75000 * (currentLevel + 1) + 75000;
 
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -139,6 +143,7 @@ class _StadiumBuildState extends State<StadiumBuild> {
   }
 
   void _showSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -169,7 +174,7 @@ class _StadiumBuildState extends State<StadiumBuild> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: const Color.fromRGBO(0, 0, 0, 0.2), // Fixed
               blurRadius: 4.0,
               spreadRadius: 2.0,
             ),
@@ -207,7 +212,7 @@ class _StadiumBuildState extends State<StadiumBuild> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: const Color.fromRGBO(0, 0, 0, 0.1), // Fixed
               blurRadius: 8.0,
               spreadRadius: 4.0,
             ),
