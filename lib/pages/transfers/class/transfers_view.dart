@@ -10,181 +10,267 @@ class TransfersView extends StatefulWidget {
   const TransfersView({super.key});
 
   @override
-  State<TransfersView> createState() => TransfersViewState();
+  State<TransfersView> createState() => _TransfersViewState();
 }
 
-class TransfersViewState extends State<TransfersView> {
+class _TransfersViewState extends State<TransfersView>
+    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+  // State variables
   List<Player> _players = [];
   Player? _selectedPlayer;
   bool _isLoading = true;
+  String? _errorMessage;
+
+  // Cached references for performance
+  late final FirebaseFirestore _firestore;
+  late final User? _currentUser;
+
+  // Animation controllers
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    _initializeReferences();
+    _initializeAnimations();
     _initializeData();
   }
 
+  void _initializeReferences() {
+    _firestore = FirebaseFirestore.instance;
+    _currentUser = FirebaseAuth.instance.currentUser;
+  }
+
+  void _initializeAnimations() {
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
   Future<void> _initializeData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (!mounted) return;
 
-    await _checkAndRefreshData();
-    await _fetchPlayersFromTransfers();
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
 
-    setState(() {
-      _isLoading = false;
-    });
+      await _checkAndRefreshData();
+      await _fetchPlayersFromTransfers();
+
+      if (mounted) {
+        _fadeController.forward();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load transfer data: ${e.toString()}';
+        });
+      }
+      debugPrint('Error initializing data: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _checkAndRefreshData() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      debugPrint('User is not logged in.');
-      return;
+    if (_currentUser == null) {
+      throw Exception('User is not logged in');
     }
 
-    final transfersRef = firestore.collection('transfers').doc(user.uid);
-    final transferDoc = await transfersRef.get();
+    final transfersRef =
+        _firestore.collection('transfers').doc(_currentUser.uid);
 
-    if (transferDoc.exists) {
-      final Timestamp? createdAt = transferDoc['createdAt'];
-      final Timestamp? deleteAt = transferDoc['deleteAt'];
+    try {
+      final transferDoc = await transfersRef.get();
 
-      if (createdAt != null && deleteAt != null) {
-        final DateTime createdTime = createdAt.toDate();
-        final DateTime deleteTime = deleteAt.toDate();
-        final DateTime now = DateTime.now();
+      if (transferDoc.exists) {
+        final data = transferDoc.data();
 
-        debugPrint(
-            'Created time: $createdTime, Delete time: $deleteTime, Current time: $now');
+        if (data == null) {
+          await _generateAndSavePlayers();
+          return;
+        }
 
-        if (now.isAfter(deleteTime)) {
-          debugPrint(
-              'Refreshing data, more than 4 minutes have passed since deleteAt.');
-          await _refreshData();
+        final Timestamp? createdAt = data['createdAt'] as Timestamp?;
+        final Timestamp? deleteAt = data['deleteAt'] as Timestamp?;
+
+        if (createdAt != null && deleteAt != null) {
+          final DateTime deleteTime = deleteAt.toDate();
+          final DateTime now = DateTime.now();
+
+          if (now.isAfter(deleteTime)) {
+            debugPrint('Refreshing data - transfer period expired');
+            await _refreshData();
+          } else {
+            debugPrint('Using existing transfer data');
+          }
         } else {
-          debugPrint(
-              'Not refreshing data, less than 4 minutes have passed since deleteAt.');
+          // Wait for background process to complete
+          await Future.delayed(const Duration(seconds: 2));
+          await _checkAndRefreshData();
         }
       } else {
-        debugPrint('The createdAt or deleteAt field is still null. Waiting...');
-        await Future.delayed(const Duration(seconds: 2));
-        await _checkAndRefreshData();
+        debugPrint('Generating new transfer data');
+        await _generateAndSavePlayers();
       }
-    } else {
-      debugPrint('User document does not exist. Generating new data.');
-      await _generateAndSavePlayers();
+    } catch (e) {
+      debugPrint('Error checking transfer data: $e');
+      rethrow;
     }
   }
 
   Future<void> _refreshData() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
+    if (_currentUser == null) return;
 
-    if (user == null) return;
+    final transfersRef =
+        _firestore.collection('transfers').doc(_currentUser.uid);
 
-    final transfersRef = firestore.collection('transfers').doc(user.uid);
-    final transferDoc = await transfersRef.get();
-    final List<dynamic> playerRefs = transferDoc['playerRefs'] ?? [];
+    try {
+      final transferDoc = await transfersRef.get();
 
-    debugPrint('Deleting players from temp_transfers...');
-    for (var ref in playerRefs) {
-      final docRef = ref as DocumentReference;
-      await docRef.delete();
-      debugPrint('Deleted player: ${docRef.id}');
+      if (transferDoc.exists) {
+        final data = transferDoc.data();
+        final List<dynamic> playerRefs = data?['playerRefs'] ?? [];
+
+        // Delete old players in batch
+        final batch = _firestore.batch();
+        for (var ref in playerRefs) {
+          if (ref is DocumentReference) {
+            batch.delete(ref);
+          }
+        }
+        await batch.commit();
+
+        // Delete transfers document
+        await transfersRef.delete();
+        debugPrint('Cleaned up old transfer data');
+      }
+
+      await _generateAndSavePlayers();
+    } catch (e) {
+      debugPrint('Error refreshing data: $e');
+      rethrow;
     }
-
-    await transfersRef.delete();
-    debugPrint('User transfers document deleted.');
-
-    debugPrint('Generating new data...');
-    await _generateAndSavePlayers();
   }
 
   Future<void> _generateAndSavePlayers() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      debugPrint('User is not logged in.');
-      return;
+    if (_currentUser == null) {
+      throw Exception('User is not logged in');
     }
 
-    final tempTransfersRef = firestore.collection('temp_transfers');
-    final transfersRef = firestore.collection('transfers').doc(user.uid);
+    final tempTransfersRef = _firestore.collection('temp_transfers');
+    final transfersRef =
+        _firestore.collection('transfers').doc(_currentUser.uid);
 
-    List<DocumentReference> playerRefs = [];
+    try {
+      final List<DocumentReference> playerRefs = [];
+      final DateTime currentTime = DateTime.now();
 
-    final DateTime currentLocalTime = DateTime.now();
-    final Timestamp createdAt = Timestamp.fromDate(currentLocalTime);
+      // Generate players in parallel for better performance
+      final List<Future<Player>> playerFutures = List.generate(
+        20,
+        (_) => Player.generateRandomFootballer(),
+      );
 
-    for (int i = 0; i < 20; i++) {
-      final player = await Player.generateRandomFootballer();
-      final playerDocRef = tempTransfersRef.doc();
-      await playerDocRef.set(player.toDocument());
-      playerRefs.add(playerDocRef);
-      debugPrint('Saved player: ${playerDocRef.id}');
+      final List<Player> players = await Future.wait(playerFutures);
+
+      // Save players in batch
+      final batch = _firestore.batch();
+      for (final player in players) {
+        final playerDocRef = tempTransfersRef.doc();
+        batch.set(playerDocRef, player.toDocument());
+        playerRefs.add(playerDocRef);
+      }
+      await batch.commit();
+
+      // Save transfer document
+      await transfersRef.set({
+        'playerRefs': playerRefs,
+        'createdAt': Timestamp.fromDate(currentTime),
+        'deleteAt': Timestamp.fromDate(
+          currentTime.add(const Duration(minutes: 4)),
+        ),
+      });
+
+      debugPrint('Generated ${players.length} new transfer players');
+
+      // Small delay to ensure data consistency
+      await Future.delayed(const Duration(milliseconds: 500));
+    } catch (e) {
+      debugPrint('Error generating players: $e');
+      rethrow;
     }
-
-    await transfersRef.set({
-      'playerRefs': playerRefs,
-      'createdAt': createdAt,
-    });
-
-    debugPrint('New user transfers document created.');
-
-    final DateTime deleteDate = currentLocalTime.add(
-        const Duration(minutes: 4)); // TODO: Adjust the time duration if needed
-    final Timestamp deleteAt = Timestamp.fromDate(deleteDate);
-
-    await transfersRef.update({
-      'deleteAt': deleteAt,
-    });
-
-    debugPrint('Delete time set to: $deleteDate');
-
-    await Future.delayed(const Duration(seconds: 2));
   }
 
   Future<void> _fetchPlayersFromTransfers() async {
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      debugPrint('User is not logged in.');
-      return;
+    if (_currentUser == null) {
+      throw Exception('User is not logged in');
     }
 
-    final transfersRef = firestore.collection('transfers').doc(user.uid);
-    final transferDoc = await transfersRef.get();
-    final List<dynamic> playerRefs = transferDoc['playerRefs'] ?? [];
+    final transfersRef =
+        _firestore.collection('transfers').doc(_currentUser.uid);
 
-    List<Player> players = [];
-    for (var ref in playerRefs) {
-      final playerDoc = await (ref as DocumentReference).get();
-      if (playerDoc.exists) {
-        players.add(Player.fromDocument(playerDoc));
-        debugPrint('Fetched player: ${playerDoc.id}');
+    try {
+      final transferDoc = await transfersRef.get();
+
+      if (!transferDoc.exists) {
+        setState(() {
+          _players = [];
+        });
+        return;
       }
+
+      final data = transferDoc.data();
+      final List<dynamic> playerRefs = data?['playerRefs'] ?? [];
+
+      // Fetch players in parallel
+      final List<Future<DocumentSnapshot>> playerFutures =
+          playerRefs.cast<DocumentReference>().map((ref) => ref.get()).toList();
+
+      final List<DocumentSnapshot> playerDocs =
+          await Future.wait(playerFutures);
+
+      final List<Player> players = playerDocs
+          .where((doc) => doc.exists)
+          .map((doc) => Player.fromDocument(doc))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _players = players;
+        });
+      }
+
+      debugPrint('Fetched ${players.length} transfer players');
+    } catch (e) {
+      debugPrint('Error fetching players: $e');
+      rethrow;
     }
-
-    setState(() {
-      _players = players;
-    });
-  }
-
-  void removePlayerFromList(Player player) {
-    setState(() {
-      _players.removeWhere((p) => p.playerID == player.playerID);
-    });
   }
 
   void _onPlayerSelected(Player player) {
+    if (!mounted) return;
+
     setState(() {
-      _selectedPlayer = player;
+      _selectedPlayer = _selectedPlayer == player ? null : player;
     });
   }
 
@@ -193,48 +279,249 @@ class TransfersViewState extends State<TransfersView> {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        return TransferPlayerConfirmWidget(
-          player: player,
-          isSelected: _selectedPlayer == player,
-          onPlayerSelected: _onPlayerSelected,
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: TransferPlayerConfirmWidget(
+              player: player,
+              isSelected: _selectedPlayer == player,
+              onPlayerSelected: _onPlayerSelected,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _onRefresh() async {
+    await _initializeData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (_isLoading) {
+      return _buildLoadingWidget();
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorWidget();
+    }
+
+    return _buildTransfersList();
+  }
+
+  Widget _buildLoadingWidget() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.hoverColor.withValues(alpha: 0.1),
+            AppColors.hoverColor.withValues(alpha: 0.05),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LoadingAnimationWidget.waveDots(
+              color: AppColors.textEnabledColor,
+              size: 50,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Loading transfers...',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textEnabledColor.withValues(alpha: 0.7),
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 48,
+            color: Colors.red.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Error Loading Transfers',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.red.shade400,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _errorMessage ?? 'Unknown error occurred',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.red.shade300,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _initializeData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.hoverColor,
+              foregroundColor: AppColors.textEnabledColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransfersList() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor,
+        border: Border.all(color: AppColors.borderColor),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: AppColors.textEnabledColor,
+          backgroundColor: AppColors.hoverColor,
+          child: _players.isEmpty ? _buildEmptyState() : _buildPlayersList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      height: 400,
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.sports_soccer,
+            size: 64,
+            color: AppColors.textEnabledColor.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No transfers available',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: AppColors.textEnabledColor.withValues(alpha: 0.7),
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Pull down to refresh',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textEnabledColor.withValues(alpha: 0.5),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayersList() {
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: _players.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final player = _players[index];
+        return RepaintBoundary(
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300 + (index * 50)),
+            curve: Curves.easeOutBack,
+            child: _OptimizedPlayerCard(
+              player: player,
+              isSelected: _selectedPlayer == player,
+              onTap: () => _showPlayerConfirmationDialog(player),
+              onPlayerSelected: _onPlayerSelected,
+            ),
+          ),
         );
       },
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
+}
 
-    return _isLoading
-        ? Center(
-            child: LoadingAnimationWidget.waveDots(
-              color: AppColors.textEnabledColor,
-              size: 50,
-            ),
-          )
-        : Container(
-            margin: EdgeInsets.all(screenWidth * 0.04),
-            decoration: BoxDecoration(
-              color: AppColors.hoverColor,
-              border: Border.all(color: AppColors.borderColor, width: 1),
-              borderRadius: BorderRadius.circular(10.0),
-            ),
-            child: ListView(
-              padding: EdgeInsets.all(screenWidth * 0.04),
-              children: _players.map((player) {
-                return GestureDetector(
-                  onTap: () {
-                    _showPlayerConfirmationDialog(player);
-                  },
-                  child: TransferPlayerConfirmWidget(
-                    player: player,
-                    isSelected: _selectedPlayer == player,
-                    onPlayerSelected: _onPlayerSelected,
-                  ),
-                );
-              }).toList(),
-            ),
-          );
+// Optimized stateless widget for player cards
+class _OptimizedPlayerCard extends StatelessWidget {
+  const _OptimizedPlayerCard({
+    required this.player,
+    required this.isSelected,
+    required this.onTap,
+    required this.onPlayerSelected,
+  });
+
+  final Player player;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Function(Player) onPlayerSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.textEnabledColor.withValues(alpha: 0.1)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: isSelected
+                ? Border.all(color: AppColors.textEnabledColor, width: 2)
+                : null,
+          ),
+          child: TransferPlayerConfirmWidget(
+            player: player,
+            isSelected: isSelected,
+            onPlayerSelected: onPlayerSelected,
+          ),
+        ),
+      ),
+    );
   }
 }
