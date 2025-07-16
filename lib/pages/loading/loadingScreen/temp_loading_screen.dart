@@ -4,14 +4,14 @@ import 'package:pocket_eleven/design/colors.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/pages/loading/loadingScreen/loading_screen_controller.dart';
 
-class TempLoadingScreen extends StatefulWidget {
-  const TempLoadingScreen({super.key});
+class LoadingScreen extends StatefulWidget {
+  const LoadingScreen({super.key});
 
   @override
-  State<TempLoadingScreen> createState() => _TempLoadingScreenState();
+  State<LoadingScreen> createState() => _LoadingScreenState();
 }
 
-class _TempLoadingScreenState extends State<TempLoadingScreen>
+class _LoadingScreenState extends State<LoadingScreen>
     with SingleTickerProviderStateMixin {
   late final LoadingScreenController _controller;
   late final AnimationController _fadeController;
