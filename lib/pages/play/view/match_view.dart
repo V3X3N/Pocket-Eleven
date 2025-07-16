@@ -675,7 +675,7 @@ class _MatchTile extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.hoverColor.withOpacity(0.7),
+                  color: AppColors.hoverColor.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
