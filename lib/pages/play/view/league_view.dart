@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
-import 'package:pocket_eleven/pages/play/widget/league_service.dart';
+import 'package:pocket_eleven/pages/play/league_service.dart';
 
 class LeagueView extends StatefulWidget {
   const LeagueView({
