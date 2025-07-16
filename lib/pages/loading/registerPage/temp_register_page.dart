@@ -12,360 +12,213 @@ class TempRegisterPage extends StatefulWidget {
 }
 
 class _TempRegisterPageState extends State<TempRegisterPage> {
-  // Controllers using late for better memory management
-  late final TextEditingController _clubnameController;
-  late final TextEditingController _usernameController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _passwordController;
-  late final TextEditingController _confirmPasswordController;
+  final _formKey = GlobalKey<FormState>();
+  final _registerService = RegisterService();
 
-  late final GlobalKey<FormState> _formKey;
-  late final RegisterService _registerService;
+  // Use ValueNotifier for efficient state management
+  final _isLoading = ValueNotifier<bool>(false);
+  final _formValid = ValueNotifier<bool>(false);
+  final _passwordStrength = ValueNotifier<int>(0);
 
-  // Optimized state management
-  bool _isLoading = false;
-  final Map<String, bool> _validationStates = {
-    'clubName': false,
-    'username': false,
-    'email': false,
-    'password': false,
-    'confirmPassword': false,
+  // Controllers
+  final _controllers = <String, TextEditingController>{
+    'clubName': TextEditingController(),
+    'username': TextEditingController(),
+    'email': TextEditingController(),
+    'password': TextEditingController(),
+    'confirmPassword': TextEditingController(),
   };
-
-  // Cached values for performance
-  late final MediaQueryData _mediaQuery;
-  late final double _screenWidth;
-  late final double _screenHeight;
 
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
-    _formKey = GlobalKey<FormState>();
-    _registerService = RegisterService();
+    _setupValidation();
   }
 
-  void _initializeControllers() {
-    _clubnameController = TextEditingController();
-    _usernameController = TextEditingController();
-    _emailController = TextEditingController();
-    _passwordController = TextEditingController();
-    _confirmPasswordController = TextEditingController();
+  void _setupValidation() {
+    void updateValidation() {
+      _formValid.value = _controllers.values
+              .every((controller) => controller.text.trim().isNotEmpty) &&
+          _validateForm();
+    }
 
-    // Setup optimized listeners
-    _clubnameController.addListener(() => _updateValidation('clubName'));
-    _usernameController.addListener(() => _updateValidation('username'));
-    _emailController.addListener(() => _updateValidation('email'));
-    _passwordController.addListener(() {
-      _updateValidation('password');
-      _updateValidation('confirmPassword');
-    });
-    _confirmPasswordController
-        .addListener(() => _updateValidation('confirmPassword'));
-  }
-
-  void _updateValidation(String field) {
-    final newState = _getValidationState(field);
-    if (_validationStates[field] != newState) {
-      setState(() {
-        _validationStates[field] = newState;
+    _controllers.forEach((key, controller) {
+      controller.addListener(() {
+        updateValidation();
+        if (key == 'password') {
+          _passwordStrength.value = _calculatePasswordStrength(controller.text);
+        }
       });
-    }
-  }
-
-  bool _getValidationState(String field) {
-    switch (field) {
-      case 'clubName':
-        return _validateClubname(_clubnameController.text) == null;
-      case 'username':
-        return _validateUsername(_usernameController.text) == null;
-      case 'email':
-        return _validateEmail(_emailController.text) == null;
-      case 'password':
-        return _validatePassword(_passwordController.text) == null;
-      case 'confirmPassword':
-        return _validateConfirmPassword(_confirmPasswordController.text) ==
-            null;
-      default:
-        return false;
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _mediaQuery = MediaQuery.of(context);
-    _screenWidth = _mediaQuery.size.width;
-    _screenHeight = _mediaQuery.size.height;
+    });
   }
 
   @override
   void dispose() {
-    _clubnameController.dispose();
-    _usernameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    _controllers.values.forEach((controller) => controller.dispose());
+    _isLoading.dispose();
+    _formValid.dispose();
+    _passwordStrength.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primaryColor,
-            AppColors.primaryColor.withValues(alpha: 0.8),
-          ],
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A2E),
+              Color(0xFF16213E),
+              Color(0xFF0F3460),
+            ],
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: _isLoading ? const _LoadingOverlay() : _buildMainContent(),
+        child: SafeArea(
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _isLoading,
+            builder: (context, isLoading, _) =>
+                isLoading ? const _LoadingOverlay() : _buildContent(),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildContent() {
     return Form(
       key: _formKey,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: _screenWidth * 0.08,
-          vertical: _screenHeight * 0.05,
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const _GameTitle(),
-                SizedBox(height: _screenHeight * 0.06),
-                ..._buildInputFields(),
-                SizedBox(height: _screenHeight * 0.04),
-                _buildPasswordStrengthIndicator(),
-                SizedBox(height: _screenHeight * 0.05),
-                _buildRegisterButton(),
-                SizedBox(height: _screenHeight * 0.03),
-                const _LoginPrompt(),
-              ],
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(24),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
+                  const _GameTitle(),
+                  const SizedBox(height: 48),
+                  ..._buildInputFields(),
+                  const SizedBox(height: 24),
+                  _buildPasswordStrength(),
+                  const SizedBox(height: 32),
+                  _buildRegisterButton(),
+                  const SizedBox(height: 24),
+                  const _LoginPrompt(),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   List<Widget> _buildInputFields() {
     final fields = [
-      _buildInputField(
-          "Club Name", _clubnameController, Icons.sports_soccer, 'clubName'),
-      _buildInputField(
-          "Username", _usernameController, Icons.person, 'username'),
-      _buildInputField("Email", _emailController, Icons.email, 'email',
-          keyboardType: TextInputType.emailAddress),
-      _buildInputField("Password", _passwordController, Icons.lock, 'password',
-          isPassword: true),
-      _buildInputField("Confirm Password", _confirmPasswordController,
-          Icons.lock_outline, 'confirmPassword',
-          isPassword: true),
+      ('Club Name', Icons.sports_soccer, 'clubName'),
+      ('Username', Icons.person, 'username'),
+      ('Email', Icons.email, 'email'),
+      ('Password', Icons.lock, 'password'),
+      ('Confirm Password', Icons.lock_outline, 'confirmPassword'),
     ];
 
     return fields
-        .map((field) => [
-              field,
-              SizedBox(height: _screenHeight * 0.025),
-            ])
-        .expand((x) => x)
-        .toList()
-      ..removeLast();
+        .map((field) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _OptimizedTextField(
+                label: field.$1,
+                icon: field.$2,
+                controller: _controllers[field.$3]!,
+                isPassword: field.$3.contains('password'),
+                keyboardType: field.$3 == 'email'
+                    ? TextInputType.emailAddress
+                    : TextInputType.text,
+                validator: _getValidator(field.$3),
+              ),
+            ))
+        .toList();
   }
 
-  Widget _buildInputField(
-    String hintText,
-    TextEditingController controller,
-    IconData icon,
-    String validationKey, {
-    bool isPassword = false,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    final hasText = controller.text.isNotEmpty;
-    final isValid = _validationStates[validationKey] ?? false;
-    final borderColor =
-        hasText ? (isValid ? Colors.green : Colors.red) : Colors.white70;
+  Widget _buildPasswordStrength() {
+    return ValueListenableBuilder<int>(
+      valueListenable: _passwordStrength,
+      builder: (context, strength, _) {
+        if (_controllers['password']!.text.isEmpty)
+          return const SizedBox.shrink();
 
-    return RepaintBoundary(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: hasText
-              ? [
-                  BoxShadow(
-                    color: borderColor.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : null,
-        ),
-        child: TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: isPassword,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
-            prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.8)),
-            suffixIcon: hasText
-                ? AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: Icon(
-                      isValid ? Icons.check_circle : Icons.error,
-                      color: isValid ? Colors.green : Colors.red,
-                      key: ValueKey(isValid),
-                    ),
-                  )
-                : null,
-            enabledBorder: OutlineInputBorder(
+        final colors = [Colors.red, Colors.orange, Colors.yellow, Colors.green];
+        final labels = ['Weak', 'Fair', 'Good', 'Strong'];
+        final color = colors[strength.clamp(0, 3)];
+
+        return RepaintBoundary(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor, width: 1.5),
+              color: Colors.white.withOpacity(0.1),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: borderColor, width: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Password Strength: ${labels[strength.clamp(0, 3)]}',
+                  style: TextStyle(
+                      color: color, fontSize: 14, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: strength / 4,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ],
             ),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.15),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           ),
-          validator: (value) => _getValidator(validationKey)(value),
-        ),
-      ),
+        );
+      },
     );
-  }
-
-  String? Function(String?) _getValidator(String key) {
-    switch (key) {
-      case 'clubName':
-        return _validateClubname;
-      case 'username':
-        return _validateUsername;
-      case 'email':
-        return _validateEmail;
-      case 'password':
-        return _validatePassword;
-      case 'confirmPassword':
-        return _validateConfirmPassword;
-      default:
-        return (_) => null;
-    }
-  }
-
-  Widget _buildPasswordStrengthIndicator() {
-    if (_passwordController.text.isEmpty) return const SizedBox.shrink();
-
-    final strength = _calculatePasswordStrength(_passwordController.text);
-    final strengthColor = [
-      Colors.red,
-      Colors.orange,
-      Colors.yellow,
-      Colors.green
-    ][strength.clamp(0, 3)];
-
-    return RepaintBoundary(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Password Strength: ${_getStrengthText(strength)}',
-              style: TextStyle(
-                  color: strengthColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: strength / 4,
-              backgroundColor: Colors.white.withValues(alpha: 0.3),
-              valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getStrengthText(int strength) {
-    switch (strength) {
-      case 0:
-        return 'Very Weak';
-      case 1:
-        return 'Weak';
-      case 2:
-        return 'Fair';
-      case 3:
-        return 'Good';
-      case 4:
-        return 'Strong';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  int _calculatePasswordStrength(String password) {
-    int strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.contains(RegExp(r'[0-9]'))) strength++;
-    if (password.contains(RegExp(r'[a-zA-Z]'))) strength++;
-    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength++;
-    return strength;
   }
 
   Widget _buildRegisterButton() {
-    final isFormValid = _validationStates.values.every((valid) => valid);
-
-    return RepaintBoundary(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: (_isLoading || !isFormValid) ? null : _handleRegister,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isFormValid ? Colors.white : Colors.grey,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: isFormValid ? 8 : 0,
+    return ValueListenableBuilder<bool>(
+      valueListenable: _formValid,
+      builder: (context, isValid, _) => RepaintBoundary(
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: isValid ? _handleRegister : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isValid ? Colors.white : Colors.grey.withOpacity(0.3),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              elevation: isValid ? 8 : 0,
+            ),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, loading, _) => loading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isValid ? AppColors.primaryColor : Colors.white54,
+                      ),
+                    ),
+            ),
           ),
-          child: _isLoading
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(
-                  'Create Account',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isFormValid ? AppColors.primaryColor : Colors.white54,
-                  ),
-                ),
         ),
       ),
     );
@@ -374,14 +227,14 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    _isLoading.value = true;
 
     try {
       final registerData = RegisterData(
-        email: _emailController.text,
-        password: _passwordController.text,
-        username: _usernameController.text,
-        clubName: _clubnameController.text,
+        email: _controllers['email']!.text.trim(),
+        password: _controllers['password']!.text,
+        username: _controllers['username']!.text.trim(),
+        clubName: _controllers['clubName']!.text.trim(),
       );
 
       final result = await _registerService.registerUser(registerData, context);
@@ -393,21 +246,17 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
         } else if (result is RegisterFailure) {
-          _showErrorSnackbar(result.error);
+          _showError(result.error);
         }
       }
     } catch (e) {
-      if (mounted) {
-        _showErrorSnackbar('An unexpected error occurred. Please try again.');
-      }
+      if (mounted) _showError('Registration failed. Please try again.');
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) _isLoading.value = false;
     }
   }
 
-  void _showErrorSnackbar(String message) {
+  void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -418,23 +267,29 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
     );
   }
 
-  // Validation methods (shortened)
-  String? _validateClubname(String? value) {
-    if (value?.trim().isEmpty ?? true) return 'Club name is required';
-    final trimmed = value!.trim();
-    if (trimmed.length < 3 || trimmed.length > 30) {
-      return 'Club name must be 3-30 characters';
-    }
+  String? Function(String?) _getValidator(String key) {
+    final validators = {
+      'clubName': (String? value) => _validateLength(value, 3, 30, 'Club name'),
+      'username': (String? value) => _validateUsername(value),
+      'email': (String? value) => _validateEmail(value),
+      'password': (String? value) => _validatePassword(value),
+      'confirmPassword': (String? value) => _validateConfirmPassword(value),
+    };
+    return validators[key] ?? (_) => null;
+  }
+
+  String? _validateLength(String? value, int min, int max, String field) {
+    if (value?.trim().isEmpty ?? true) return '$field is required';
+    final length = value!.trim().length;
+    if (length < min || length > max)
+      return '$field must be $min-$max characters';
     return null;
   }
 
   String? _validateUsername(String? value) {
-    if (value?.trim().isEmpty ?? true) return 'Username is required';
-    final trimmed = value!.trim();
-    if (trimmed.length < 3 || trimmed.length > 20) {
-      return 'Username must be 3-20 characters';
-    }
-    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(trimmed)) {
+    final lengthError = _validateLength(value, 3, 20, 'Username');
+    if (lengthError != null) return lengthError;
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value!.trim())) {
       return 'Only letters, numbers, and underscores allowed';
     }
     return null;
@@ -452,23 +307,144 @@ class _TempRegisterPageState extends State<TempRegisterPage> {
   String? _validatePassword(String? value) {
     if (value?.isEmpty ?? true) return 'Password is required';
     if (value!.length < 8) return 'Password must be at least 8 characters';
-    if (!value.contains(RegExp(r'[0-9]'))) {
-      return 'Password must contain at least one number';
-    }
-    if (!value.contains(RegExp(r'[a-zA-Z]'))) {
-      return 'Password must contain at least one letter';
-    }
     return null;
   }
 
   String? _validateConfirmPassword(String? value) {
     if (value?.isEmpty ?? true) return 'Please confirm your password';
-    if (value != _passwordController.text) return 'Passwords do not match';
+    if (value != _controllers['password']!.text)
+      return 'Passwords do not match';
     return null;
+  }
+
+  bool _validateForm() {
+    return _controllers.entries.every((entry) {
+      final validator = _getValidator(entry.key);
+      return validator(entry.value.text) == null;
+    });
+  }
+
+  int _calculatePasswordStrength(String password) {
+    if (password.isEmpty) return 0;
+    int strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.contains(RegExp(r'[0-9]'))) strength++;
+    if (password.contains(RegExp(r'[a-zA-Z]'))) strength++;
+    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) strength++;
+    return strength;
   }
 }
 
-// Optimized stateless widgets
+class _OptimizedTextField extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final TextEditingController controller;
+  final bool isPassword;
+  final TextInputType keyboardType;
+  final String? Function(String?) validator;
+
+  const _OptimizedTextField({
+    required this.label,
+    required this.icon,
+    required this.controller,
+    this.isPassword = false,
+    this.keyboardType = TextInputType.text,
+    required this.validator,
+  });
+
+  @override
+  State<_OptimizedTextField> createState() => _OptimizedTextFieldState();
+}
+
+class _OptimizedTextFieldState extends State<_OptimizedTextField> {
+  final _focusNode = FocusNode();
+  final _hasText = ValueNotifier<bool>(false);
+  final _isValid = ValueNotifier<bool>(false);
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_updateState);
+    _focusNode.addListener(_updateState);
+  }
+
+  void _updateState() {
+    _hasText.value = widget.controller.text.isNotEmpty;
+    _isValid.value = widget.validator(widget.controller.text) == null;
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _hasText.dispose();
+    _isValid.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _hasText,
+        builder: (context, hasText, _) => ValueListenableBuilder<bool>(
+          valueListenable: _isValid,
+          builder: (context, isValid, _) {
+            final borderColor = hasText
+                ? (isValid ? Colors.green : Colors.red)
+                : Colors.white.withOpacity(0.3);
+
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: hasText
+                    ? [
+                        BoxShadow(
+                          color: borderColor.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
+                    : null,
+              ),
+              child: TextFormField(
+                controller: widget.controller,
+                focusNode: _focusNode,
+                keyboardType: widget.keyboardType,
+                obscureText: widget.isPassword,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: widget.label,
+                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                  prefixIcon:
+                      Icon(widget.icon, color: Colors.white.withOpacity(0.7)),
+                  suffixIcon: hasText
+                      ? Icon(
+                          isValid ? Icons.check_circle : Icons.error,
+                          color: isValid ? Colors.green : Colors.red,
+                        )
+                      : null,
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: borderColor, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: borderColor, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  contentPadding: const EdgeInsets.all(20),
+                ),
+                validator: widget.validator,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _GameTitle extends StatelessWidget {
   const _GameTitle();
 
@@ -479,27 +455,27 @@ class _GameTitle extends StatelessWidget {
         children: [
           ShaderMask(
             shaderCallback: (bounds) => const LinearGradient(
-              colors: [Colors.white, Colors.white70, Colors.white54],
+              colors: [Colors.white, Colors.blue, Colors.purple],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ).createShader(bounds),
             child: const Text(
               'POCKET ELEVEN',
               style: TextStyle(
-                fontSize: 48,
+                fontSize: 42,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-                letterSpacing: 2,
+                letterSpacing: 3,
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Container(
             height: 4,
-            width: 100,
+            width: 120,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Colors.white, Colors.transparent],
+                colors: [Colors.blue, Colors.purple, Colors.transparent],
               ),
               borderRadius: BorderRadius.circular(2),
             ),
@@ -516,24 +492,23 @@ class _LoginPrompt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const TempLoginPage()),
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           decoration: BoxDecoration(
-            border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4), width: 1.5),
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
             borderRadius: BorderRadius.circular(25),
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
           ),
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.login, color: Colors.white, size: 20),
-              SizedBox(width: 12),
+              Icon(Icons.login, color: Colors.white, size: 18),
+              SizedBox(width: 8),
               Text(
                 "Already have an account? Sign in",
                 style: TextStyle(
@@ -556,7 +531,7 @@ class _LoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black54,
+      color: Colors.black.withOpacity(0.7),
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -566,7 +541,7 @@ class _LoadingOverlay extends StatelessWidget {
               width: 48,
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                strokeWidth: 4,
+                strokeWidth: 3,
               ),
             ),
             SizedBox(height: 24),

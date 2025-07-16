@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/firebase/auth_functions.dart';
-import 'package:pocket_eleven/firebase/firebase_club.dart';
 import 'package:pocket_eleven/firebase/firebase_league.dart';
 
-// Immutable data class with validation
+// Immutable data class with built-in validation
 @immutable
 class RegisterData {
   final String email;
@@ -20,37 +18,36 @@ class RegisterData {
     required this.clubName,
   });
 
-  // Validation with comprehensive checks
   String? validate() {
-    final emailTrimmed = email.trim();
-    final usernameTrimmed = username.trim();
-    final clubNameTrimmed = clubName.trim();
+    final trimmed = this.trimmed;
 
-    if (emailTrimmed.isEmpty) return 'Email is required';
-    if (usernameTrimmed.isEmpty) return 'Username is required';
-    if (clubNameTrimmed.isEmpty) return 'Club name is required';
+    // Required field checks
+    if (trimmed.email.isEmpty) return 'Email is required';
+    if (trimmed.username.isEmpty) return 'Username is required';
+    if (trimmed.clubName.isEmpty) return 'Club name is required';
     if (password.isEmpty) return 'Password is required';
 
-    // Enhanced validation
-    if (usernameTrimmed.length < 3 || usernameTrimmed.length > 20) {
+    // Length validations
+    if (trimmed.username.length < 3 || trimmed.username.length > 20) {
       return 'Username must be 3-20 characters';
     }
-    if (clubNameTrimmed.length < 3 || clubNameTrimmed.length > 30) {
+    if (trimmed.clubName.length < 3 || trimmed.clubName.length > 30) {
       return 'Club name must be 3-30 characters';
     }
     if (password.length < 8) return 'Password must be at least 8 characters';
+
+    // Format validations
     if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-        .hasMatch(emailTrimmed)) {
+        .hasMatch(trimmed.email)) {
       return 'Invalid email format';
     }
-    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(usernameTrimmed)) {
+    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(trimmed.username)) {
       return 'Username can only contain letters, numbers, and underscores';
     }
 
     return null;
   }
 
-  // Factory for trimmed data
   RegisterData get trimmed => RegisterData(
         email: email.trim(),
         password: password,
@@ -59,7 +56,7 @@ class RegisterData {
       );
 }
 
-// Sealed result class for better error handling
+// Sealed result classes for type-safe error handling
 @immutable
 sealed class RegisterResult {
   const RegisterResult();
@@ -76,191 +73,236 @@ class RegisterFailure extends RegisterResult {
   const RegisterFailure(this.error, {this.code});
 }
 
-// Optimized service with better error handling and performance
+// Optimized singleton service with caching and efficient operations
 class RegisterService {
   static final RegisterService _instance = RegisterService._internal();
   factory RegisterService() => _instance;
   RegisterService._internal();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Main registration with comprehensive error handling
+  // Simple cache with automatic cleanup
+  static final Map<String, bool> _emailCache = {};
+  static DateTime _lastCacheClean = DateTime.now();
+
+  // Main registration method with streamlined error handling
   Future<RegisterResult> registerUser(
       RegisterData data, BuildContext context) async {
     try {
-      // Validate data first
+      // Validate input data
       final validationError = data.validate();
-      if (validationError != null) {
-        return RegisterFailure(validationError);
-      }
+      if (validationError != null) return RegisterFailure(validationError);
 
       final trimmedData = data.trimmed;
 
+      // Check email availability
+      if (await isEmailRegistered(trimmedData.email)) {
+        return const RegisterFailure('Email already registered',
+            code: 'email-already-in-use');
+      }
+
       // Create user account
-      final authResult = await _createUserAccount(trimmedData, context);
-      if (authResult is RegisterFailure) return authResult;
-
-      final userId = (authResult as RegisterSuccess).userId;
-      final userRef = _firestore.collection('users').doc(userId);
-
-      // Batch operations for better performance
-      final batch = _firestore.batch();
-
-      // Initialize user data
-      await _initializeUserData(userRef, userId, batch);
-
-      // Handle league assignment
-      await _handleLeagueAssignment(userRef, batch);
-
-      // Commit batch
-      await batch.commit();
-
-      return RegisterSuccess(userId);
-    } on FirebaseAuthException catch (e) {
-      return RegisterFailure(_getAuthErrorMessage(e), code: e.code);
-    } on FirebaseException catch (e) {
-      return RegisterFailure(_getFirestoreErrorMessage(e), code: e.code);
-    } catch (e) {
-      debugPrint('RegisterService Error: $e');
-      return RegisterFailure('An unexpected error occurred. Please try again.');
-    }
-  }
-
-  // Optimized account creation
-  Future<RegisterResult> _createUserAccount(
-      RegisterData data, BuildContext context) async {
-    try {
-      await AuthServices.signupUser(
-        data.email,
-        data.password,
-        data.username,
-        data.clubName,
-        context,
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: trimmedData.email,
+        password: trimmedData.password,
       );
 
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        return const RegisterFailure('Failed to get user ID after signup');
-      }
+      final user = userCredential.user;
+      if (user == null)
+        return const RegisterFailure('Failed to create account');
 
-      return RegisterSuccess(userId);
+      // Update profile and save to Firestore concurrently
+      await Future.wait([
+        user.updateDisplayName(trimmedData.username),
+        _saveUserToFirestore(trimmedData, user.uid),
+        LeagueFunctions.initializeUserWithLeague(user.uid, trimmedData),
+      ]);
+
+      _showSuccessMessage(context);
+      return RegisterSuccess(user.uid);
+    } on FirebaseAuthException catch (e) {
+      return RegisterFailure(_getErrorMessage(e), code: e.code);
+    } on FirebaseException catch (e) {
+      return RegisterFailure(_getErrorMessage(e), code: e.code);
     } catch (e) {
-      rethrow;
+      debugPrint('Registration error: $e');
+      return const RegisterFailure('Registration failed. Please try again.');
     }
   }
 
-  // Optimized initialization with batch operations
-  Future<void> _initializeUserData(
-    DocumentReference userRef,
-    String userId,
-    WriteBatch batch,
-  ) async {
+  // Optimized Firestore operations
+  static Future<void> _saveUserToFirestore(
+      RegisterData data, String userId) async {
+    await _firestore.collection('users').doc(userId).set({
+      'username': data.username,
+      'email': data.email,
+      'clubName': data.clubName,
+      'uid': userId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'lastActive': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Cached email existence check
+  Future<bool> isEmailRegistered(String email) async {
+    _cleanCacheIfNeeded();
+
+    if (_emailCache.containsKey(email)) return _emailCache[email]!;
+
     try {
-      final userData = await ClubFunctions.getUserData(userId);
-      if (userData == null) {
-        throw Exception('Failed to retrieve user data after creation');
-      }
+      final snapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
 
-      // Use batch for better performance
-      await ClubFunctions.initializeSectorLevels(userRef, userData);
+      final exists = snapshot.docs.isNotEmpty;
+      _emailCache[email] = exists;
+      return exists;
     } catch (e) {
-      throw Exception('Failed to initialize user data: $e');
+      debugPrint('Email check error: $e');
+      return false;
     }
   }
 
-  // Optimized league assignment
-  Future<void> _handleLeagueAssignment(
-      DocumentReference userRef, WriteBatch batch) async {
+  // Optimized user operations
+  Future<bool> userHasClub(String email) async {
     try {
-      final availableLeague =
-          await LeagueFunctions.findAvailableLeagueWithBot();
+      final snapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
 
-      if (availableLeague != null) {
-        await _replaceUserInExistingLeague(availableLeague, userRef, batch);
-      } else {
-        await _createNewLeagueForUser(userRef, batch);
-      }
+      if (snapshot.docs.isEmpty) return false;
+
+      final data = snapshot.docs.first.data();
+      return data['clubName']?.toString().isNotEmpty ?? false;
     } catch (e) {
-      throw Exception('Failed to assign league: $e');
+      debugPrint('Club check error: $e');
+      return false;
     }
   }
 
-  // Optimized league replacement
-  Future<void> _replaceUserInExistingLeague(
-    DocumentSnapshot availableLeague,
-    DocumentReference userRef,
-    WriteBatch batch,
-  ) async {
-    final leagueData = availableLeague.data() as Map<String, dynamic>?;
-    if (leagueData == null) throw Exception('League data is null');
+  // Streamlined sign-in method
+  Future<void> signinUser(
+      String email, String password, BuildContext context) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      _showSuccessMessage(context, message: 'Successfully signed in');
+    } on FirebaseAuthException catch (e) {
+      _showErrorMessage(context, _getErrorMessage(e));
+    } catch (e) {
+      _showErrorMessage(context, 'Sign in failed. Please try again.');
+    }
+  }
 
-    final clubs = List<DocumentReference>.from(leagueData['clubs'] ?? []);
-    final botIndex = clubs.indexWhere((club) => club.id.startsWith('Bot_'));
+  // Authentication state utilities
+  static bool get isLoggedIn => _auth.currentUser != null;
+  static String? get currentUserID => _auth.currentUser?.uid;
+  static User? get currentUser => _auth.currentUser;
+  static Future<void> signOut() => _auth.signOut();
 
-    if (botIndex == -1) throw Exception('No bot found to replace');
+  // Efficient user data operations
+  Stream<DocumentSnapshot> getUserDataStream(String userId) =>
+      _firestore.collection('users').doc(userId).snapshots();
 
-    final botRef = clubs[botIndex];
-    clubs[botIndex] = userRef;
+  Future<Map<String, dynamic>?> getUserData(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      return doc.exists ? doc.data() : null;
+    } catch (e) {
+      debugPrint('Get user data error: $e');
+      return null;
+    }
+  }
 
-    // Use batch operations
-    batch.update(availableLeague.reference, {'clubs': clubs});
-    batch.update(userRef, {'leagueRef': availableLeague.reference});
+  Future<void> updateUserData(
+      String userId, Map<String, dynamic> updates) async {
+    try {
+      updates['lastUpdated'] = FieldValue.serverTimestamp();
+      await _firestore.collection('users').doc(userId).update(updates);
+    } catch (e) {
+      debugPrint('Update user data error: $e');
+    }
+  }
 
-    // Handle match replacement separately (can't be batched)
-    await LeagueFunctions.replaceBotInMatches(
-      availableLeague,
-      botRef.id,
-      userRef.id,
+  // Cleanup operations
+  Future<void> cleanupOnError(String userId) async {
+    try {
+      final batch = _firestore.batch();
+      batch.delete(_firestore.collection('users').doc(userId));
+      batch.delete(_firestore.collection('matches').doc(userId));
+      await batch.commit();
+      await _auth.currentUser?.delete();
+    } catch (e) {
+      debugPrint('Cleanup error: $e');
+    }
+  }
+
+  // Helper methods
+  static void _cleanCacheIfNeeded() {
+    if (DateTime.now().difference(_lastCacheClean).inMinutes > 5) {
+      _emailCache.clear();
+      _lastCacheClean = DateTime.now();
+    }
+  }
+
+  static void _showSuccessMessage(BuildContext context,
+      {String message = 'Registration successful'}) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
-  // Optimized league creation
-  Future<void> _createNewLeagueForUser(
-      DocumentReference userRef, WriteBatch batch) async {
-    final newLeagueId = await LeagueFunctions.createNewLeagueWithBots();
-    if (newLeagueId.isEmpty) throw Exception('Failed to create new league');
-
-    final newLeagueRef = _firestore.collection('leagues').doc(newLeagueId);
-    batch.update(userRef, {'leagueRef': newLeagueRef});
+  static void _showErrorMessage(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
-  // User-friendly error messages
-  String _getAuthErrorMessage(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'email-already-in-use':
-        return 'This email is already registered. Please use a different email.';
-      case 'invalid-email':
-        return 'Please enter a valid email address.';
-      case 'weak-password':
-        return 'Password is too weak. Please choose a stronger password.';
-      case 'network-request-failed':
-        return 'Network error. Please check your connection and try again.';
-      default:
-        return 'Authentication failed. Please try again.';
+  // Consolidated error message mapping
+  static String _getErrorMessage(Exception e) {
+    if (e is FirebaseAuthException) {
+      return switch (e.code) {
+        'email-already-in-use' => 'Email already registered',
+        'invalid-email' => 'Invalid email address',
+        'weak-password' => 'Password is too weak',
+        'user-not-found' => 'No account found with this email',
+        'wrong-password' => 'Incorrect password',
+        'user-disabled' => 'Account has been disabled',
+        'too-many-requests' => 'Too many attempts. Try again later',
+        'network-request-failed' => 'Network error. Check connection',
+        _ => 'Authentication failed. Please try again',
+      };
     }
+
+    if (e is FirebaseException) {
+      return switch (e.code) {
+        'unavailable' => 'Service temporarily unavailable',
+        'deadline-exceeded' => 'Request timeout. Please try again',
+        'permission-denied' => 'Permission denied',
+        'resource-exhausted' => 'Service quota exceeded',
+        _ => 'Service error. Please try again',
+      };
+    }
+
+    return 'An unexpected error occurred';
   }
 
-  String _getFirestoreErrorMessage(FirebaseException e) {
-    switch (e.code) {
-      case 'unavailable':
-        return 'Service temporarily unavailable. Please try again later.';
-      case 'deadline-exceeded':
-        return 'Request timeout. Please try again.';
-      default:
-        return 'Database error. Please try again.';
-    }
-  }
-
-  // Cleanup method for error recovery
-  Future<void> cleanupOnError(String userId) async {
-    try {
-      await Future.wait([
-        _firestore.collection('users').doc(userId).delete(),
-        _auth.currentUser?.delete() ?? Future.value(),
-      ]);
-    } catch (e) {
-      debugPrint('Error during cleanup: $e');
-    }
+  // Cache management
+  static void clearAllCaches() {
+    _emailCache.clear();
   }
 }
