@@ -116,7 +116,7 @@ class AuthService {
         throw const AuthException('No user is currently signed in');
       }
 
-      await user.updateEmail(newEmail);
+      await user.verifyBeforeUpdateEmail(newEmail);
     } on FirebaseAuthException catch (e) {
       throw AuthException(_getAuthErrorMessage(e.code));
     } catch (e) {

@@ -4,7 +4,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
-import 'package:pocket_eleven/pages/loading/loginPage/temp_login_page.dart';
+import 'package:pocket_eleven/pages/loading/login_register/temp_login_page.dart';
 
 @immutable
 class UserData {
@@ -143,7 +143,7 @@ class _ProfilePageState extends State<ProfilePage>
   void _navigateToLogin() => WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const TempLoginPage()));
+              MaterialPageRoute(builder: (_) => const LoginPage()));
         }
       });
 
@@ -189,7 +189,7 @@ class _ProfilePageState extends State<ProfilePage>
       _cache.clear();
       if (mounted) {
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const TempLoginPage()));
+            MaterialPageRoute(builder: (_) => const LoginPage()));
       }
     } catch (e) {
       if (mounted) {
