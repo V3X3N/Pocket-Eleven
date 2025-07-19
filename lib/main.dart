@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:pocket_eleven/pages/loading/loadingScreen/temp_loading_screen.dart';
+import 'package:pocket_eleven/pages/loading/loadingScreen/loading_screen.dart';
 import 'firebase/firebase_options.dart';
 
 Future<void> main() async {
