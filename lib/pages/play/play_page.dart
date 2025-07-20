@@ -75,8 +75,7 @@ class _PlayPageState extends State<PlayPage> {
                 children: [
                   MatchView(
                       screenWidth: screenWidth, screenHeight: screenHeight),
-                  LeagueView(
-                      screenWidth: screenWidth, screenHeight: screenHeight),
+                  LeagueView(),
                 ],
               ),
             ),
