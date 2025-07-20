@@ -2,15 +2,16 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:pocket_eleven/components/option_button.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_players.dart';
 import 'package:pocket_eleven/firebase/firebase_training.dart';
-import 'package:pocket_eleven/pages/club/widget/build_info.dart';
 import 'package:pocket_eleven/models/player.dart';
+import 'package:pocket_eleven/pages/club/widget/loading_overlay.dart';
+import 'package:pocket_eleven/pages/club/widget/player_training_card.dart';
+import 'package:pocket_eleven/pages/club/widget/training_info_card.dart';
 
+/// Optimized training view with performance improvements and reusable components
 class TrainingView extends StatefulWidget {
   const TrainingView({super.key});
 
@@ -33,12 +34,6 @@ class _TrainingViewState extends State<TrainingView> {
   bool _isUpgrading = false;
   final Map<String, bool> _trainingInProgress = {};
 
-  // Cache layout values
-  double _screenWidth = 0;
-  double _screenHeight = 0;
-  double _horizontalPadding = 0;
-  double _verticalPadding = 0;
-
   @override
   void initState() {
     super.initState();
@@ -46,35 +41,24 @@ class _TrainingViewState extends State<TrainingView> {
     _loadData();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final size = MediaQuery.of(context).size;
-    _screenWidth = size.width;
-    _screenHeight = size.height;
-    _horizontalPadding = _screenWidth * 0.05;
-    _verticalPadding = _screenHeight * 0.02;
-  }
-
-  // Load user data and players in parallel
   Future<void> _loadData() async {
     if (_userId == null) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
 
     try {
-      final futures = await Future.wait([
+      final results = await Future.wait([
         FirebaseFunctions.getUserData(),
         TrainingFunctions.getTrainingLevel(_userId!),
         _loadPlayersData(),
       ]);
 
-      final userData = futures[0] as Map<String, dynamic>;
-      final trainingLevel = futures[1] as int;
-      final playersList = futures[2] as List<Player>;
-
       if (mounted) {
+        final userData = results[0] as Map<String, dynamic>;
+        final trainingLevel = results[1] as int;
+        final playersList = results[2] as List<Player>;
+
         setState(() {
           _level = trainingLevel;
           _upgradeCost = FirebaseFunctions.calculateUpgradeCost(_level);
@@ -102,22 +86,20 @@ class _TrainingViewState extends State<TrainingView> {
 
   Future<void> _trainPlayer(Player player, String paramName) async {
     final trainingKey = '${player.playerID}_$paramName';
-
     if (_trainingInProgress[trainingKey] == true) return;
 
     final currentValue = _getParamValue(player, paramName);
     if (currentValue >= _maxParamValue) {
-      _showSnackBar(
+      _showMessage(
           'This attribute is already at the maximum level ($_maxParamValue).',
-          Colors.red);
+          Colors.orange);
       return;
     }
 
     final trainingCost =
         max(_basePlayerTrainingCost - _trainingCostReduction * (_level - 1), 0);
-
     if (_userMoney < trainingCost) {
-      _showSnackBar('Not enough money for training.', Colors.red);
+      _showMessage('Not enough money for training.', Colors.red);
       return;
     }
 
@@ -141,7 +123,7 @@ class _TrainingViewState extends State<TrainingView> {
       }
     } catch (e) {
       debugPrint('Error training player: $e');
-      _showSnackBar('Training failed. Please try again.', Colors.red);
+      _showMessage('Training failed. Please try again.', Colors.red);
       if (mounted) setState(() => _trainingInProgress.remove(trainingKey));
     }
   }
@@ -149,14 +131,14 @@ class _TrainingViewState extends State<TrainingView> {
   Future<void> _increaseLevel() async {
     if (_isUpgrading || _level >= _maxLevel) {
       if (_level >= _maxLevel) {
-        _showSnackBar('Training is already at the maximum level ($_maxLevel).',
+        _showMessage('Training is already at the maximum level ($_maxLevel).',
             Colors.orange);
       }
       return;
     }
 
     if (_userMoney < _upgradeCost) {
-      _showSnackBar('Not enough money to upgrade the training.', Colors.red);
+      _showMessage('Not enough money to upgrade the training.', Colors.red);
       return;
     }
 
@@ -179,44 +161,35 @@ class _TrainingViewState extends State<TrainingView> {
       }
     } catch (e) {
       debugPrint('Error upgrading training: $e');
-      _showSnackBar('Upgrade failed. Please try again.', Colors.red);
+      _showMessage('Upgrade failed. Please try again.', Colors.red);
       if (mounted) setState(() => _isUpgrading = false);
     }
   }
 
   int _getParamValue(Player player, String paramName) {
-    switch (paramName) {
-      case 'param1':
-        return player.param1;
-      case 'param2':
-        return player.param2;
-      case 'param3':
-        return player.param3;
-      case 'param4':
-        return player.param4;
-      default:
-        return 0;
-    }
+    return switch (paramName) {
+      'param1' => player.param1,
+      'param2' => player.param2,
+      'param3' => player.param3,
+      'param4' => player.param4,
+      _ => 0,
+    };
   }
 
   void _setParamValue(Player player, String paramName, int value) {
     switch (paramName) {
       case 'param1':
         player.param1 = value;
-        break;
       case 'param2':
         player.param2 = value;
-        break;
       case 'param3':
         player.param3 = value;
-        break;
       case 'param4':
         player.param4 = value;
-        break;
     }
   }
 
-  void _showSnackBar(String message, Color color) {
+  void _showMessage(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -227,241 +200,76 @@ class _TrainingViewState extends State<TrainingView> {
     );
   }
 
+  List<TrainingAttribute> _getPlayerAttributes(Player player) {
+    return [
+      TrainingAttribute(
+        name: player.param1Name,
+        value: player.param1,
+        isTraining: _trainingInProgress['${player.playerID}_param1'] ?? false,
+        onTrain: () => _trainPlayer(player, 'param1'),
+      ),
+      TrainingAttribute(
+        name: player.param2Name,
+        value: player.param2,
+        isTraining: _trainingInProgress['${player.playerID}_param2'] ?? false,
+        onTrain: () => _trainPlayer(player, 'param2'),
+      ),
+      TrainingAttribute(
+        name: player.param3Name,
+        value: player.param3,
+        isTraining: _trainingInProgress['${player.playerID}_param3'] ?? false,
+        onTrain: () => _trainPlayer(player, 'param3'),
+      ),
+      TrainingAttribute(
+        name: player.param4Name,
+        value: player.param4,
+        isTraining: _trainingInProgress['${player.playerID}_param4'] ?? false,
+        onTrain: () => _trainPlayer(player, 'param4'),
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get layout values directly if not cached yet
-    final screenWidth =
-        _screenWidth > 0 ? _screenWidth : MediaQuery.of(context).size.width;
-    final screenHeight =
-        _screenHeight > 0 ? _screenHeight : MediaQuery.of(context).size.height;
-    final horizontalPadding =
-        _horizontalPadding > 0 ? _horizontalPadding : screenWidth * 0.05;
-    final verticalPadding =
-        _verticalPadding > 0 ? _verticalPadding : screenHeight * 0.02;
-
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              color: AppColors.primaryColor,
-              padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding,
-                vertical: verticalPadding,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _TrainingInfoContainer(
-                    level: _level,
-                    upgradeCost: _upgradeCost,
-                    userMoney: _userMoney,
-                    isUpgrading: _isUpgrading,
-                    onUpgradePressed: _increaseLevel,
-                  ),
-                  SizedBox(height: screenHeight * 0.04),
-                  _isLoading
-                      ? Center(
-                          child: LoadingAnimationWidget.waveDots(
-                            color: AppColors.textEnabledColor,
-                            size: 50,
-                          ),
-                        )
-                      : Expanded(
-                          child: ListView.builder(
-                            itemCount: _players.length,
-                            itemBuilder: (context, index) => _PlayerCard(
-                              player: _players[index],
-                              screenWidth: screenWidth,
-                              screenHeight: screenHeight,
-                              trainingInProgress: _trainingInProgress,
-                              onTrainPlayer: _trainPlayer,
-                            ),
-                          ),
-                        ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TrainingInfoContainer extends StatelessWidget {
-  const _TrainingInfoContainer({
-    required this.level,
-    required this.upgradeCost,
-    required this.userMoney,
-    required this.isUpgrading,
-    required this.onUpgradePressed,
-  });
-
-  final int level;
-  final int upgradeCost;
-  final double userMoney;
-  final bool isUpgrading;
-  final VoidCallback onUpgradePressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: AppColors.hoverColor,
-          border: Border.all(color: AppColors.borderColor, width: 1),
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: BuildInfo(
-          headerText: 'Training',
-          level: level,
-          upgradeCost: upgradeCost,
-          isUpgradeEnabled: userMoney >= upgradeCost && !isUpgrading,
-          onUpgradePressed: onUpgradePressed,
-        ),
-      ),
-    );
-  }
-}
-
-class _PlayerCard extends StatelessWidget {
-  const _PlayerCard({
-    required this.player,
-    required this.screenWidth,
-    required this.screenHeight,
-    required this.trainingInProgress,
-    required this.onTrainPlayer,
-  });
-
-  final Player player;
-  final double screenWidth;
-  final double screenHeight;
-  final Map<String, bool> trainingInProgress;
-  final Function(Player, String) onTrainPlayer;
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: Container(
-        margin: EdgeInsets.only(bottom: screenHeight * 0.01),
-        padding: EdgeInsets.all(screenWidth * 0.03),
-        decoration: BoxDecoration(
-          color: AppColors.hoverColor,
-          border: Border.all(color: AppColors.borderColor, width: 1),
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              player.name,
-              style: TextStyle(
-                fontSize: screenWidth * 0.045,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textEnabledColor,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Container(
+        color: AppColors.primaryColor,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                _TrainingButton(
-                  player: player,
-                  paramName: 'param1',
-                  paramLabel: player.param1Name,
-                  paramValue: player.param1,
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                  isTraining:
-                      trainingInProgress['${player.playerID}_param1'] ?? false,
-                  onTrain: () => onTrainPlayer(player, 'param1'),
+                TrainingInfoCard(
+                  level: _level,
+                  upgradeCost: _upgradeCost,
+                  isUpgradeEnabled: _userMoney >= _upgradeCost && !_isUpgrading,
+                  isUpgrading: _isUpgrading,
+                  headerText: 'Training',
+                  onUpgradePressed: _increaseLevel,
                 ),
-                _TrainingButton(
-                  player: player,
-                  paramName: 'param2',
-                  paramLabel: player.param2Name,
-                  paramValue: player.param2,
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                  isTraining:
-                      trainingInProgress['${player.playerID}_param2'] ?? false,
-                  onTrain: () => onTrainPlayer(player, 'param2'),
-                ),
-                _TrainingButton(
-                  player: player,
-                  paramName: 'param3',
-                  paramLabel: player.param3Name,
-                  paramValue: player.param3,
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                  isTraining:
-                      trainingInProgress['${player.playerID}_param3'] ?? false,
-                  onTrain: () => onTrainPlayer(player, 'param3'),
-                ),
-                _TrainingButton(
-                  player: player,
-                  paramName: 'param4',
-                  paramLabel: player.param4Name,
-                  paramValue: player.param4,
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                  isTraining:
-                      trainingInProgress['${player.playerID}_param4'] ?? false,
-                  onTrain: () => onTrainPlayer(player, 'param4'),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: LoadingOverlay(
+                    isLoading: _isLoading,
+                    loadingText: 'Loading players...',
+                    child: ListView.builder(
+                      itemCount: _players.length,
+                      itemBuilder: (context, index) {
+                        final player = _players[index];
+                        return PlayerTrainingCard(
+                          playerName: player.name,
+                          attributes: _getPlayerAttributes(player),
+                          trainingText: 'Train',
+                          trainingInProgressText: 'Training...',
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _TrainingButton extends StatelessWidget {
-  const _TrainingButton({
-    required this.player,
-    required this.paramName,
-    required this.paramLabel,
-    required this.paramValue,
-    required this.screenWidth,
-    required this.screenHeight,
-    required this.isTraining,
-    required this.onTrain,
-  });
-
-  final Player player;
-  final String paramName;
-  final String paramLabel;
-  final int paramValue;
-  final double screenWidth;
-  final double screenHeight;
-  final bool isTraining;
-  final VoidCallback onTrain;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            '$paramLabel: $paramValue',
-            style: TextStyle(
-              color: AppColors.textEnabledColor,
-              fontSize: screenWidth * 0.030,
-            ),
-          ),
-          SizedBox(height: screenWidth * 0.02),
-          OptionButton(
-            onTap: isTraining ? null : onTrain,
-            screenWidth: screenWidth,
-            screenHeight: screenHeight * 0.7,
-            text: isTraining ? 'Training...' : 'Train',
-            fontSizeMultiplier: 0.7,
-          ),
-        ],
       ),
     );
   }
