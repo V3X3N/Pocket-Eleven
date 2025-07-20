@@ -1,6 +1,8 @@
 // File: pages/register/temp_register_page.dart
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/register/register_data.dart';
+import 'package:pocket_eleven/firebase/register/register_results.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
 import 'package:pocket_eleven/pages/loading/login_register/temp_login_page.dart';
 import 'package:pocket_eleven/pages/loading/login_register/controllers/register_auth_services.dart';
@@ -20,14 +22,14 @@ import 'package:pocket_eleven/pages/loading/login_register/widgets/password_stre
 /// - Responsive design for all screen sizes
 /// - 60fps performance with RepaintBoundary optimization
 /// - Defensive programming with null safety
-class TempRegisterPage extends StatefulWidget {
-  const TempRegisterPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<TempRegisterPage> createState() => _TempRegisterPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _TempRegisterPageState extends State<TempRegisterPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _registerService = RegisterService();
 

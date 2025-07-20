@@ -101,7 +101,7 @@ class LoadingScreenController extends ChangeNotifier {
       ]);
 
       final hasClub = results[1] as bool;
-      final page = hasClub ? const HomePage() : const TempRegisterPage();
+      final page = hasClub ? const HomePage() : const RegisterPage();
 
       return AuthSuccess(page);
     } catch (e) {
