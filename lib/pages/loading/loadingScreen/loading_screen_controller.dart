@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/loading/login_register/temp_login_page.dart';
-import 'package:pocket_eleven/pages/loading/login_register/temp_register_page.dart';
+import 'package:pocket_eleven/pages/loading/login_register/login_page.dart';
+import 'package:pocket_eleven/pages/loading/login_register/register_page.dart';
 
 // Optimized result classes using sealed classes for better type safety
 sealed class AuthResult {

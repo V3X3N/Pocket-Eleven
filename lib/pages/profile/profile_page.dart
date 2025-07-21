@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/models/user_data.dart';
-import 'package:pocket_eleven/pages/loading/login_register/temp_login_page.dart';
+import 'package:pocket_eleven/pages/loading/login_register/login_page.dart';
 import 'package:pocket_eleven/pages/profile/widgets/avatar_selector_dialog.dart';
 import 'package:pocket_eleven/pages/profile/widgets/modern_avatar.dart';
 import 'package:pocket_eleven/pages/profile/widgets/modern_error_widget.dart';

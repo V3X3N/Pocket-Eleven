@@ -1,11 +1,11 @@
-// File: pages/register/temp_register_page.dart
+// File: pages/loading/login_register/optimized_register_page.dart
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/register/auth_services.dart';
 import 'package:pocket_eleven/firebase/register/register_data.dart';
 import 'package:pocket_eleven/firebase/register/register_results.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/loading/login_register/temp_login_page.dart';
-import 'package:pocket_eleven/pages/loading/login_register/controllers/register_auth_services.dart';
+import 'package:pocket_eleven/pages/loading/login_register/login_page.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/action_button_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/app_title_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/gradient_background_widget.dart';
@@ -14,14 +14,14 @@ import 'package:pocket_eleven/pages/loading/login_register/widgets/navigate_prom
 import 'package:pocket_eleven/pages/loading/login_register/widgets/optimized_text_field_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/password_strength_indicator_widget.dart';
 
-/// **Main registration page with optimized performance and modern UI**
+/// **Main registration page with shared AuthService and optimized performance**
 ///
 /// Features:
 /// - Real-time form validation with visual feedback
 /// - Password strength indicator
 /// - Responsive design for all screen sizes
 /// - 60fps performance with RepaintBoundary optimization
-/// - Defensive programming with null safety
+/// - Unified authentication handling with proper error management
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -31,12 +31,15 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final _registerService = RegisterService();
+
+  // Shared authentication service
+  static final AuthService _authService = AuthService();
 
   // Efficient state management with ValueNotifier
   late final ValueNotifier<bool> _isLoading;
   late final ValueNotifier<bool> _formValid;
   late final ValueNotifier<int> _passwordStrength;
+  late final ValueNotifier<String?> _errorNotifier;
 
   // Controllers map for easy management
   late final Map<String, TextEditingController> _controllers;
@@ -61,6 +64,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _isLoading = ValueNotifier(false);
     _formValid = ValueNotifier(false);
     _passwordStrength = ValueNotifier(0);
+    _errorNotifier = ValueNotifier<String?>(null);
 
     _controllers = Map.fromEntries(
       _fieldConfigs
@@ -75,6 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
       final isFormValid = _validateAllFields();
 
       _formValid.value = hasAllFields && isFormValid;
+      _clearError(); // Clear error when user starts typing
     }
 
     for (final entry in _controllers.entries) {
@@ -98,13 +103,18 @@ class _RegisterPageState extends State<RegisterPage> {
           AppColors.accentColor,
         ],
         child: SafeArea(
-          child: ValueListenableBuilder<bool>(
-            valueListenable: _isLoading,
-            builder: (context, isLoading, _) => isLoading
-                ? const LoadingOverlay(
-                    message: 'Creating your account...',
-                  )
-                : _buildContent(),
+          child: Stack(
+            children: [
+              _buildContent(),
+              ValueListenableBuilder<bool>(
+                valueListenable: _isLoading,
+                builder: (context, isLoading, _) => isLoading
+                    ? const LoadingOverlay(
+                        message: 'Creating your account...',
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
           ),
         ),
       ),
@@ -134,8 +144,9 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 48),
                   ..._buildFormFields(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   _buildPasswordStrength(),
+                  _buildErrorMessage(),
                   const SizedBox(height: 32),
                   _buildRegisterButton(),
                   const SizedBox(height: 24),
@@ -175,11 +186,49 @@ class _RegisterPageState extends State<RegisterPage> {
           return const SizedBox.shrink();
         }
 
-        return PasswordStrengthIndicator(
-          strength: strength,
-          password: _controllers['password']!.text,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: PasswordStrengthIndicator(
+            strength: strength,
+            password: _controllers['password']!.text,
+          ),
         );
       },
+    );
+  }
+
+  Widget _buildErrorMessage() {
+    return ValueListenableBuilder<String?>(
+      valueListenable: _errorNotifier,
+      builder: (context, error, _) => error != null
+          ? Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.errorColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: AppColors.errorColor.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: AppColors.errorColor, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      error,
+                      style: const TextStyle(
+                        color: AppColors.errorColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -199,17 +248,15 @@ class _RegisterPageState extends State<RegisterPage> {
     return NavigationPrompt(
       icon: Icons.login,
       text: "Already have an account? Sign in",
-      onTap: () => Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-      ),
+      onTap: _navigateToLogin,
     );
   }
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    _isLoading.value = true;
+    _setLoading(true);
+    _clearError();
 
     try {
       final registerData = RegisterData(
@@ -219,39 +266,82 @@ class _RegisterPageState extends State<RegisterPage> {
         clubName: _controllers['clubName']!.text.trim(),
       );
 
-      final result = await _registerService.registerUser(registerData, context);
+      final result = await _authService.registerUser(registerData, context);
 
       if (!mounted) return;
 
-      if (result is RegisterSuccess) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      } else if (result is RegisterFailure) {
-        _showError(result.error);
+      switch (result) {
+        case RegisterSuccess():
+          _navigateToHome();
+        case RegisterFailure(error: final error, code: final code):
+          _setError(error);
+
+          // Handle specific error cases
+          if (code == 'email-already-in-use') {
+            _showAlternativeAction(
+                'This email is already registered. Would you like to sign in instead?');
+          }
       }
     } catch (e) {
-      if (mounted) _showError('Registration failed. Please try again.');
+      if (mounted) _setError('Registration failed. Please try again.');
     } finally {
-      if (mounted) _isLoading.value = false;
+      if (mounted) _setLoading(false);
     }
   }
 
-  void _showError(String message) {
+  void _showAlternativeAction(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Account Exists'),
         content: Text(message),
-        backgroundColor: AppColors.errorColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: EdgeInsets.symmetric(
-          horizontal: _getHorizontalPadding(context),
-        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Stay Here'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _navigateToLogin();
+            },
+            child: const Text('Sign In'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) => const LoginPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: animation.drive(
+              Tween(begin: const Offset(-1.0, 0.0), end: Offset.zero)
+                  .chain(CurveTween(curve: Curves.easeOutCubic)),
+            ),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 350),
+      ),
+    );
+  }
+
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) => const HomePage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -342,6 +432,11 @@ class _RegisterPageState extends State<RegisterPage> {
     return 16;
   }
 
+  // Helper methods for state management
+  void _setLoading(bool isLoading) => _isLoading.value = isLoading;
+  void _setError(String error) => _errorNotifier.value = error;
+  void _clearError() => _errorNotifier.value = null;
+
   @override
   void dispose() {
     for (final controller in _controllers.values) {
@@ -350,6 +445,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _isLoading.dispose();
     _formValid.dispose();
     _passwordStrength.dispose();
+    _errorNotifier.dispose();
     super.dispose();
   }
 }

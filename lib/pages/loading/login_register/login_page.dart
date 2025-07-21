@@ -1,9 +1,11 @@
 // File: pages/loading/login_register/optimized_login_page.dart
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
+import 'package:pocket_eleven/firebase/register/auth_services.dart';
+import 'package:pocket_eleven/firebase/register/login_data.dart';
+import 'package:pocket_eleven/firebase/register/login_results.dart';
 import 'package:pocket_eleven/pages/home_page.dart';
-import 'package:pocket_eleven/pages/loading/login_register/controllers/login_auth_services.dart';
-import 'package:pocket_eleven/pages/loading/login_register/temp_register_page.dart';
+import 'package:pocket_eleven/pages/loading/login_register/register_page.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/action_button_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/app_title_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/gradient_background_widget.dart';
@@ -11,10 +13,10 @@ import 'package:pocket_eleven/pages/loading/login_register/widgets/loading_overl
 import 'package:pocket_eleven/pages/loading/login_register/widgets/navigate_prompt_widget.dart';
 import 'package:pocket_eleven/pages/loading/login_register/widgets/optimized_text_field_widget.dart';
 
-/// **High-performance login page with modern UI components**
+/// **High-performance login page with shared AuthService**
 ///
-/// Optimized for 60fps rendering with efficient state management
-/// and responsive design for all device types.
+/// Optimized for 60fps rendering with efficient state management,
+/// responsive design, and unified authentication handling.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -27,7 +29,9 @@ class _LoginPageState extends State<LoginPage> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   late final GlobalKey<FormState> _formKey;
-  late final AuthService _authService;
+
+  // Shared authentication service
+  static final AuthService _authService = AuthService();
 
   // State notifiers for efficient rebuilds
   late final ValueNotifier<bool> _isLoadingNotifier;
@@ -50,7 +54,6 @@ class _LoginPageState extends State<LoginPage> {
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
     _formKey = GlobalKey<FormState>();
-    _authService = AuthService();
   }
 
   void _initializeNotifiers() {
@@ -126,6 +129,8 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: constraints.maxHeight * 0.025),
                   _buildPasswordField(),
                   _buildErrorMessage(),
+                  SizedBox(height: constraints.maxHeight * 0.04),
+                  _buildForgotPasswordLink(),
                   SizedBox(height: constraints.maxHeight * 0.06),
                   _buildLoginButton(),
                   SizedBox(height: constraints.maxHeight * 0.04),
@@ -194,6 +199,25 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _buildForgotPasswordLink() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: _handleForgotPassword,
+        child: const Text(
+          'Forgot Password?',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            decoration: TextDecoration.underline,
+            decorationColor: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLoginButton() {
     return ValueListenableBuilder<bool>(
       valueListenable: _isFormValidNotifier,
@@ -234,32 +258,57 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    _isLoadingNotifier.value = true;
-    _errorNotifier.value = null;
+    _setLoading(true);
+    _clearError();
 
     try {
-      final success = await _authService.signInUser(
-        _emailController.text.trim(),
-        _passwordController.text,
+      final loginData = LoginData(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
 
-      if (success && mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, _) => const HomePage(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 300),
-          ),
-        );
+      final result = await _authService.loginUser(loginData, context);
+
+      if (!mounted) return;
+
+      switch (result) {
+        case LoginSuccess():
+          _navigateToHome();
+        case LoginFailure(error: final error):
+          _setError(error);
       }
     } catch (e) {
-      if (mounted) _errorNotifier.value = e.toString();
+      if (mounted) _setError('Login failed. Please try again.');
     } finally {
-      if (mounted) _isLoadingNotifier.value = false;
+      if (mounted) _setLoading(false);
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      _setError('Please enter your email address first');
+      return;
+    }
+
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final success = await _authService.sendPasswordReset(email);
+
+      if (!mounted) return;
+
+      if (success) {
+        _showSuccessMessage('Password reset email sent. Check your inbox.');
+      } else {
+        _setError('Email not found or failed to send reset email');
+      }
+    } catch (e) {
+      if (mounted) _setError('Failed to send reset email. Try again.');
+    } finally {
+      if (mounted) _setLoading(false);
     }
   }
 
@@ -281,6 +330,39 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) => const HomePage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  void _showSuccessMessage(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.successColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  // Helper methods for state management
+  void _setLoading(bool isLoading) => _isLoadingNotifier.value = isLoading;
+  void _setError(String error) => _errorNotifier.value = error;
+  void _clearError() => _errorNotifier.value = null;
 
   @override
   void dispose() {
