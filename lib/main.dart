@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:pocket_eleven/pages/loading/temp_loading_page.dart';
+import 'package:pocket_eleven/pages/loading/loadingScreen/loading_screen.dart';
 import 'firebase/firebase_options.dart';
 
 Future<void> main() async {
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TempLoadingScreen(),
+      home: LoadingScreen(),
     );
   }
 }
