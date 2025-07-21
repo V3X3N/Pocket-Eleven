@@ -140,7 +140,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     title: 'POCKET ELEVEN',
                     fontSize: 42,
                     letterSpacing: 3,
-                    showUnderline: true,
                   ),
                   const SizedBox(height: 48),
                   ..._buildFormFields(),

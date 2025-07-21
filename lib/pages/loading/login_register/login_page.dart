@@ -122,7 +122,6 @@ class _LoginPageState extends State<LoginPage> {
                   const AppTitle(
                     title: 'POCKET ELEVEN',
                     fontSize: 42,
-                    showUnderline: true,
                   ),
                   SizedBox(height: constraints.maxHeight * 0.08),
                   _buildEmailField(),
