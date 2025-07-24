@@ -29,7 +29,7 @@ class _TacticPageState extends State<TacticPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: screenHeight * 0.07),
+      appBar: ReusableAppBar(),
       body: Container(
         color: AppColors.primaryColor,
         child: Column(

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:unicons/unicons.dart';
@@ -5,28 +6,164 @@ import 'package:pocket_eleven/firebase/firebase_functions.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
 class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final double appBarHeight;
+  final String? title;
+  final bool showBackButton;
 
   const ReusableAppBar({
     super.key,
-    required this.appBarHeight,
+    this.title,
+    this.showBackButton = true,
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(appBarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      iconTheme: const IconThemeData(color: AppColors.textEnabledColor),
-      backgroundColor: AppColors.hoverColor,
-      centerTitle: true,
-      title: const _MoneyDisplay(),
+    final canPop = showBackButton && Navigator.canPop(context);
+
+    return Container(
+      decoration: _buildGradientDecoration(),
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            toolbarHeight: kToolbarHeight,
+            flexibleSpace: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.04,
+                  vertical: 4,
+                ),
+                child: Row(
+                  children: [
+                    if (canPop) const _BackButton(),
+                    if (title != null) ...[
+                      const Spacer(),
+                      Flexible(child: _TitleWidget(title: title!)),
+                      const Spacer(),
+                    ] else if (!canPop)
+                      const Spacer(),
+                    const _MoneyDisplay(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildGradientDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.hoverColor,
+          AppColors.hoverColor.withValues(alpha: 0.85),
+          AppColors.hoverColor.withValues(alpha: 0.7),
+        ],
+        stops: const [0.0, 0.6, 1.0],
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.12),
+          offset: const Offset(0, 4),
+          blurRadius: 16,
+          spreadRadius: -2,
+        ),
+      ],
     );
   }
 }
 
-// Separate widget for money display to isolate rebuilds
+class _BackButton extends StatelessWidget {
+  const _BackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Container(
+        decoration: _buildButtonDecoration(),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => Navigator.of(context).pop(),
+            child: const Padding(
+              padding: EdgeInsets.all(10),
+              child: Icon(
+                UniconsLine.arrow_left,
+                color: AppColors.textEnabledColor,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildButtonDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.2),
+          Colors.white.withValues(alpha: 0.08),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          offset: const Offset(0, 2),
+          blurRadius: 8,
+        ),
+      ],
+    );
+  }
+}
+
+class _TitleWidget extends StatelessWidget {
+  final String title;
+
+  const _TitleWidget({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ShaderMask(
+        shaderCallback: (bounds) => LinearGradient(
+          colors: [
+            AppColors.textEnabledColor,
+            AppColors.textEnabledColor.withValues(alpha: 0.9),
+          ],
+        ).createShader(bounds),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: MediaQuery.of(context).size.width * 0.045,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: 0.8,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}
+
 class _MoneyDisplay extends StatelessWidget {
   const _MoneyDisplay();
 
@@ -39,151 +176,180 @@ class _MoneyDisplay extends StatelessWidget {
           return const _LoadingIndicator();
         }
 
-        if (snapshot.hasError) {
-          return _ErrorDisplay(error: snapshot.error.toString());
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const _ErrorDisplay();
         }
 
-        final userData = snapshot.data ?? {};
-        final money = (userData['money'] ?? 0).toDouble();
-
-        return _MoneyRow(money: money);
+        final money = ((snapshot.data?['money'] ?? 0) as num).toDouble();
+        return _MoneyContainer(money: money);
       },
     );
   }
 }
 
-// Separate loading widget to avoid rebuilding
 class _LoadingIndicator extends StatelessWidget {
   const _LoadingIndicator();
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Center(
-        child: LoadingAnimationWidget.waveDots(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.04,
+          vertical: 8,
+        ),
+        decoration: _buildContainerDecoration(),
+        child: LoadingAnimationWidget.threeArchedCircle(
           color: AppColors.textEnabledColor,
-          size: 50,
+          size: 16,
         ),
       ),
     );
   }
+
+  BoxDecoration _buildContainerDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          Colors.white.withValues(alpha: 0.15),
+          Colors.white.withValues(alpha: 0.08),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+    );
+  }
 }
 
-// Separate error widget
 class _ErrorDisplay extends StatelessWidget {
-  final String error;
-
-  const _ErrorDisplay({required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Error: $error',
-        style: const TextStyle(
-          color: AppColors.textEnabledColor,
-          fontSize: 14,
-        ),
-      ),
-    );
-  }
-}
-
-// Optimized money display with RepaintBoundary
-class _MoneyRow extends StatelessWidget {
-  final double money;
-
-  const _MoneyRow({required this.money});
+  const _ErrorDisplay();
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min, // Optimize layout
-        children: [
-          _InfoRow(
-            icon: UniconsLine.usd_circle,
-            text: money.toStringAsFixed(0),
-          ),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              UniconsLine.exclamation_triangle,
+              color: Colors.red.shade300,
+              size: 14,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Error',
+              style: TextStyle(
+                color: Colors.red.shade300,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-// Optimized info row widget
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
+class _MoneyContainer extends StatelessWidget {
+  final double money;
 
-  const _InfoRow({
-    required this.icon,
-    required this.text,
-  });
+  const _MoneyContainer({required this.money});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: AppColors.textEnabledColor,
-          size: 20, // Explicit size for better performance
+    return RepaintBoundary(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.03,
+          vertical: 6,
         ),
-        const SizedBox(width: 5),
-        Text(
-          text,
-          style: _textStyle, // Use cached style
+        decoration: _buildMoneyDecoration(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildMoneyIcon(),
+            SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+            Text(
+              _formatMoney(money),
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textEnabledColor,
+                letterSpacing: 0.6,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildMoneyDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.2),
+          Colors.white.withValues(alpha: 0.08),
+          Colors.white.withValues(alpha: 0.05),
+        ],
+        stops: const [0.0, 0.6, 1.0],
+      ),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.1),
+          offset: const Offset(0, 4),
+          blurRadius: 12,
+          spreadRadius: -2,
+        ),
+        BoxShadow(
+          color: Colors.white.withValues(alpha: 0.08),
+          offset: const Offset(0, -1),
+          blurRadius: 6,
         ),
       ],
     );
   }
 
-  // Cache the TextStyle to avoid recreation
-  static const TextStyle _textStyle = TextStyle(
-    fontSize: 20,
-    color: AppColors.textEnabledColor,
-  );
-}
-
-// Optional: Add a memoized version for high-frequency updates
-class _MemoizedMoneyDisplay extends StatefulWidget {
-  const _MemoizedMoneyDisplay();
-
-  @override
-  State<_MemoizedMoneyDisplay> createState() => _MemoizedMoneyDisplayState();
-}
-
-class _MemoizedMoneyDisplayState extends State<_MemoizedMoneyDisplay> {
-  double? _lastMoney;
-  Widget? _cachedWidget;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<Map<String, dynamic>>(
-      stream: FirebaseFunctions.getUserDataStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const _LoadingIndicator();
-        }
-
-        if (snapshot.hasError) {
-          return _ErrorDisplay(error: snapshot.error.toString());
-        }
-
-        final userData = snapshot.data ?? {};
-        final money = (userData['money'] ?? 0).toDouble();
-
-        // Only rebuild if money value actually changed
-        if (_lastMoney != money) {
-          _lastMoney = money;
-          _cachedWidget = _MoneyRow(money: money);
-        }
-
-        return _cachedWidget!;
-      },
+  Widget _buildMoneyIcon() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.withValues(alpha: 0.25),
+            Colors.green.withValues(alpha: 0.15),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(
+        UniconsLine.usd_circle,
+        color: Colors.green.shade200,
+        size: 16,
+      ),
     );
+  }
+
+  String _formatMoney(double amount) {
+    if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(amount % 1000000 == 0 ? 0 : 1)}M';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(amount % 1000 == 0 ? 0 : 1)}K';
+    }
+    return amount.toStringAsFixed(amount % 1 == 0 ? 0 : 1);
   }
 }
