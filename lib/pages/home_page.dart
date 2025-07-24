@@ -63,17 +63,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
-    double navBarHeight = screenHeight * 0.08;
-
     return Scaffold(
       backgroundColor: AppColors.primaryColor,
       bottomNavigationBar: BottomNavBar(
         onTabChange: (index) => navigateBottomBar(index),
-        navBarHeight: navBarHeight,
-        screenWidth: screenWidth,
-        onCurrencyChange: onCurrencyChange,
       ),
       body: _pages![_selectedIndex],
     );
