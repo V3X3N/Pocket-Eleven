@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/pages/play/services/league_service.dart';
-import 'package:pocket_eleven/pages/play/widgets/app_container.dart';
 import 'package:pocket_eleven/pages/play/widgets/empty_state_widget.dart';
 import 'package:pocket_eleven/pages/play/widgets/error_state_widget.dart';
-import 'package:pocket_eleven/pages/play/widgets/loading_indicator.dart';
 import 'package:pocket_eleven/pages/play/widgets/standings_header.dart';
 import 'package:pocket_eleven/pages/play/widgets/standings_row.dart';
 
-/// Optimized league standings view with modern UI and performance improvements
-///
-/// Features:
-/// - Sub-16ms frame rendering for 60fps
-/// - Responsive design for all device sizes
-/// - Efficient state management and rebuilding
-/// - Modular, reusable component architecture
-/// - Defensive programming with proper error handling
 class LeagueView extends StatefulWidget {
   const LeagueView({super.key});
 
@@ -24,6 +14,12 @@ class LeagueView extends StatefulWidget {
 }
 
 class _LeagueViewState extends State<LeagueView> {
+  static const _gradientColors = [
+    AppColors.primaryColor,
+    AppColors.secondaryColor,
+    AppColors.accentColor,
+  ];
+
   late Future<_LeagueData> _leagueDataFuture;
 
   @override
@@ -68,36 +64,90 @@ class _LeagueViewState extends State<LeagueView> {
     });
   }
 
+  Widget _buildModernContainer({required Widget child}) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      margin: EdgeInsets.all(screenWidth * 0.05),
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.borderColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 8),
+            blurRadius: 32,
+          ),
+          BoxShadow(
+            color: Color(0x1AFFFFFF),
+            offset: Offset(0, 1),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Center(
+      child: CircularProgressIndicator(
+        valueColor: const AlwaysStoppedAnimation(AppColors.textEnabledColor),
+        strokeWidth: screenWidth * 0.008,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryColor,
-      body: AppContainer(
-        child: FutureBuilder<_LeagueData>(
-          future: _leagueDataFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const LoadingIndicator();
-            }
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _gradientColors,
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: _buildModernContainer(
+            child: FutureBuilder<_LeagueData>(
+              future: _leagueDataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildLoadingIndicator();
+                }
 
-            if (snapshot.hasError) {
-              return ErrorStateWidget(
-                title: 'Error loading standings',
-                message: snapshot.error.toString(),
-                onRetry: _retryLoading,
-              );
-            }
+                if (snapshot.hasError) {
+                  return ErrorStateWidget(
+                    title: 'Error loading standings',
+                    message: snapshot.error.toString(),
+                    onRetry: _retryLoading,
+                  );
+                }
 
-            final data = snapshot.data;
-            if (data == null || data.standings.isEmpty) {
-              return const EmptyStateWidget(
-                title: 'No league standings available',
-                subtitle: 'Check back later for updated standings',
-              );
-            }
+                final data = snapshot.data;
+                if (data == null || data.standings.isEmpty) {
+                  return const EmptyStateWidget(
+                    title: 'No league standings available',
+                    subtitle: 'Check back later for updated standings',
+                  );
+                }
 
-            return _StandingsTable(data: data);
-          },
+                return _StandingsTable(data: data);
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -115,7 +165,19 @@ class _StandingsTable extends StatelessWidget {
     return RepaintBoundary(
       child: Column(
         children: [
-          const StandingsHeader(headers: StandingsHeader.defaultHeaders),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.hoverColor.withValues(alpha: 0.6),
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.borderColor.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+            ),
+            child:
+                const StandingsHeader(headers: StandingsHeader.defaultHeaders),
+          ),
           Expanded(
             child: _StandingsList(data: data),
           ),
@@ -135,26 +197,64 @@ class _StandingsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.all(screenWidth * 0.02),
-      itemCount: data.standings.length,
-      itemBuilder: (context, index) {
-        final team = data.standings[index];
-        final teamData = team.value as Map<String, dynamic>;
-        final teamName = data.clubNames[team.key] ?? team.key;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent,
+            AppColors.hoverColor.withValues(alpha: 0.1),
+          ],
+          stops: const [0.0, 1.0],
+        ),
+      ),
+      child: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        itemCount: data.standings.length,
+        separatorBuilder: (context, index) => Container(
+          height: 1,
+          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                AppColors.borderColor.withValues(alpha: 0.2),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+        itemBuilder: (context, index) {
+          final team = data.standings[index];
+          final teamData = team.value as Map<String, dynamic>;
+          final teamName = data.clubNames[team.key] ?? team.key;
 
-        return StandingsRow(
-          key: ValueKey(team.key),
-          position: index + 1,
-          teamName: teamName,
-          matchesPlayed: teamData['matchesPlayed'] as int? ?? 0,
-          goalsFor: teamData['goalsScored'] as int? ?? 0,
-          goalsAgainst: teamData['goalsConceded'] as int? ?? 0,
-          points: teamData['points'] as int? ?? 0,
-          onTap: () => _handleTeamTap(team.key, teamName),
-        );
-      },
+          return Container(
+            decoration: BoxDecoration(
+              color: index % 2 == 0
+                  ? AppColors.hoverColor.withValues(alpha: 0.3)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.borderColor.withValues(alpha: 0.1),
+                width: 0.5,
+              ),
+            ),
+            child: StandingsRow(
+              key: ValueKey(team.key),
+              position: index + 1,
+              teamName: teamName,
+              matchesPlayed: teamData['matchesPlayed'] as int? ?? 0,
+              goalsFor: teamData['goalsScored'] as int? ?? 0,
+              goalsAgainst: teamData['goalsConceded'] as int? ?? 0,
+              points: teamData['points'] as int? ?? 0,
+              onTap: () => _handleTeamTap(team.key, teamName),
+            ),
+          );
+        },
+      ),
     );
   }
 
