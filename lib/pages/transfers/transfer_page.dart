@@ -20,7 +20,6 @@ class _TransferPageState extends State<TransferPage>
   static const double _horizontalPadding = 0.04;
   static const double _verticalPadding = 0.02;
   static const double _buttonSpacing = 0.04;
-  static const double _appBarHeight = 0.07;
 
   int _selectedIndex = 0;
   late final List<Widget> _pages;
@@ -91,7 +90,7 @@ class _TransferPageState extends State<TransferPage>
     final double screenWidth = screenSize.width;
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: screenHeight * _appBarHeight),
+      appBar: ReusableAppBar(),
       body: RepaintBoundary(
         child: Container(
           color: AppColors.primaryColor,

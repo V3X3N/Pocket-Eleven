@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_eleven/pages/transfers/widgets/under_development_widget.dart';
+import 'package:pocket_eleven/components/under_development_widget.dart';
 
 class ScoutingView extends StatelessWidget {
   const ScoutingView({super.key, required this.onCurrencyChange});

@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pocket_eleven/design/colors.dart';
 import 'package:pocket_eleven/firebase/firebase_league.dart';
 import 'package:pocket_eleven/pages/play/services/match_service.dart';
 import 'package:pocket_eleven/pages/play/widgets/action_button.dart';
 import 'package:pocket_eleven/pages/play/widgets/club_info.dart';
 import 'package:pocket_eleven/pages/play/widgets/empty_state.dart';
-import 'package:pocket_eleven/pages/play/widgets/loading_widget.dart';
 import 'package:pocket_eleven/pages/play/widgets/match_tile.dart';
-import 'package:pocket_eleven/pages/play/widgets/modern_card.dart';
 import 'package:pocket_eleven/pages/play/widgets/vs_container.dart';
 
-/// Main match view displaying next match and upcoming matches.
-///
-/// This widget provides:
-/// - Next match card with simulation capability
-/// - List of upcoming matches
-/// - Responsive design for all screen sizes
-/// - Optimized performance with cached widgets
 class MatchView extends StatelessWidget {
   const MatchView({
     super.key,
@@ -26,20 +18,75 @@ class MatchView extends StatelessWidget {
 
   final double screenWidth, screenHeight;
 
+  static const _gradientColors = [
+    AppColors.primaryColor,
+    AppColors.secondaryColor,
+    AppColors.accentColor,
+  ];
+
+  Widget _buildModernContainer({
+    required Widget child,
+    double? height,
+  }) {
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.hoverColor.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppColors.borderColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 8),
+            blurRadius: 32,
+          ),
+          BoxShadow(
+            color: Color(0x1AFFFFFF),
+            offset: Offset(0, 1),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ModernCard(
-          height: screenHeight * 0.35,
-          child: _NextMatchCard(screenWidth: screenWidth),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: _gradientColors,
+          stops: [0.0, 0.5, 1.0],
         ),
-        Expanded(
-          child: ModernCard(
-            child: _UpcomingMatchesList(screenWidth: screenWidth),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(screenWidth * 0.05),
+          child: Column(
+            children: [
+              _buildModernContainer(
+                height: screenHeight * 0.35,
+                child: _NextMatchCard(screenWidth: screenWidth),
+              ),
+              SizedBox(height: screenWidth * 0.04),
+              Expanded(
+                child: _buildModernContainer(
+                  child: _UpcomingMatchesList(screenWidth: screenWidth),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -56,7 +103,11 @@ class _NextMatchCard extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
-            child: ResponsiveLoadingWidget(screenWidth: screenWidth),
+            child: CircularProgressIndicator(
+              valueColor:
+                  const AlwaysStoppedAnimation(AppColors.textEnabledColor),
+              strokeWidth: screenWidth * 0.008,
+            ),
           );
         }
 
@@ -96,36 +147,39 @@ class _MatchInfoContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: ClubInfo(
-                crestPath: 'assets/crests/crest_${matchData.userAvatar}.png',
-                clubName: matchData.userClubName,
-                screenWidth: screenWidth,
+    return Padding(
+      padding: EdgeInsets.all(screenWidth * 0.06),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: ClubInfo(
+                  crestPath: 'assets/crests/crest_${matchData.userAvatar}.png',
+                  clubName: matchData.userClubName,
+                  screenWidth: screenWidth,
+                ),
               ),
-            ),
-            VSContainer(screenWidth: screenWidth),
-            Expanded(
-              child: ClubInfo(
-                crestPath:
-                    'assets/crests/crest_${matchData.opponentAvatar}.png',
-                clubName: matchData.opponentName,
-                screenWidth: screenWidth,
+              VSContainer(screenWidth: screenWidth),
+              Expanded(
+                child: ClubInfo(
+                  crestPath:
+                      'assets/crests/crest_${matchData.opponentAvatar}.png',
+                  clubName: matchData.opponentName,
+                  screenWidth: screenWidth,
+                ),
               ),
-            ),
-          ],
-        ),
-        ActionButton(
-          text: "Simulate Match",
-          icon: Icons.play_arrow_rounded,
-          onPressed: _handleSimulation,
-          screenWidth: screenWidth,
-        ),
-      ],
+            ],
+          ),
+          ActionButton(
+            text: "Simulate Match",
+            icon: Icons.play_arrow_rounded,
+            onPressed: _handleSimulation,
+            screenWidth: screenWidth,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -142,23 +196,31 @@ class _UpcomingMatchesList extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
-            child: ResponsiveLoadingWidget(screenWidth: screenWidth),
+            child: CircularProgressIndicator(
+              valueColor:
+                  const AlwaysStoppedAnimation(AppColors.textEnabledColor),
+              strokeWidth: screenWidth * 0.008,
+            ),
           );
         }
 
         final matches = snapshot.data ?? [];
 
         return matches.isNotEmpty
-            ? ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                itemCount: matches.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) => MatchTile(
-                  opponentName: matches[index].opponentName,
-                  matchTime: matches[index].matchTime,
-                  screenWidth: screenWidth,
-                  onTap: () => debugPrint(
-                      'Match tapped: ${matches[index].opponentName}'),
+            ? Padding(
+                padding: EdgeInsets.all(screenWidth * 0.04),
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: matches.length,
+                  separatorBuilder: (_, __) =>
+                      SizedBox(height: screenWidth * 0.03),
+                  itemBuilder: (context, index) => MatchTile(
+                    opponentName: matches[index].opponentName,
+                    matchTime: matches[index].matchTime,
+                    screenWidth: screenWidth,
+                    onTap: () => debugPrint(
+                        'Match tapped: ${matches[index].opponentName}'),
+                  ),
                 ),
               )
             : EmptyState(

@@ -1,21 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_eleven/design/colors.dart';
 
-/// A versus (VS) container widget for match displays.
-///
-/// This widget provides:
-/// - Gradient background with rounded corners
-/// - Responsive text sizing
-/// - Border with transparency
-/// - Consistent styling across match displays
-///
-/// Usage:
-/// ```dart
-/// VSContainer(
-///   screenWidth: MediaQuery.of(context).size.width,
-///   text: 'VS',
-/// )
-/// ```
 class VSContainer extends StatelessWidget {
   /// Creates a VS container widget.
   ///
@@ -44,15 +29,14 @@ class VSContainer extends StatelessWidget {
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0x4D717483), // AppColors.borderColor with 30% opacity
-            Color(0x1A717483), // AppColors.borderColor with 10% opacity
+            Color(0x4D717483),
+            Color(0x1A717483),
           ],
         ),
         borderRadius: BorderRadius.all(Radius.circular(16)),
         border: Border.fromBorderSide(
           BorderSide(
-            color: Color(
-                0x1AF8F5FA), // AppColors.textEnabledColor with 10% opacity
+            color: Color(0x1AF8F5FA),
           ),
         ),
       ),

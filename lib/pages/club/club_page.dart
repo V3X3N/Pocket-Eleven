@@ -25,7 +25,6 @@ class _ClubPageState extends State<ClubPage> {
   // Cache expensive calculations
   late double _screenHeight;
   late double _screenWidth;
-  late double _appBarHeight;
   late EdgeInsets _mainPadding;
   late double _buttonSpacing;
 
@@ -48,7 +47,6 @@ class _ClubPageState extends State<ClubPage> {
     final size = MediaQuery.of(context).size;
     _screenHeight = size.height;
     _screenWidth = size.width;
-    _appBarHeight = _screenHeight * 0.07;
     _mainPadding = EdgeInsets.symmetric(
       horizontal: _screenWidth * 0.04,
       vertical: _screenHeight * 0.02,
@@ -124,7 +122,7 @@ class _ClubPageState extends State<ClubPage> {
     }
 
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: _appBarHeight),
+      appBar: ReusableAppBar(),
       body: Container(
         color: AppColors.primaryColor,
         child: Column(
@@ -149,7 +147,7 @@ class _ClubPageState extends State<ClubPage> {
 
   Widget _buildLoadingState() {
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: _appBarHeight),
+      appBar: ReusableAppBar(),
       body: Container(
         color: AppColors.primaryColor,
         child: const Center(
@@ -161,7 +159,7 @@ class _ClubPageState extends State<ClubPage> {
 
   Widget _buildErrorState() {
     return Scaffold(
-      appBar: ReusableAppBar(appBarHeight: _appBarHeight),
+      appBar: ReusableAppBar(),
       body: Container(
         color: AppColors.primaryColor,
         child: Center(
